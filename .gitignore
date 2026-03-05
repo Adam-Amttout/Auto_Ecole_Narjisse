@@ -1,0 +1,18 @@
+# React
+frontend/node_modules
+frontend/build
+
+# Laravel
+backend/vendor
+backend/node_modules
+backend/storage
+backend/bootstrap/cache
+
+# Environment files
+.env
+backend/.env
+frontend/.env
+
+# OS
+.DS_Store
+Thumbs.db

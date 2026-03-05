@@ -1,0 +1,95 @@
+/* Navbar générale */
+.custom-navbar {
+  background-color: #1b3a57; /* bleu profond professionnel */
+  padding: 0.7rem 1.5rem; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  font-family: 'Montserrat', sans-serif;
+  border-bottom: 1px solid rgba(255,255,255,0.1); 
+  border-radius: 15px;
+}
+
+/* Logo */
+.navbar-logo {
+  height: 50px;
+  width: auto;
+  border-radius: 8px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Liens du menu */
+.custom-navbar .nav-link {
+  color: #f0f0f0;
+  margin: 0 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-size: 0.95rem;
+  transition: color 0.3s, transform 0.3s, text-shadow 0.3s;
+}
+
+.custom-navbar .nav-link:first-child {
+  margin-left: 0;
+}
+.custom-navbar .nav-link:last-child {
+  margin-right: 0;
+}
+.custom-navbar .nav-link:hover {
+  color: #ffd700;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+  transform: translateY(-2px);
+}
+
+/* Liens actifs et clic (sauf bouton Connexion) */
+.custom-navbar .nav-link:not(.btn-login a):active,
+.custom-navbar .nav-link:not(.btn-login a):focus,
+.custom-navbar .nav-link.active:not(.btn-login a) {
+  text-decoration: underline; /* souligné au clic ou actif */
+  color: #ffd700;
+  font-weight: 600;
+}
+
+/* Mobile toggle button */
+.custom-navbar .navbar-toggler {
+  border-color: rgba(255,255,255,0.6);
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+}
+
+.custom-navbar .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23f0f0f0' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* Transition générale */
+.custom-navbar .nav-link,
+.navbar-logo {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Bouton Connexion */
+.btn-login a {
+  background-color: #ffcc00;
+  color: #002b5b;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Hover : grossit le bouton */
+.btn-login a:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Active / Focus : underline pour le bouton Connexion désactivé (rien) */
+.btn-login a:active,
+.btn-login a:focus {
+  text-decoration: none; /* pas de soulignement */
+  transform: scale(1);
+}

@@ -1,0 +1,62 @@
+.custom-footer {
+  background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 3rem 1.5rem;
+}
+
+.custom-footer h4, .custom-footer h5 {
+  color: #ffd700;
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.7rem;
+}
+
+.footer-links a,
+.custom-footer a {
+  color: white;
+  text-decoration: none;   /* supprime le soulignement */
+  transition: color 0.3s;
+}
+
+.footer-links a:hover,
+.custom-footer a:hover {
+  color: #ffd700;          /* doré au hover */
+}
+
+.social-icons a {
+  color: white;
+  font-size: 1.8rem;
+  transition: color 0.3s, transform 0.3s, filter 0.3s;
+}
+
+.social-icons a:hover {
+  color: #25D366;          /* vert WhatsApp ou changer couleur selon réseau */
+  transform: scale(1.2) translateY(-2px);
+  filter: drop-shadow(0 0 6px green); /* léger glow */
+}
+
+.custom-footer p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .social-icons {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .social-icons a {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+}

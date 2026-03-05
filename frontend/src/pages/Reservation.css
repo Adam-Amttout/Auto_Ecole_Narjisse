@@ -1,0 +1,52 @@
+.inscription-container {
+  background-color: #f8f9fa;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.inscription-container h2 {
+  color: #2c2c2c;
+  font-weight: 600;
+}
+
+.form-label {
+  font-weight: 500;
+}
+
+.form-control {
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+.form-control:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 5px #ffd700;
+}
+
+.form-check-label {
+  margin-right: 15px;
+}
+
+button[type="submit"] {
+  background-color: #ffd700;
+  border: none;
+  color: #2c2c2c;
+  font-weight: 600;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+button[type="submit"]:hover {
+  background-color: #e6c200;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .form-check-inline {
+    display: block;
+    margin-bottom: 8px;
+  }
+}
