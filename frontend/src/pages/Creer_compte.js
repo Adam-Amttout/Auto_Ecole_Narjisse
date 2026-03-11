@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Container, Form, Button, Row, Col, InputGroup } from "react-bootstrap";
+import axios from "axios";
 
 function CreerCompte() {
   const [formData, setFormData] = useState({
@@ -23,45 +24,41 @@ function CreerCompte() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Vérification côté client du mot de passe
     if (formData.password !== formData.confirmPassword) {
       alert("Les mots de passe ne correspondent pas !");
       return;
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nom: formData.nom,
-          prenom: formData.prenom,
-          email: formData.email,
-          cin: formData.cin,
-          password: formData.password,
-          password_confirmation: formData.confirmPassword
-        }),
+      const response = await axios.post("http://127.0.0.1:8000/api/clients", {
+        nom: formData.nom,
+        prenom: formData.prenom,
+        email: formData.email,
+        cin: formData.cin,
+        password: formData.password,
+        password_confirmation: formData.confirmPassword
+      }, {
+        headers: { "Content-Type": "application/json" }
       });
 
-      const data = await response.json();
+      alert(response.data.message || "Compte créé avec succès !");
+      // Réinitialiser le formulaire
+      setFormData({ nom: "", prenom: "", email: "", cin: "", password: "", confirmPassword: "" });
 
-      if (response.ok) {
-        alert(data.message || "Compte créé avec succès !");
-        // Réinitialiser le formulaire
-        setFormData({ nom: "", prenom: "", email: "", cin: "", password: "", confirmPassword: "" });
-      } else {
-        // Afficher les erreurs venant du backend
-        let errors = "";
-        if (data.errors) {
-          errors = Object.values(data.errors).flat().join("\n");
-        } else {
-          errors = data.message || "Erreur lors de l'enregistrement.";
-        }
-        alert(errors);
-      }
     } catch (error) {
       console.error("Erreur serveur:", error);
-      alert("Erreur serveur ou connexion au backend impossible.");
+      if (error.response && error.response.data) {
+        // Afficher les erreurs venant du backend
+        let errors = "";
+        if (error.response.data.errors) {
+          errors = Object.values(error.response.data.errors).flat().join("\n");
+        } else {
+          errors = error.response.data.message || "Erreur lors de l'enregistrement.";
+        }
+        alert(errors);
+      } else {
+        alert("Erreur serveur ou connexion au backend impossible.");
+      }
     }
   };
 

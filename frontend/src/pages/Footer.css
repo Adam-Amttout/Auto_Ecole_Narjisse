@@ -21,15 +21,18 @@
 }
 
 .footer-links a,
+.footer-links span, /* ajoute les span pour scroll */
 .custom-footer a {
   color: white;
-  text-decoration: none;   /* supprime le soulignement */
+  text-decoration: none;
+  cursor: pointer; /* pour indiquer que c’est cliquable */
   transition: color 0.3s;
 }
 
 .footer-links a:hover,
+.footer-links span:hover, /* hover pour les span */
 .custom-footer a:hover {
-  color: #ffd700;          /* doré au hover */
+  color: #ffd700;
 }
 
 .social-icons a {
@@ -39,14 +42,19 @@
 }
 
 .social-icons a:hover {
-  color: #25D366;          /* vert WhatsApp ou changer couleur selon réseau */
+  color: #25D366; 
   transform: scale(1.2) translateY(-2px);
-  filter: drop-shadow(0 0 6px green); /* léger glow */
+  
 }
 
 .custom-footer p {
   margin: 0.3rem 0;
   font-size: 0.9rem;
+}
+
+.map-container iframe {
+  border: 0;
+  border-radius: 8px;
 }
 
 /* Responsive */

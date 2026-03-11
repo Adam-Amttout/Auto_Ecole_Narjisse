@@ -1,0 +1,27 @@
+.cours-page{
+padding:60px 0;
+}
+
+.cours-card img{
+height:200px;
+object-fit:cover;
+}
+
+.cours-card{
+transition:0.3s;
+border:none;
+}
+
+.cours-card:hover{
+transform:translateY(-10px);
+}
+
+.cours-detail{
+background:#f8f9fa;
+border-radius:10px;
+}
+
+.cours-detail h3{
+color:#002b5b;
+margin-bottom:15px;
+}

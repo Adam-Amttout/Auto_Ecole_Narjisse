@@ -1,0 +1,50 @@
+.about-hero{
+height:60vh;
+background-image:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
+url("https://images.unsplash.com/photo-1493238792000-8113da705763");
+background-size:cover;
+background-position:center;
+}
+
+.about-hero h1{
+font-size:48px;
+font-weight:bold;
+}
+
+.about-section{
+padding:80px 0;
+}
+
+.about-section h2{
+font-weight:bold;
+margin-bottom:20px;
+}
+
+.stats-section{
+background:#002b5b;
+color:white;
+padding:60px 0;
+}
+
+.stats-section h3{
+font-size:40px;
+font-weight:bold;
+}
+
+.team-section{
+padding:80px 0;
+}
+
+.team-card img{
+height:250px;
+object-fit:cover;
+}
+
+.team-card{
+border:none;
+transition:0.3s;
+}
+
+.team-card:hover{
+transform:translateY(-10px);
+}
