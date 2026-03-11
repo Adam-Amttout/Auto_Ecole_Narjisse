@@ -84,19 +84,7 @@ function Reservation() {
               />
             </Form.Group>
           </Col>
-          <Col md={6} className="mb-3">
-            <Form.Group>
-              <Form.Label>CIN</Form.Label>
-              <Form.Control
-                type="text"
-                name="cin"
-                placeholder="Votre CIN"
-                value={formData.cin}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-          </Col>
+          
         </Row>
 
         <Row>

@@ -53,8 +53,8 @@ function Footer() {
           <Col xs={6} md={3} className="mb-3">
             <h5>Contact & Localisation</h5>
             <p>Email : <a href="mailto:info@autoecolemarrakech.com">info@autoecolemarrakech.com</a></p>
-            <p>Téléphone : <a href="tel:+212600123456">+212 600-123456</a></p>
-            <p>Adresse : Allal Elfassi, Marrakech, Maroc</p>
+            <p>Téléphone : <a href="tel:+212600123456">+212 524303811</a></p>
+            <p>Adresse : Allal Elfassi,IMM ALHOUBOUSS PORTE 5 APPARTEMENT 3 Marrakech, Maroc</p>
             <p className="mt-2">Vous pouvez nous visiter directement ou nous contacter via téléphone ou WhatsApp.</p>
             <div className="map-container mt-2">
               <iframe

@@ -14,6 +14,9 @@ import Creer_compte from "./pages/Creer_compte";
 import Reservation from "./pages/Reservation";
 import Cours from "./pages/Cours";
 import Dashboard from "./pages/Dashboard";
+import DangerDetail from "./pages/DangerDetail";
+import Video1 from "./pages/VideoX";
+
 
 function App() {
   return (
@@ -28,6 +31,8 @@ function App() {
         <Route path="/reservation" element={<Reservation />} />
         <Route path="/cours" element={<Cours />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/cours/danger" element={<DangerDetail />} />
+        <Route path="/video1" element={<Video1 />} />
       </Routes>
 
       {/* <Footer /> */}

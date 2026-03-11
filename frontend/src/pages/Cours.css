@@ -1,27 +1,43 @@
-.cours-page{
-padding:60px 0;
+.cours-page {
+  padding-top: 50px;
+  padding-bottom: 50px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.cours-card img{
-height:200px;
-object-fit:cover;
+.cours-card {
+  border-radius: 15px;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.cours-card{
-transition:0.3s;
-border:none;
+.cours-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
-.cours-card:hover{
-transform:translateY(-10px);
+.card-title {
+  font-weight: bold;
+  color: #007bff;
 }
 
-.cours-detail{
-background:#f8f9fa;
-border-radius:10px;
+.card-text {
+  font-size: 0.95rem;
+  margin-bottom: 0.8rem;
 }
 
-.cours-detail h3{
-color:#002b5b;
-margin-bottom:15px;
+.btn {
+  width: 100%;
+  font-weight: bold;
+}
+
+@media (max-width: 767px) {
+  .cours-card {
+    margin-bottom: 20px;
+  }
+}
+.cours-card img {
+  width: 100%;       /* l’image prend toute la largeur de la carte */
+  height: 200px;     /* fixe une hauteur pour que toutes les cartes aient la même taille */
+  object-fit: cover; /* l’image garde son ratio sans être déformée */
+  border-top-left-radius: 15px;  /* arrondi si tu veux comme la carte */
+  border-top-right-radius: 15px;
 }
