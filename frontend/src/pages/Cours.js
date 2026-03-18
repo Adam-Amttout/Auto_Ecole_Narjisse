@@ -41,7 +41,7 @@ function Cours() {
               <p className="card-text">
                 Panneaux fournissant des informations utiles (direction, services…).
               </p>
-              <button className="btn btn-primary" onClick={() => navigate("/cours/2")}>
+              <button className="btn btn-primary" onClick={() => navigate("/indication")}>
                 Lire plus
               </button>
             </div>
@@ -57,7 +57,7 @@ function Cours() {
               <p className="card-text">
                 Panneaux indiquant ce qui est interdit (accès, circulation…).
               </p>
-              <button className="btn btn-primary" onClick={() => navigate("/cours/3")}>
+              <button className="btn btn-primary" onClick={() => navigate("/interdiction")}>
                 Lire plus
               </button>
             </div>

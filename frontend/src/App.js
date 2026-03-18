@@ -1,7 +1,6 @@
 
-
-
-
+import Interdiction from "./pages/interdiction";
+import Indication from "./pages/indication";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -33,6 +32,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/cours/danger" element={<DangerDetail />} />
         <Route path="/video1" element={<Video1 />} />
+        <Route path="/indication" element={<Indication />} />
+        <Route path="/interdiction" element={<Interdiction />} />
       </Routes>
 
       {/* <Footer /> */}
