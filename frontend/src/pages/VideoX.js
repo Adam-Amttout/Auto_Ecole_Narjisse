@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import video1 from "../assets/video/vid1.mp4";
 
 function Video1() {
   const navigate = useNavigate();
@@ -13,7 +12,7 @@ function Video1() {
       <div
         style={{
           display: "inline-block",
-          maxWidth: "350px", // plus petit que 600px
+          maxWidth: "350px",
           width: "100%",
           borderRadius: "10px",
           overflow: "hidden",
@@ -22,7 +21,7 @@ function Video1() {
         }}
       >
         <video
-          src={video1}
+          src="/video/vid1.mp4"
           controls
           autoPlay
           style={{
