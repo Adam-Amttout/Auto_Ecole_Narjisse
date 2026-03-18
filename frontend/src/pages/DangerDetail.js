@@ -18,7 +18,7 @@ const [watched,setWatched] = useState([])
 const [currentIndex, setCurrentIndex] = useState(null);
 
 const indications = [
-{image:img1,video:"/video/video1.mp4",title:"Parking"},
+{image:img1,video:"/video/Vid1.mp4",title:"Parking"},
 {image:img2,video:"/video/video2.mp4",title:"Station service"},
 {image:img3,video:"/video/video3.mp4",title:"Hôpital"},
 {image:img4,video:"/video/video4.mp4",title:"Téléphone"},

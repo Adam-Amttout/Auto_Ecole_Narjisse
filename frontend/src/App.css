@@ -3,3 +3,6 @@ body, html, #root, .App {
   padding: 0;
   font-family: Arial, sans-serif;
 }
+body {
+  padding-top: 80px;
+}

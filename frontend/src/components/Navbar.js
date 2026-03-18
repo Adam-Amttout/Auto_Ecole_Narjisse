@@ -1,127 +1,176 @@
-
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./Navbar.css";
 import { Navbar as BSNavbar, Nav, Container, Button } from "react-bootstrap";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Navbar() {
 
   const navigate = useNavigate();
   const location = useLocation();
   const [expanded, setExpanded] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
 
-  // Fonction pour scroller vers une section
+  // 🔥 scroll vers section (محسّن)
   const scrollToSection = (id) => {
 
-    // ferme le menu mobile
     setExpanded(false);
 
     if (location.pathname !== "/") {
-      // Si on n'est pas sur Home, naviguer vers Home d'abord
-      navigate("/", { replace: false });
+      navigate("/");
 
       setTimeout(() => {
         const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-      }, 50);
+        if (el) {
+          const offset = 80; // height navbar
+          const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }, 100);
 
     } else {
-
       const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      if (el) {
+        const offset = 80;
+        const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
 
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
     }
   };
+
+  // 🔥 detect section active
+  useEffect(() => {
+    const sections = ["home", "about", "services", "faq", "contact"];
+
+    const handleScroll = () => {
+      let current = "home";
+
+      sections.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          const top = el.offsetTop - 120;
+          if (window.scrollY >= top) {
+            current = id;
+          }
+        }
+      });
+
+      setActiveSection(current);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <BSNavbar
       expand="md"
       expanded={expanded}
       className="custom-navbar"
-      sticky="top"
     >
 
       <Container>
 
         {/* Logo */}
-        <BSNavbar.Brand
-          as={Link}
-          to="/"
-          onClick={() => setExpanded(false)}
-        >
-          <img
-            src="/Logo.png"
-            alt="Auto Ecole Narjisse"
-            className="navbar-logo"
-          />
-        </BSNavbar.Brand>
+          <BSNavbar.Brand
+              as={Link}
+              to="/"
+              onClick={() => setExpanded(false)}
+              className="brand-container"
+            >
+              <img
+                src="/logo.png"
+                alt="Auto École Narjiss"
+                className="navbar-logo"
+              />
 
-        {/* Icon menu mobile */}
+              <div className="brand-texts">
+                <span className="brand-title">Auto École</span>
+                <span className="brand-name">Narjiss</span>
+              </div>
+            </BSNavbar.Brand>
+
+        {/* Mobile toggle */}
         <BSNavbar.Toggle
           aria-controls="basic-navbar-nav"
-          onClick={() => setExpanded(expanded ? false : true)}
+          onClick={() => setExpanded(!expanded)}
         />
 
         <BSNavbar.Collapse id="basic-navbar-nav">
 
           <Nav className="ms-auto align-items-lg-center">
 
-            {/* Sections scrollables */}
-            <Nav.Link onClick={() => scrollToSection("home")}>
+            {/* Accueil */}
+            <Nav.Link
+              onClick={() => scrollToSection("home")}
+              className={activeSection === "home" ? "nav-link active" : "nav-link"}
+            >
               Accueil
             </Nav.Link>
 
-            <Nav.Link onClick={() => scrollToSection("about")}>
-              À propos
+            {/* À propos FIX */}
+            <Nav.Link
+              onClick={() => scrollToSection("about")}
+              className={activeSection === "about" ? "nav-link active" : "nav-link"}
+            >
+              <span className="no-break">À&nbsp;propos</span>
             </Nav.Link>
 
-            <Nav.Link onClick={() => scrollToSection("services")}>
+            {/* Services */}
+            <Nav.Link
+              onClick={() => scrollToSection("services")}
+              className={activeSection === "services" ? "nav-link active" : "nav-link"}
+            >
               Services
             </Nav.Link>
 
-             <Nav.Link
-              as={Link}
-              to="/dashboard"
-              onClick={() => setExpanded(false)}
-            >
-            Dashboard
-            </Nav.Link>
-
+            {/* Cours */}
             <Nav.Link
               as={Link}
-              to="/reservation"
-              onClick={() => setExpanded(false)}
-            >
-              Inscription
-            </Nav.Link>
-             <Nav.Link
-              as={Link}
               to="/cours"
+              className={location.pathname === "/cours" ? "nav-link active" : "nav-link"}
               onClick={() => setExpanded(false)}
             >
               Cours
             </Nav.Link>
 
-           
-
-            <Nav.Link onClick={() => scrollToSection("faq")}>
+            {/* FAQ */}
+            <Nav.Link
+              onClick={() => scrollToSection("faq")}
+              className={activeSection === "faq" ? "nav-link active" : "nav-link"}
+            >
               FAQ
             </Nav.Link>
-            <Nav.Link onClick={() => scrollToSection("contact")}>
+
+            {/* Contact */}
+            <Nav.Link
+              onClick={() => scrollToSection("contact")}
+              className={activeSection === "contact" ? "nav-link active" : "nav-link"}
+            >
               Contact
             </Nav.Link>
 
-            {/* Bouton Connexion */}
-            <div className="btn-login">
-              <Button
-                as={Link}
-                to="/connexion"
-                className="btn-login w-100 w-lg-auto mt-3 mt-lg-0"
-                onClick={() => setExpanded(false)}
-              >
-                Connexion
-              </Button>
-            </div>
+            {/* 🔥 Inscription */}
+            <Button
+              as={Link}
+              to="/reservation"
+              className="btn-register ms-lg-3 mt-3 mt-lg-0"
+              onClick={() => setExpanded(false)}
+            >
+              Inscription 
+            </Button>
+
+            {/* Connexion */}
+            <Button
+              as={Link}
+              to="/connexion"
+              className="btn-login ms-2 mt-3 mt-lg-0"
+              onClick={() => setExpanded(false)}
+            >
+              Connexion
+            </Button>
 
           </Nav>
 
