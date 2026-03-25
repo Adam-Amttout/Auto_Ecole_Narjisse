@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import "./indication.css";
 
-import img1 from "../assets/images/dangerDetail/img1.png";
-import img2 from "../assets/images/dangerDetail/img2.png";
-import img3 from "../assets/images/dangerDetail/img3.png";
-import img4 from "../assets/images/dangerDetail/img4.png";
-import img5 from "../assets/images/dangerDetail/img5.png";
-import img6 from "../assets/images/dangerDetail/img6.png";
-import img7 from "../assets/images/dangerDetail/img7.png";
-import img8 from "../assets/images/dangerDetail/img8.png";
+import img13 from "../assets/images/interdection/img13.png";
+import img23 from "../assets/images/interdection/img23.png";
+import img33 from "../assets/images/interdection/img33.png";
+import img43 from "../assets/images/interdection/img43.png";
+import img53 from "../assets/images/interdection/img53.png";
+import img63 from "../assets/images/interdection/img63.png";
 
 function Indication() {
 
@@ -18,15 +16,13 @@ const [watched,setWatched] = useState([])
 const [currentIndex, setCurrentIndex] = useState(null);
 
 const indications = [
-{image:img1,video:"/video/video1.mp4",title:"Parking"},
-{image:img2,video:"/video/video2.mp4",title:"Station service"},
-{image:img3,video:"/video/video3.mp4",title:"Hôpital"},
-{image:img4,video:"/video/video4.mp4",title:"Téléphone"},
-{image:img5,video:"/video/video5.mp4",title:"Restaurant"},
-{image:img6,video:"/video/video6.mp4",title:"Autoroute"},
-{image:img7,video:"/video/video7.mp4",title:"Hôtel"},
-{image:img8,video:"/video/video8.mp4",title:"Aéroport"}
-]
+  { image: img13, video: "/video/interdection/ved13.mp4", title: "Parking" },
+  { image: img23, video: "/video/interdection/ved23.mp4", title: "Station service" },
+  { image: img33, video: "/video/interdection/ved33.mp4", title: "Hôpital" },
+  { image: img43, video: "/video/interdection/ved43.mp4", title: "Passage piéton" },
+  { image: img53, video: "/video/interdection/ved53.mp4", title: "Virage dangereux" },
+  { image: img63, video: "/video/interdection/ved63.mp4", title: "Route glissante" },
+];
 
 // فتح الفيديو
 const openVideo = (video,index)=>{

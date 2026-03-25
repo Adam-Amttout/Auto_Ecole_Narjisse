@@ -1,14 +1,8 @@
 import React, { useState } from "react";
 import "./indication.css";
 
-import img1 from "../assets/images/dangerDetail/img1.png";
-import img2 from "../assets/images/dangerDetail/img2.png";
-import img3 from "../assets/images/dangerDetail/img3.png";
-import img4 from "../assets/images/dangerDetail/img4.png";
-import img5 from "../assets/images/dangerDetail/img5.png";
-import img6 from "../assets/images/dangerDetail/img6.png";
-import img7 from "../assets/images/dangerDetail/img7.png";
-import img8 from "../assets/images/dangerDetail/img8.png";
+
+import img12 from "../assets/images/interaction/img12.png";
 
 function Indication() {
 
@@ -18,14 +12,7 @@ const [watched,setWatched] = useState([])
 const [currentIndex, setCurrentIndex] = useState(null);
 
 const indications = [
-{image:img1,video:"/video/video1.mp4",title:"Parking"},
-{image:img2,video:"/video/video2.mp4",title:"Station service"},
-{image:img3,video:"/video/video3.mp4",title:"Hôpital"},
-{image:img4,video:"/video/video4.mp4",title:"Téléphone"},
-{image:img5,video:"/video/video5.mp4",title:"Restaurant"},
-{image:img6,video:"/video/video6.mp4",title:"Autoroute"},
-{image:img7,video:"/video/video7.mp4",title:"Hôtel"},
-{image:img8,video:"/video/video8.mp4",title:"Aéroport"}
+ {image: img12, video: "/video/INDECATION/ved12.mp4", title: "Parking" },
 ]
 
 // فتح الفيديو
