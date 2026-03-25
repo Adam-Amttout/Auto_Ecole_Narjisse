@@ -1,54 +1,222 @@
-.connexion-container {
-  background-color: #f8f9fa;
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+/* PAGE */
+.login-page {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  background: linear-gradient(
+      rgba(0, 0, 0, 0.45),
+      rgba(0, 0, 0, 0.45)
+    ),
+    url("../assets/connexion/image.png");
+
+  background-size: cover;
+  background-position: center;
 }
 
-h2 {
-  font-weight: 600;
-  color: #2c2c2c;
+/* BLUR BACKGROUND */
+.login-page::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(4px);
+  z-index: 0;
 }
 
-.form-control {
-  border-radius: 8px;
-  padding: 0.6rem 0.75rem;
-  transition: border 0.3s, box-shadow 0.3s;
+/* BOX */
+.login-box {
+  width: 350px;
+  padding: 40px;
+  position: relative;
+  z-index: 1;
+
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  color: white;
+  text-align: center;
+
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+
+  transition: 0.3s;
 }
 
-.form-control:focus {
-  border-color: #ffd700;
-  box-shadow: 0 0 5px #ffd700;
+/* HOVER CARD */
+.login-box:hover {
+  transform: translateY(-5px);
 }
 
-button[type="submit"],
-button[type="button"] {
-  padding: 0.5rem 1.2rem;
-  font-weight: 600;
-  transition: transform 0.3s, box-shadow 0.3s;
+/* ANIMATION */
+.fade-in {
+  animation: fadeZoom 0.6s ease;
 }
 
-button[type="submit"] {
-  background-color: #ffd700;
+@keyframes fadeZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* AVATAR */
+.avatar {
+  font-size: 60px;
+  margin-bottom: 10px;
+  color: #e63946;
+
+  animation: float 2.5s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+/* CLOSE */
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: 0.3s;
+}
+
+.close-btn:hover {
+  color: #e63946;
+  transform: rotate(90deg);
+}
+
+/* INPUT */
+.input-box {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-box input {
+  width: 100%;
+  padding: 10px 40px;
   border: none;
-  color: #2c2c2c;
+  outline: none;
+
+  border-bottom: 2px solid rgba(255,255,255,0.5);
+  background: transparent;
+  color: white;
+
+  transition: 0.3s;
 }
 
-button[type="submit"]:hover {
-  background-color: #e6c200;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+.input-box input::placeholder {
+  color: #ddd;
 }
 
-button[type="button"] {
-  border: 2px solid #ffd700;
-  color: #2c2c2c;
-  background-color: transparent;
+/* FOCUS */
+.input-box input:focus {
+  border-bottom: 2px solid #e63946;
+  transform: scale(1.03);
+  box-shadow: 0 5px 15px rgba(230,57,70,0.2);
 }
 
-button[type="button"]:hover {
-  background-color: #ffd700;
-  color: #2c2c2c;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+/* ICON */
+.icon {
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  color: #e63946;
+}
+
+/* SHOW PASSWORD ICON */
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  cursor: pointer;
+  color: #ddd;
+  transition: 0.3s;
+}
+
+.toggle-password:hover {
+  color: #e63946;
+}
+
+/* OPTIONS */
+.options {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* FORGOT */
+.forgot {
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.forgot:hover {
+  color: #e63946;
+  text-decoration: underline;
+}
+
+/* BUTTON */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+
+  background: linear-gradient(45deg, #e63946, #ff6b6b);
+  border: none;
+  border-radius: 8px;
+
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+/* BUTTON HOVER */
+.login-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(230, 57, 70, 0.5);
+}
+
+/* BUTTON DISABLED */
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* REGISTER */
+.register {
+  margin-top: 15px;
+}
+
+.register span {
+  color: #e63946;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: 0.3s;
+}
+
+.register span:hover {
+  text-decoration: underline;
+}
+
+/* RESPONSIVE */
+@media (max-width: 400px) {
+  .login-box {
+    width: 90%;
+    padding: 25px;
+  }
 }

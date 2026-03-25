@@ -38,19 +38,24 @@ function CreerCompte() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("CLICKED"); // ✅ debug
+    alert("Button clicked"); // ✅ باش تشوف واش خدام
+
     if (formData.password !== formData.confirmPassword) {
       setErrors({ confirmPassword: "Les mots de passe ne correspondent pas" });
       return;
     }
 
     try {
-      await axios.post("http://127.0.0.1:8000/api/clients", {
+      const res = await axios.post("http://localhost:8000/api/register-user", {
         nom: formData.nom,
         prenom: formData.prenom,
         email: formData.email,
         password: formData.password,
         password_confirmation: formData.confirmPassword
       });
+
+      console.log(res.data); // ✅ debug
 
       setSuccess(true);
 
@@ -59,16 +64,27 @@ function CreerCompte() {
       }, 3000);
 
     } catch (error) {
+      console.log(error); // ✅ مهم بزاف
+      alert("Error from server"); // 👈 باش يبان ليك
+
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       }
-}
+    }
   };
 
   return (
     <div className="form-bg">
 
-      <video autoPlay loop muted playsInline className="bg-video">
+      {/* ✅ FIX VIDEO CLICK */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="bg-video"
+        style={{ pointerEvents: "none" }} // 🔥 هذا هو الحل
+      >
         <source src="/video/cree_un_compte/Cree_un_compte.mp4" type="video/mp4" />
       </video>
 
@@ -78,7 +94,6 @@ function CreerCompte() {
           <h2 className="form-title">Créer un compte</h2>
           <p className="form-subtitle">Rejoignez-nous dès maintenant</p>
 
-          {/* ✅ SUCCESS MESSAGE */}
           {success && (
             <div className="success-box">
               ✔ Compte créé avec succès !
@@ -127,7 +142,6 @@ function CreerCompte() {
               {errors.email && <small className="error">{errors.email}</small>}
             </Form.Group>
 
-            {/* PASSWORD */}
             <Form.Group className="mb-2 position-relative">
               <Form.Control
                 type={showPassword ? "text" : "password"}
@@ -142,17 +156,14 @@ function CreerCompte() {
               </span>
             </Form.Group>
 
-            {/* ✅ STRENGTH BAR */}
             <div className={`strength-bar ${getPasswordStrength()}`}></div>
 
-            {/* ✅ TEXT */}
             <p className={`strength-text ${getPasswordStrength()}`}>
               {getPasswordStrength() === "weak" && "Faible"}
               {getPasswordStrength() === "medium" && "Moyen"}
               {getPasswordStrength() === "strong" && "Fort"}
             </p>
 
-            {/* ✅ RULES */}
             <div className="password-rules">
               <p className={formData.password.length >= 8 ? "valid" : "invalid"}>
                 {formData.password.length >= 8 ? "✔" : "✖"} 8 caractères minimum
@@ -167,7 +178,6 @@ function CreerCompte() {
               </p>
             </div>
 
-            {/* CONFIRM */}
             <Form.Group className="mb-4 mt-2">
               <Form.Control
                 type={showPassword ? "text" : "password"}
