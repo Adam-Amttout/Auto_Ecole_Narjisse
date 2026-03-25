@@ -47,8 +47,8 @@ function Home() {
           </p>
 
           <Button href="/reservation" className="hero-btn">
-              Commencer maintenant
-            </Button>
+            Commencer maintenant
+          </Button>
         </Container>
 
       </section>
@@ -66,7 +66,8 @@ function Home() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <FaWhatsapp />
+        <FaWhatsapp className="whatsapp-icon" />
+        <span className="whatsapp-text">Discutez avec nous</span>
       </a>
 
     </div>

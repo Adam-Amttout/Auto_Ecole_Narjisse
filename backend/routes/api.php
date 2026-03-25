@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,3 +35,9 @@ Route::post('/register', [ClientController::class, 'store']);
 
 // 🔹 Contact (email)
 Route::post('/contact', [ContactController::class, 'send']);
+
+// 🔹 Login
+Route::post('/login', [AuthController::class, 'login']);
+
+// 🔥 REGISTER USER (بدون middleware)
+Route::post('/register-user', [AuthController::class, 'register']);
