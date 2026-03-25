@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Alert, Spinner } from "react-bootstrap";
+import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaClock } from "react-icons/fa";
+import axios from "axios";
 import "./Reservation.css";
 
 function Reservation() {
@@ -7,191 +9,180 @@ function Reservation() {
     nom: "",
     prenom: "",
     email: "",
-    cin: "",
     telephone: "",
-    dateNaissance: "",
-    sexe: "",
-    typePermis: "",
-    langues: []
+    sujet: "",
+    message: ""
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-    if (type === "checkbox") {
-      let newLangues = [...formData.langues];
-      if (checked) {
-        newLangues.push(value);
-      } else {
-        newLangues = newLangues.filter((lang) => lang !== value);
-      }
-      setFormData({ ...formData, langues: newLangues });
-    } else {
-      setFormData({ ...formData, [name]: value });
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const validate = () => {
+    if (!formData.nom || !formData.prenom || !formData.email || !formData.message) {
+      return "Veuillez remplir tous les champs obligatoires.";
+    }
+    if (!formData.email.includes("@")) {
+      return "Email invalide.";
+    }
+    return "";
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      await axios.post("http://localhost:8000/api/contact", formData)
+
+      setSuccess(true);
+
+      setFormData({
+        nom: "",
+        prenom: "",
+        email: "",
+        telephone: "",
+        sujet: "",
+        message: ""
+      });
+
+      setTimeout(() => setSuccess(false), 4000);
+
+    }
+    catch (err) {
+  console.log("ERROR FULL:", err);
+  console.log("RESPONSE:", err.response);
+  console.log("DATA:", err.response?.data);
+  console.log("STATUS:", err.response?.status);
+  setError("Erreur lors de l'envoi ❌");
+}
+
+finally {
+      setLoading(false);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Données soumises:", formData);
-    alert("Inscription réussie !");
-  };
-
   return (
-    <Container className="inscription-container my-5">
-      <h2 className="text-center mb-4">Formulaire de réservation </h2>
-      <Form onSubmit={handleSubmit}>
-        <Row>
-          <Col md={6} className="mb-3">
-            <Form.Group>
-              <Form.Label>Nom</Form.Label>
-              <Form.Control
-                type="text"
-                name="nom"
-                placeholder="Votre nom"
-                value={formData.nom}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6} className="mb-3">
-            <Form.Group>
-              <Form.Label>Prénom</Form.Label>
-              <Form.Control
-                type="text"
-                name="prenom"
-                placeholder="Votre prénom"
-                value={formData.prenom}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-          </Col>
-        </Row>
+    <Container className="contact-container">
+      <Row className="g-4">
 
-        <Row>
-          <Col md={6} className="mb-3">
-            <Form.Group>
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                placeholder="example@mail.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-          </Col>
-          
-        </Row>
+        {/* LEFT */}
+        <Col md={7} className="fade-up">
+          <div className="contact-form">
 
-        <Row>
-          <Col md={6} className="mb-3">
-            <Form.Group>
-              <Form.Label>Téléphone</Form.Label>
-              <Form.Control
-                type="tel"
-                name="telephone"
-                placeholder="+212 6XX-XXXXXX"
-                value={formData.telephone}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6} className="mb-3">
-            <Form.Group>
-              <Form.Label>Date de naissance</Form.Label>
-              <Form.Control
-                type="date"
-                name="dateNaissance"
-                value={formData.dateNaissance}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-          </Col>
-        </Row>
+            <h2>Envoyez-nous un message</h2>
+            <p>Nous vous répondrons dans les 24 heures.</p>
 
-        <Row>
-          <Col md={6} className="mb-3">
-            <Form.Group>
-              <Form.Label>Sexe</Form.Label>
-              <div>
-                <Form.Check
-                  inline
-                  label="Homme"
-                  name="sexe"
-                  type="radio"
-                  value="Homme"
-                  onChange={handleChange}
-                  required
-                />
-                <Form.Check
-                  inline
-                  label="Femme"
-                  name="sexe"
-                  type="radio"
-                  value="Femme"
-                  onChange={handleChange}
-                />
-              </div>
-            </Form.Group>
-          </Col>
-          <Col md={6} className="mb-3">
-            <Form.Group>
-              <Form.Label>Type de permis</Form.Label>
-              <Form.Select
-                name="typePermis"
-                value={formData.typePermis}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Choisir un type</option>
-                <option value="Voiture">Voiture</option>
-                <option value="Moto">Moto</option>
-                <option value="Bus">Bus</option>
+            {success && <Alert variant="success">✅ Message envoyé avec succès !</Alert>}
+            {error && <Alert variant="danger">{error}</Alert>}
+
+            <Form onSubmit={handleSubmit}>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Label>Prénom *</Form.Label>
+                  <Form.Control name="prenom" value={formData.prenom} onChange={handleChange}/>
+                </Col>
+
+                <Col md={6}>
+                  <Form.Label>Nom *</Form.Label>
+                  <Form.Control name="nom" value={formData.nom} onChange={handleChange}/>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Label>Email *</Form.Label>
+                  <Form.Control name="email" value={formData.email} onChange={handleChange}/>
+                </Col>
+
+                <Col md={6}>
+                  <Form.Label>Téléphone</Form.Label>
+                  <Form.Control name="telephone" value={formData.telephone} onChange={handleChange}/>
+                </Col>
+              </Row>
+
+              <Form.Label>Sujet</Form.Label>
+              <Form.Select name="sujet" value={formData.sujet} onChange={handleChange} className="select-style">
+                <option value="">Sélectionnez un sujet</option>
+                <option>Inscription</option>
+                <option>Information</option>
+                <option>Tarifs</option>
+                <option>Cours de code</option>
+                <option>Cours de conduite</option>
               </Form.Select>
-            </Form.Group>
-          </Col>
-        </Row>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Langues </Form.Label>
-          <div>
-            <Form.Check
-              inline
-              type="checkbox"
-              label="Français"
-              value="Français"
-              name="langues"
-              onChange={handleChange}
-            />
-            <Form.Check
-              inline
-              type="checkbox"
-              label="Arabe"
-              value="Arabe"
-              name="langues"
-              onChange={handleChange}
-            />
-            <Form.Check
-              inline
-              type="checkbox"
-              label="Anglais"
-              value="Anglais"
-              name="langues"
-              onChange={handleChange}
-            />
+              <Form.Label className="mt-3">Message *</Form.Label>
+              <Form.Control as="textarea" rows={4} name="message" value={formData.message} onChange={handleChange}/>
+
+              <Button type="submit" className="btn-send w-100 mt-4" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Spinner animation="border" size="sm" /> Envoi...
+                  </>
+                ) : (
+                  "Envoyer le message"
+                )}
+              </Button>
+
+            </Form>
           </div>
-        </Form.Group>
+        </Col>
 
-        <Button variant="warning" type="submit" className="mt-3 w-100">
-          Réserver
-        </Button>
-      </Form>
+        {/* RIGHT */}
+        <Col md={5} className="right-side">
+
+          <div className="info-box fade-up">
+            <FaMapMarkerAlt className="icon" />
+            <div>
+              <h5>Adresse</h5>
+              <p>123 Avenue Mohammed V</p>
+              <p>Casablanca, Maroc</p>
+            </div>
+          </div>
+
+          <div className="info-box fade-up">
+            <FaPhoneAlt className="icon" />
+            <div>
+              <h5>Téléphone</h5>
+              <p>+212 6 61 96 70 48</p>
+              <p>+212 6 63 42 84 39</p>
+            </div>
+          </div>
+
+          <div className="info-box fade-up">
+            <FaEnvelope className="icon" />
+            <div>
+              <h5>Email</h5>
+              <p>contact@alkawkab.ma</p>
+            </div>
+          </div>
+
+          <div className="info-box fade-up">
+            <FaClock className="icon" />
+            <div>
+              <h5>Horaires</h5>
+              <p>Lun - Ven: 8h00 - 19h00</p>
+              <p>Samedi: 9h00 - 17h00</p>
+              <p>Dimanche: Fermé</p>
+            </div>
+          </div>
+
+        </Col>
+
+      </Row>
     </Container>
   );
 }

@@ -1,156 +1,195 @@
 import React, { useState } from "react";
-import { Container, Form, Button, Row, Col, InputGroup } from "react-bootstrap";
+import { Container, Form, Button, Row, Col } from "react-bootstrap";
 import axios from "axios";
+import "./CreerCompte.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function CreerCompte() {
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
     email: "",
-    cin: "",
     password: "",
     confirmPassword: ""
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState(false);
 
-  // Met à jour l'état pour chaque champ
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+
+    if (name === "email" && !value.includes("@")) {
+      setErrors({ ...errors, email: "Email invalide" });
+    } else {
+      setErrors({ ...errors, [name]: "" });
+    }
   };
 
-  // Soumission du formulaire
+  const getPasswordStrength = () => {
+    const p = formData.password;
+    if (p.length > 8 && /[A-Z]/.test(p) && /\d/.test(p)) return "strong";
+    if (p.length > 5) return "medium";
+    return "weak";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Les mots de passe ne correspondent pas !");
+      setErrors({ confirmPassword: "Les mots de passe ne correspondent pas" });
       return;
     }
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/clients", {
+      await axios.post("http://127.0.0.1:8000/api/clients", {
         nom: formData.nom,
         prenom: formData.prenom,
         email: formData.email,
-        cin: formData.cin,
         password: formData.password,
         password_confirmation: formData.confirmPassword
-      }, {
-        headers: { "Content-Type": "application/json" }
       });
 
-      alert(response.data.message || "Compte créé avec succès !");
-      // Réinitialiser le formulaire
-      setFormData({ nom: "", prenom: "", email: "", cin: "", password: "", confirmPassword: "" });
+      setSuccess(true);
+
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
 
     } catch (error) {
-      console.error("Erreur serveur:", error);
-      if (error.response && error.response.data) {
-        // Afficher les erreurs venant du backend
-        let errors = "";
-        if (error.response.data.errors) {
-          errors = Object.values(error.response.data.errors).flat().join("\n");
-        } else {
-          errors = error.response.data.message || "Erreur lors de l'enregistrement.";
-        }
-        alert(errors);
-      } else {
-        alert("Erreur serveur ou connexion au backend impossible.");
+      if (error.response?.data?.errors) {
+        setErrors(error.response.data.errors);
       }
-    }
+}
   };
 
   return (
-    <Container className="my-5">
-      <h2 className="text-center mb-4">Créer un compte</h2>
-      <Form onSubmit={handleSubmit}>
-        <Row>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label>Nom</Form.Label>
+    <div className="form-bg">
+
+      <video autoPlay loop muted playsInline className="bg-video">
+        <source src="/video/cree_un_compte/Cree_un_compte.mp4" type="video/mp4" />
+      </video>
+
+      <Container className="form-container">
+        <div className="form-box">
+
+          <h2 className="form-title">Créer un compte</h2>
+          <p className="form-subtitle">Rejoignez-nous dès maintenant</p>
+
+          {/* ✅ SUCCESS MESSAGE */}
+          {success && (
+            <div className="success-box">
+              ✔ Compte créé avec succès !
+            </div>
+          )}
+
+          <Form onSubmit={handleSubmit}>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Control
+                    type="text"
+                    name="nom"
+                    value={formData.nom}
+                    onChange={handleChange}
+                    placeholder="Nom"
+                    required
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Control
+                    type="text"
+                    name="prenom"
+                    value={formData.prenom}
+                    onChange={handleChange}
+                    placeholder="Prénom"
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group className="mb-3">
               <Form.Control
-                type="text"
-                name="nom"
-                value={formData.nom}
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
+                placeholder="Email"
                 required
               />
+              {errors.email && <small className="error">{errors.email}</small>}
             </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label>Prénom</Form.Label>
+
+            {/* PASSWORD */}
+            <Form.Group className="mb-2 position-relative">
               <Form.Control
-                type="text"
-                name="prenom"
-                value={formData.prenom}
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
                 onChange={handleChange}
+                placeholder="Mot de passe"
                 required
               />
+              <span className="toggle-eye" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
             </Form.Group>
-          </Col>
-        </Row>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+            {/* ✅ STRENGTH BAR */}
+            <div className={`strength-bar ${getPasswordStrength()}`}></div>
 
-        <Form.Group className="mb-3">
-          <Form.Label>CIN</Form.Label>
-          <Form.Control
-            type="text"
-            name="cin"
-            value={formData.cin}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+            {/* ✅ TEXT */}
+            <p className={`strength-text ${getPasswordStrength()}`}>
+              {getPasswordStrength() === "weak" && "Faible"}
+              {getPasswordStrength() === "medium" && "Moyen"}
+              {getPasswordStrength() === "strong" && "Fort"}
+            </p>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Mot de passe</Form.Label>
-          <InputGroup>
-            <Form.Control
-              type={showPassword ? "text" : "password"}
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-            <Button
-              variant="outline-secondary"
-              onClick={() => setShowPassword(!showPassword)}
-              type="button"
-            >
-              {showPassword ? "Cacher" : "Afficher"}
+            {/* ✅ RULES */}
+            <div className="password-rules">
+              <p className={formData.password.length >= 8 ? "valid" : "invalid"}>
+                {formData.password.length >= 8 ? "✔" : "✖"} 8 caractères minimum
+              </p>
+
+              <p className={/[A-Z]/.test(formData.password) ? "valid" : "invalid"}>
+                {/[A-Z]/.test(formData.password) ? "✔" : "✖"} Une majuscule
+              </p>
+
+              <p className={/\d/.test(formData.password) ? "valid" : "invalid"}>
+                {/\d/.test(formData.password) ? "✔" : "✖"} Un chiffre
+              </p>
+            </div>
+
+            {/* CONFIRM */}
+            <Form.Group className="mb-4 mt-2">
+              <Form.Control
+                type={showPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirmer mot de passe"
+                required
+              />
+              {errors.confirmPassword && (
+                <small className="error">{errors.confirmPassword}</small>
+              )}
+            </Form.Group>
+
+            <Button type="submit" className="btn-send w-100">
+              Créer votre compte
             </Button>
-          </InputGroup>
-        </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Confirmer mot de passe</Form.Label>
-          <Form.Control
-            type={showPassword ? "text" : "password"}
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Button type="submit" className="w-100" variant="warning">
-          Créer votre compte
-        </Button>
-      </Form>
-    </Container>
+          </Form>
+        </div>
+      </Container>
+    </div>
   );
 }
 

@@ -1,122 +1,87 @@
-
-.home {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-
+/* HERO */
 .hero {
   position: relative;
-  min-height: 100vh; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  height: 100vh;
+  overflow: hidden;
 }
 
+.hero-btn {
+  background: #e63946; /* نفس لون الموقع */
+  color: #fff;
+  padding: 14px 40px;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  border: none;
+  transition: 0.3s;
+  box-shadow: 0 8px 25px rgba(230,57,70,0.4);
+}
 
-.overlay {
+.hero-btn:hover {
+  background: #c1121f;
+  transform: scale(1.05);
+}
+
+/* 🎥 VIDEO */
+.hero-video {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    rgba(0, 0, 0, 0.4),
-    rgba(0, 0, 0, 0.4)
-  );
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  top: 0;
+  left: 0;
   z-index: 1;
 }
 
-
-.hero-content {
-  position: relative;
+/* 🌑 OVERLAY */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
   z-index: 2;
-  max-width: 800px;
-  padding: 20px;
 }
 
+/* 📝 CONTENT */
+.hero-content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
+/* TEXT */
 .hero-content h1 {
-  font-size: 3.5rem;
-  font-weight: 700;
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.hero-content p {
+  font-size: 1.2rem;
   margin-bottom: 20px;
 }
 
-
-.hero-content p {
-  font-size: 1.4rem;
-  margin-bottom: 30px;
-}
-
-
+/* BUTTON */
 .hero-content .btn {
-  padding: 14px 35px;
+  padding: 12px 30px;
   font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 50px;
-  transition: 0.3s ease;
+  border-radius: 30px;
 }
 
-.hero-content .btn:hover {
-  transform: scale(1.08);
+/* ✨ Animation */
+.hero-content {
+  animation: fadeUp 1s ease;
 }
 
-
-.whatsapp-float {
-  position: fixed;
-  bottom: 25px;
-  right: 25px;
-  width: 65px;
-  height: 65px;
-  border-radius: 50%;
-  background-color: #25D366;
-  color: white;
-  font-size: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-  z-index: 9999;
-  animation: pulse 1.8s infinite;
-  transition: 0.3s ease;
-}
-
-.whatsapp-float:hover {
-  background-color: #1ebe5d;
-  transform: scale(1.1);
-}
-
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6);
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-  70% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 18px rgba(37, 211, 102, 0);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-
-@media (max-width: 576px) {
-  .hero-content h1 {
-    font-size: 2rem;
-  }
-
-  .hero-content p {
-    font-size: 1rem;
-  }
-
-  .whatsapp-float {
-    width: 55px;
-    height: 55px;
-    font-size: 24px;
-    bottom: 20px;
-    right: 20px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

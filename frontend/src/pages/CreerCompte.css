@@ -1,0 +1,271 @@
+/* ===== BACKGROUND ===== */
+.form-bg {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+
+/* 👁️ eye icon */
+.toggle-eye {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+  font-size: 18px;
+}
+
+/* focus animation */
+.form-control {
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  transform: scale(1.02);
+}
+
+/* error message */
+.error {
+  color: #e63946;
+  font-size: 12px;
+}
+
+/* ===== PASSWORD STRENGTH BAR ===== */
+.strength-bar {
+  height: 6px;
+  border-radius: 10px;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  transition: 0.4s;
+}
+
+/* ضعيف */
+.strength-bar.weak {
+  width: 30%;
+  background: linear-gradient(to right, #e63946, #ff6b6b);
+}
+
+/* متوسط */
+.strength-bar.medium {
+  width: 60%;
+  background: linear-gradient(to right, #ff9f1c, #ffd166);
+}
+
+/* قوي */
+.strength-bar.strong {
+  width: 100%;
+  background: linear-gradient(to right, #2ecc71, #27ae60);
+}
+
+/* ===== TEXT ===== */
+.strength-text {
+  font-size: 13px;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+/* colors */
+.strength-text.weak {
+  color: #e63946;
+}
+
+.strength-text.medium {
+  color: #ff9f1c;
+}
+
+.strength-text.strong {
+  color: #2ecc71;
+}
+
+
+/* ===== PASSWORD RULES ===== */
+.password-rules {
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.password-rules p {
+  margin: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ❌ invalid */
+.password-rules .invalid {
+  color: #999;
+}
+
+/* ✅ valid */
+.password-rules .valid {
+  color: #2ecc71;
+  font-weight: 500;
+}
+/* strength bar */
+.strength {
+  display: flex;
+  gap: 5px;
+  margin: 10px 0;
+}
+
+.strength span {
+  width: 25%;
+  height: 6px;
+  background: #ddd;
+  border-radius: 10px;
+}
+
+.strength.weak span:nth-child(1) {
+  background: red;
+}
+
+.strength.medium span:nth-child(-n+2) {
+  background: orange;
+}
+
+.strength.strong span {
+  background: green;
+}
+/* 🎬 VIDEO */
+.bg-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  filter: brightness(0.5); /* 🔥 نخلو الفيديو يبان شوية */
+}
+
+/* overlay خفيف (ماشي أبيض بزاف) */
+.form-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35); /* 🔥 dark خفيف باش الفيديو يبان */
+  z-index: 0;
+}
+
+/* ===== CONTAINER ===== */
+.form-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ===== FORM BOX ===== */
+.form-box {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  padding: 40px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  color: #333;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.25);
+  animation: fadeIn 0.8s ease;
+}
+
+/* ===== TITLE ===== */
+.form-title {
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #1d3557;
+}
+
+.form-subtitle {
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 25px;
+  color: #555;
+}
+
+/* ===== INPUT ===== */
+.form-control {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  color: #333;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.form-control::placeholder {
+  color: #999;
+}
+
+.form-control:focus {
+  background: #fff;
+  border: 1px solid #e63946;
+  box-shadow: 0 0 8px rgba(230,57,70,0.4);
+}
+
+/* ===== BUTTON ===== */
+.btn-send {
+  background: linear-gradient(45deg, #e63946, #ff6b6b);
+  border: none;
+  padding: 12px;
+  border-radius: 30px;
+  font-weight: bold;
+  color: white;
+  transition: 0.3s;
+}
+
+.btn-send:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(230,57,70,0.5);
+}
+
+/* ===== ANIMATION ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================= */
+/* 📱 RESPONSIVE */
+/* ========================= */
+
+@media (max-width: 768px) {
+  .form-box {
+    padding: 25px;
+    border-radius: 15px;
+  }
+
+  .form-title {
+    font-size: 22px;
+  }
+
+  .form-subtitle {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  .form-box {
+    padding: 20px;
+  }
+
+  .form-control {
+    font-size: 14px;
+  }
+
+  .btn-send {
+    padding: 10px;
+    font-size: 14px;
+  }
+}

@@ -64,6 +64,22 @@ function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+  const handleScrollNavbar = () => {
+    const navbar = document.querySelector(".custom-navbar");
+
+    if (window.scrollY > 50) {
+      navbar.classList.add("scrolled");
+    } else {
+      navbar.classList.remove("scrolled");
+    }
+  };
+
+  window.addEventListener("scroll", handleScrollNavbar);
+
+  return () => window.removeEventListener("scroll", handleScrollNavbar);
+}, []);
+
   return (
     <BSNavbar
       expand="md"

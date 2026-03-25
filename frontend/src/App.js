@@ -20,9 +20,7 @@ import Video1 from "./pages/VideoX";
 function App() {
   return (
     <BrowserRouter>
-
       <Navbar />
-
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/connexion" element={<Connexion />} />
@@ -35,11 +33,8 @@ function App() {
         <Route path="/indication" element={<Indication />} />
         <Route path="/interdiction" element={<Interdiction />} />
       </Routes>
-
       {/* <Footer /> */}
-
     </BrowserRouter>
   );
 }
-
 export default App;

@@ -3,17 +3,15 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ContactController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Ici, tu définis toutes les routes API de ton application.
-|
 */
 
-// Route de test simple GET
+// 🔹 Test GET
 Route::get('/test-connection', function () {
     return response()->json([
         'success' => true,
@@ -21,14 +19,18 @@ Route::get('/test-connection', function () {
     ]);
 });
 
-// Routes Clients
+// 🔹 Clients
 Route::prefix('clients')->group(function () {
-    // Créer un client (POST)
+
+    // Create client
     Route::post('/', [ClientController::class, 'store']);
 
-    // Lister tous les clients (GET)
+    // Get all clients
     Route::get('/', [ClientController::class, 'index']);
 });
 
-// Route pour React: POST /api/register (si tu veux garder ton ancien composant)
+// 🔹 Register (optionnel)
 Route::post('/register', [ClientController::class, 'store']);
+
+// 🔹 Contact (email)
+Route::post('/contact', [ContactController::class, 'send']);

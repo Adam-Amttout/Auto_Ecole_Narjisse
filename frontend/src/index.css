@@ -15,3 +15,7 @@ code {
 html{
 scroll-behavior:smooth;
 }
+body {
+  padding-top: 80px;
+  font-family: 'Poppins', sans-serif;
+}

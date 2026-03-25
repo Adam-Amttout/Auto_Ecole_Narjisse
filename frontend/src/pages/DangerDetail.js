@@ -19,8 +19,8 @@ const [currentIndex, setCurrentIndex] = useState(null);
 
 const indications = [
 {image:img1,video:"/video/Vid1.mp4",title:"Parking"},
-{image:img2,video:"/video/video2.mp4",title:"Station service"},
-{image:img3,video:"/video/video3.mp4",title:"Hôpital"},
+{image:img2,video:"/video/Vid2.mp4",title:"Station service"},
+{image:img3,video:"/video/Vid3.mp4",title:"Hôpital"},
 {image:img4,video:"/video/video4.mp4",title:"Téléphone"},
 {image:img5,video:"/video/video5.mp4",title:"Restaurant"},
 {image:img6,video:"/video/video6.mp4",title:"Autoroute"},
@@ -170,7 +170,5 @@ onEnded={nextVideo}
 </div>
 
 )
-
 }
-
 export default Indication;
