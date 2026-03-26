@@ -28,7 +28,7 @@ function Footer() {
 
           {/* Logo + description */}
           <Col md={4} className="mb-4">
-            <h4> Auto École Marrakech</h4>
+            <h4>Auto École Marrakech</h4>
             <p>
               Votre partenaire pour une formation de qualité en conduite et sécurité routière.
             </p>
@@ -44,11 +44,32 @@ function Footer() {
             </ul>
           </Col>
 
-          {/* Contact */}
+          {/* Contact + localisation */}
           <Col md={3} className="mb-4">
-            <h5>Contact</h5>
-            <p><FaPhone /> +212 524303811</p>
-            <p><FaEnvelope /> info@autoecolemarrakech.com</p>
+            <h5>Contact & Localisation</h5>
+
+            <p><FaEnvelope /> 
+              <a href="mailto:info@autoecolemarrakech.com"> info@autoecolemarrakech.com</a>
+            </p>
+
+            <p><FaPhone /> 
+              <a href="tel:+212524303811"> +212 524303811</a>
+            </p>
+
+            <p>
+              Adresse : Allal Elfassi, IMM ALHOUBOUSS PORTE 5 APP 3, Marrakech
+            </p>
+
+            <div className="map-container mt-2">
+              <iframe
+                title="Localisation Auto École Marrakech"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3383.123456789!2d-7.983456!3d31.629345!2m3!1f0!2f0!3f0"
+                width="100%"
+                height="150"
+                style={{ border: 0, borderRadius: "8px" }}
+                loading="lazy"
+              ></iframe>
+            </div>
           </Col>
 
           {/* Social */}
