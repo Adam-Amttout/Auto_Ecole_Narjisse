@@ -1,70 +1,135 @@
+/* BACKGROUND */
 .custom-footer {
-  background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
-  color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding: 3rem 1.5rem;
+  background: #0b1220;
+  color: #fff;
+  padding: 25px 0; /* نقصنا شوية */
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.custom-footer h4, .custom-footer h5 {
-  color: #ffd700;
-  margin-bottom: 1rem;
-  letter-spacing: 0.5px;
+/* TITLES */
+.custom-footer h4,
+.custom-footer h5 {
+  color: #ffffff;
+  font-weight: 600;
+  margin-bottom: 12px; /* نقصنا */
 }
 
+/* TEXT */
+.custom-footer p {
+  font-size: 13px; /* نقصنا */
+  color: #cbd5e1;
+  margin-bottom: 8px; /* نقصنا */
+  line-height: 1.5;
+}
+
+/* LINKS */
 .footer-links {
   list-style: none;
   padding: 0;
 }
 
 .footer-links li {
-  margin-bottom: 0.7rem;
+  margin-bottom: 6px; /* نقصنا */
 }
 
-.footer-links a,
-.footer-links span, /* ajoute les span pour scroll */
-.custom-footer a {
-  color: white;
-  text-decoration: none;
-  cursor: pointer; /* pour indiquer que c’est cliquable */
-  transition: color 0.3s;
+.footer-links span {
+  cursor: pointer;
+  color: #e2e8f0;
+  transition: 0.3s;
+  position: relative;
 }
 
-.footer-links a:hover,
-.footer-links span:hover, /* hover pour les span */
-.custom-footer a:hover {
-  color: #ffd700;
+/* hover underline animation */
+.footer-links span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0%;
+  height: 2px;
+  background: #e63946; /* بدلنا للـ red */
+  transition: 0.3s;
 }
 
+.footer-links span:hover {
+  color: #e63946; /* نفس red ديال site */
+}
+
+.footer-links span:hover::after {
+  width: 100%;
+}
+
+/* CONTACT ICONS */
+.custom-footer svg {
+  margin-right: 8px;
+  color: #e63946; /* بدلنا للـ red */
+}
+
+/* SOCIAL ICONS */
 .social-icons a {
-  color: white;
-  font-size: 1.8rem;
-  transition: color 0.3s, transform 0.3s, filter 0.3s;
+  width: 36px; /* صغرنا */
+  height: 36px;
+  background: #1e293b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e63946; /* red */
+  font-size: 15px;
+  transition: 0.3s;
+  text-decoration: none;
 }
 
+/* hover effect */
 .social-icons a:hover {
-  color: #25D366; 
-  transform: scale(1.2) translateY(-2px);
-  
+  background: #e63946;
+  color: #ffffff; /* icon يبقى واضح */
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 0 10px rgba(230, 57, 70, 0.6);}
+.social-icons a svg {
+  color: inherit;
 }
 
-.custom-footer p {
-  margin: 0.3rem 0;
-  font-size: 0.9rem;
+/* LINE */
+.custom-footer hr {
+  border-color: rgba(255, 255, 255, 0.1);
+  margin: 15px 0; /* نقصنا */
 }
 
-.map-container iframe {
-  border: 0;
-  border-radius: 8px;
+/* COPYRIGHT */
+.custom-footer .text-center {
+  font-size: 12px; /* نقصنا */
+  color: #94a3b8;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .social-icons {
-    flex-direction: row;
-    flex-wrap: wrap;
+/* ANIMATION (fade up) */
+.custom-footer .row {
+  animation: fadeUp 0.8s ease;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-  .social-icons a {
-    margin-right: 10px;
-    margin-bottom: 10px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .custom-footer {
+    text-align: center;
+  }
+
+  .social-icons {
+    justify-content: center !important;
+  }
+
+  .footer-links span::after {
+    left: 50%;
+    transform: translateX(-50%);
   }
 }

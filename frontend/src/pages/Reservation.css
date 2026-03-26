@@ -1,44 +1,38 @@
 /* ANIMATION */
 .fade-up {
+  opacity: 0;
+  transform: translateY(30px);
   animation: fadeUp 0.8s ease forwards;
 }
 
+.fade-up:nth-child(1) { animation-delay: 0.1s; }
+.fade-up:nth-child(2) { animation-delay: 0.2s; }
+.fade-up:nth-child(3) { animation-delay: 0.3s; }
+.fade-up:nth-child(4) { animation-delay: 0.4s; }
+
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* ICON */
-.icon {
-  font-size: 22px;
-  color: #e63946;
-  margin-right: 15px;
-  margin-top: 5px;
-}
-
-/* INFO BOX FLEX */
-.info-box {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-/* باقي CSS ديالك (خليه كما هو) */
-/* ===== BACKGROUND ===== */
+/* ===== CONTAINER ===== */
 .contact-container {
   position: relative;
   min-height: 100vh;
-  padding: 50px 20px;
+  padding: 60px 20px;
   background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
   overflow: hidden;
 }
+/* ===== H2 ===== */
+.contact-highlight {
+  color: #e63946;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
 
+/* BACKGROUND EFFECT */
 .contact-container::before {
   content: "";
   position: absolute;
@@ -63,15 +57,25 @@
   filter: blur(90px);
 }
 
+/* ===== IMPORTANT FIX 🔥 (الحل الحقيقي) ===== */
+.contact-container .row {
+  display: flex;
+  align-items: stretch;
+}
+
+/* ===== LEFT ===== */
 .contact-form {
   position: relative;
   z-index: 2;
-  padding: 25px;
+  padding: 30px;
   border-radius: 20px;
   background: linear-gradient(145deg, #ffffff, #f1f5f9);
   box-shadow: 0 10px 30px rgba(0,0,0,0.08),
               inset 0 1px 0 rgba(255,255,255,0.6);
   transition: 0.3s;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .contact-form:hover {
@@ -79,20 +83,11 @@
   box-shadow: 0 20px 40px rgba(0,0,0,0.12);
 }
 
-.contact-form::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.4);
-  backdrop-filter: blur(6px);
-  z-index: -1;
-}
-
+/* INPUT */
 .form-control,
 .select-style {
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid #ddd;
   margin-bottom: 15px;
   font-size: 14px;
@@ -105,60 +100,122 @@
   box-shadow: 0 0 0 2px rgba(230,57,70,0.15);
 }
 
+/* BUTTON */
 .btn-send {
-  background: linear-gradient(135deg, #e63946, #ff6b6b);
-  border: none;
-  padding: 12px;
-  border-radius: 25px;
-  font-weight: bold;
-  color: white;
-  transition: 0.3s;
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-send:hover {
-  transform: scale(1.05);
-  background: linear-gradient(135deg, #c1121f, #ff4d4d);
-  box-shadow: 0 10px 25px rgba(230,57,70,0.4);
+.btn-send::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: -100%;
+  background: rgba(255,255,255,0.2);
+  transition: 0.4s;
 }
 
+.btn-send:hover::after {
+  left: 100%;
+}
+
+/* ===== RIGHT SIDE ===== */
 .right-side {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  height: 100%;
+  gap: 20px;
 }
 
+/* INFO BOX */
 .info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
   background: linear-gradient(145deg, #ffffff, #f8fafc);
-  padding: 18px;
-  border-radius: 15px;
-  margin-bottom: 15px;
+  padding: 20px;
+  border-radius: 18px;
   box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-  transition: 0.3s;
-  flex: 1;
+  transition: all 0.3s ease;
+  flex: 1; /* 🔥 يخليهم متساويين */
+  cursor: pointer;
+}
+.info-box:hover {
+  transform: translateY(-6px) scale(1.01);
 }
 
-.info-box:hover {
-  transform: translateY(-3px);
-  background: linear-gradient(135deg, #e63946, #ff6b6b);
-  color: white;
+/* ICON */
+.icon-box {
+  width: 45px;
+  height: 45px;
+  min-width: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(230,57,70,0.1);
+  color: #e63946;
+  font-size: 18px;
+  transition: 0.3s;
 }
-/* ALERT ANIMATION */
+.info-box:hover .icon-box {
+  transform: scale(1.15) rotate(5deg);
+}
+
+/* TEXT */
+.info-content h5 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.info-content p {
+  margin: 3px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+/* HOVER */
+.info-box:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.info-box:hover .icon-box {
+  background: #e63946;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* ALERT */
 .alert {
   border-radius: 12px;
   font-size: 14px;
   animation: fadeUp 0.5s ease;
 }
 
-/* SPINNER SPACE */
-.btn-send span {
-  margin-left: 8px;
-}
-
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .right-side {
-    margin-top: 20px;
+
+  .contact-container .row {
+    flex-direction: column;
   }
+
+  .contact-form {
+    padding: 20px;
+  }
+
+  .right-side {
+    height: auto;
+  }
+
   .info-box {
     flex: unset;
+  }
+
+  .icon-box {
+    width: 40px;
+    height: 40px;
   }
 }

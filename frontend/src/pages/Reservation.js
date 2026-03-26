@@ -3,6 +3,8 @@ import { Container, Row, Col, Form, Button, Alert, Spinner } from "react-bootstr
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaClock } from "react-icons/fa";
 import axios from "axios";
 import "./Reservation.css";
+import Footer from "./Footer";
+import WhatsAppButton from "./WhatsAppButton";
 
 function Reservation() {
   const [formData, setFormData] = useState({
@@ -45,7 +47,7 @@ function Reservation() {
       setLoading(true);
       setError("");
 
-      await axios.post("http://localhost:8000/api/contact", formData)
+      await axios.post("http://localhost:8000/api/contact", formData);
 
       setSuccess(true);
 
@@ -60,74 +62,75 @@ function Reservation() {
 
       setTimeout(() => setSuccess(false), 4000);
 
-    }
-    catch (err) {
-  console.log("ERROR FULL:", err);
-  console.log("RESPONSE:", err.response);
-  console.log("DATA:", err.response?.data);
-  console.log("STATUS:", err.response?.status);
-  setError("Erreur lors de l'envoi ❌");
-}
-
-finally {
+    } catch (err) {
+      setError("Erreur lors de l'envoi ❌");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
+    <>
     <Container className="contact-container">
-      <Row className="g-4">
+      <Row className="g-4 align-items-stretch">
 
         {/* LEFT */}
-        <Col md={7} className="fade-up">
-          <div className="contact-form">
+        <Col md={7} className="fade-up d-flex align-items-stretch">
+          <div className="contact-form w-100">
 
             <h2>Envoyez-nous un message</h2>
-            <p>Nous vous répondrons dans les 24 heures.</p>
+            <p className="contact-highlight">
+              Inscrivez-vous dès maintenant et commencez votre formation !
+            </p>
 
             {success && <Alert variant="success">✅ Message envoyé avec succès !</Alert>}
             {error && <Alert variant="danger">{error}</Alert>}
 
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit} className="d-flex flex-column h-100">
 
-              <Row>
-                <Col md={6}>
-                  <Form.Label>Prénom *</Form.Label>
-                  <Form.Control name="prenom" value={formData.prenom} onChange={handleChange}/>
-                </Col>
+              <div>
 
-                <Col md={6}>
-                  <Form.Label>Nom *</Form.Label>
-                  <Form.Control name="nom" value={formData.nom} onChange={handleChange}/>
-                </Col>
-              </Row>
+                <Row>
+                  <Col md={6}>
+                    <Form.Label>Prénom *</Form.Label>
+                    <Form.Control name="prenom" value={formData.prenom} onChange={handleChange}/>
+                  </Col>
 
-              <Row>
-                <Col md={6}>
-                  <Form.Label>Email *</Form.Label>
-                  <Form.Control name="email" value={formData.email} onChange={handleChange}/>
-                </Col>
+                  <Col md={6}>
+                    <Form.Label>Nom *</Form.Label>
+                    <Form.Control name="nom" value={formData.nom} onChange={handleChange}/>
+                  </Col>
+                </Row>
 
-                <Col md={6}>
-                  <Form.Label>Téléphone</Form.Label>
-                  <Form.Control name="telephone" value={formData.telephone} onChange={handleChange}/>
-                </Col>
-              </Row>
+                <Row>
+                  <Col md={6}>
+                    <Form.Label>Email *</Form.Label>
+                    <Form.Control name="email" value={formData.email} onChange={handleChange}/>
+                  </Col>
 
-              <Form.Label>Sujet</Form.Label>
-              <Form.Select name="sujet" value={formData.sujet} onChange={handleChange} className="select-style">
-                <option value="">Sélectionnez un sujet</option>
-                <option>Inscription</option>
-                <option>Information</option>
-                <option>Tarifs</option>
-                <option>Cours de code</option>
-                <option>Cours de conduite</option>
-              </Form.Select>
+                  <Col md={6}>
+                    <Form.Label>Téléphone</Form.Label>
+                    <Form.Control name="telephone" value={formData.telephone} onChange={handleChange}/>
+                  </Col>
+                </Row>
 
-              <Form.Label className="mt-3">Message *</Form.Label>
-              <Form.Control as="textarea" rows={4} name="message" value={formData.message} onChange={handleChange}/>
+                <Form.Label>Sujet</Form.Label>
+                <Form.Select name="sujet" value={formData.sujet} onChange={handleChange} className="select-style">
+                  <option value="">Sélectionnez un sujet</option>
+                  <option>Inscription</option>
+                  <option>Information</option>
+                  <option>Tarifs</option>
+                  <option>Cours de code</option>
+                  <option>Cours de conduite</option>
+                </Form.Select>
 
-              <Button type="submit" className="btn-send w-100 mt-4" disabled={loading}>
+                <Form.Label className="mt-3">Message *</Form.Label>
+                <Form.Control as="textarea" rows={4} name="message" value={formData.message} onChange={handleChange}/>
+
+              </div>
+
+              {/* BUTTON ديما لتحت */}
+              <Button type="submit" className="btn-send w-100 mt-4 mt-auto" disabled={loading}>
                 {loading ? (
                   <>
                     <Spinner animation="border" size="sm" /> Envoi...
@@ -142,48 +145,53 @@ finally {
         </Col>
 
         {/* RIGHT */}
-        <Col md={5} className="right-side">
+        <Col md={5} className="d-flex align-items-stretch">
+          <div className="right-side w-100">
 
-          <div className="info-box fade-up">
-            <FaMapMarkerAlt className="icon" />
-            <div>
-              <h5>Adresse</h5>
-              <p>123 Avenue Mohammed V</p>
-              <p>Casablanca, Maroc</p>
+            <div className="info-box fade-up">
+              <div className="icon-box"><FaMapMarkerAlt /></div>
+              <div className="info-content">
+                <h5>Adresse</h5>
+                <p>123 Avenue Mohammed V</p>
+                <p>Casablanca, Maroc</p>
+              </div>
             </div>
-          </div>
 
-          <div className="info-box fade-up">
-            <FaPhoneAlt className="icon" />
-            <div>
-              <h5>Téléphone</h5>
-              <p>+212 6 61 96 70 48</p>
-              <p>+212 6 63 42 84 39</p>
+            <div className="info-box fade-up">
+              <div className="icon-box"><FaPhoneAlt /></div>
+              <div className="info-content">
+                <h5>Téléphone</h5>
+                <p>+212 6 61 96 70 48</p>
+                <p>+212 6 63 42 84 39</p>
+              </div>
             </div>
-          </div>
 
-          <div className="info-box fade-up">
-            <FaEnvelope className="icon" />
-            <div>
-              <h5>Email</h5>
-              <p>contact@alkawkab.ma</p>
+            <div className="info-box fade-up">
+              <div className="icon-box"><FaEnvelope /></div>
+              <div className="info-content">
+                <h5>Email</h5>
+                <p>contact@alkawkab.ma</p>
+              </div>
             </div>
-          </div>
 
-          <div className="info-box fade-up">
-            <FaClock className="icon" />
-            <div>
-              <h5>Horaires</h5>
-              <p>Lun - Ven: 8h00 - 19h00</p>
-              <p>Samedi: 9h00 - 17h00</p>
-              <p>Dimanche: Fermé</p>
+            <div className="info-box fade-up">
+              <div className="icon-box"><FaClock /></div>
+              <div className="info-content">
+                <h5>Horaires</h5>
+                <p>Lun - Ven: 8h00 - 19h00</p>
+                <p>Samedi: 9h00 - 17h00</p>
+                <p>Dimanche: Fermé</p>
+              </div>
             </div>
-          </div>
 
+          </div>
         </Col>
 
       </Row>
     </Container>
+    <Footer />
+    <WhatsAppButton/>
+    </>
   );
 }
 

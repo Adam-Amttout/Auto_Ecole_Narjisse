@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock, FaUserCircle, FaEye, FaEyeSlash } from "react-icons/fa";
 import "./Connexion.css";
 import axios from "axios";
-
+import Footer from "./Footer";
+import WhatsAppButton from "./WhatsAppButton";
 function Connexion() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,6 +46,7 @@ function Connexion() {
 };
 
   return (
+    <>
     <div className="login-page">
       <div className="login-box fade-in">
         <span className="close-btn" onClick={() => navigate("/")}>×</span>
@@ -109,6 +111,9 @@ function Connexion() {
         </Form>
       </div>
     </div>
+    <WhatsAppButton/>
+    <Footer />
+    </>
   );
 }
 

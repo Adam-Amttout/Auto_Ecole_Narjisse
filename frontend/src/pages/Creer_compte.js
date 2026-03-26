@@ -3,6 +3,8 @@ import { Container, Form, Button, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import "./CreerCompte.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Footer from "./Footer";
+import WhatsAppButton from "./WhatsAppButton";
 
 function CreerCompte() {
   const [formData, setFormData] = useState({
@@ -74,6 +76,7 @@ function CreerCompte() {
   };
 
   return (
+    <>
     <div className="form-bg">
 
       {/* ✅ FIX VIDEO CLICK */}
@@ -200,6 +203,9 @@ function CreerCompte() {
         </div>
       </Container>
     </div>
+    <Footer/>
+    <WhatsAppButton/>
+    </>
   );
 }
 
