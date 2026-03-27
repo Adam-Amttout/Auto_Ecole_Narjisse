@@ -7,15 +7,30 @@ import "./Home.css";
 import About from "../pages/About";
 import Services from "../pages/Services";
 import Faq from "../pages/Faq";
-import Footer from "../pages/Footer";
 
 function Home() {
   const location = useLocation();
 
+  // 🔥 scroll من Navbar / Footer
   useEffect(() => {
-    if (location.hash) {
-      const el = document.querySelector(location.hash);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (location.state?.sectionId) {
+      const el = document.getElementById(location.state.sectionId);
+
+      if (el) {
+        const offset = 80;
+
+        setTimeout(() => {
+          const y =
+            el.getBoundingClientRect().top +
+            window.pageYOffset -
+            offset;
+
+          window.scrollTo({
+            top: y,
+            behavior: "smooth",
+          });
+        }, 100);
+      }
     }
   }, [location]);
 
@@ -24,8 +39,6 @@ function Home() {
 
       {/* HERO */}
       <section id="home" className="hero">
-
-        {/* 🎥 VIDEO */}
         <video
           className="hero-video"
           src="/video/hero/hero.mp4"
@@ -35,29 +48,27 @@ function Home() {
           playsInline
         />
 
-        {/* 🌑 OVERLAY */}
         <div className="overlay"></div>
 
-        {/* 📝 CONTENT */}
         <Container className="hero-content text-center text-white">
-          <h1>Obtenez votre permis en toute confiance </h1>
-
-          <p>
-            Formation rapide • Moniteurs experts • Résultat garanti
-          </p>
+          <h1>Obtenez votre permis en toute confiance</h1>
+          <p>Formation rapide • Moniteurs experts • Résultat garanti</p>
 
           <Button href="/reservation" className="hero-btn">
             Commencer maintenant
           </Button>
         </Container>
-
       </section>
 
       {/* Sections */}
       <section id="about"><About /></section>
       <section id="services"><Services /></section>
       <section id="faq"><Faq /></section>
-      <section id="contact"><Footer /></section>
+
+      {/* 🔥 contact section (ماشي footer) */}
+      <section id="contact" style={{ padding: "100px 0", textAlign: "center" }}>
+        
+      </section>
 
       {/* WhatsApp */}
       <a
