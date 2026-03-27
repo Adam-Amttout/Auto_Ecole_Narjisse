@@ -15,7 +15,7 @@ import Cours from "./pages/Cours";
 import Dashboard from "./pages/Dashboard";
 import DangerDetail from "./pages/DangerDetail";
 import Video1 from "./pages/VideoX";
-
+import Gallery from "./pages/Gallery";
 
 function App() {
   return (
@@ -32,6 +32,7 @@ function App() {
         <Route path="/video1" element={<Video1 />} />
         <Route path="/indication" element={<Indication />} />
         <Route path="/interdiction" element={<Interdiction />} />
+       
       </Routes>
       {/* <Footer /> */}
     </BrowserRouter>

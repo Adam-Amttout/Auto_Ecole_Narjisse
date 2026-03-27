@@ -6,6 +6,7 @@ import "./Home.css";
 
 import About from "../pages/About";
 import Services from "../pages/Services";
+import Gallery from "./Gallery";
 import Faq from "../pages/Faq";
 import Footer from "../pages/Footer";
 
@@ -56,6 +57,7 @@ function Home() {
       {/* Sections */}
       <section id="about"><About /></section>
       <section id="services"><Services /></section>
+      <section id="gallery"><Gallery /></section>
       <section id="faq"><Faq /></section>
       <section id="contact"><Footer /></section>
 
