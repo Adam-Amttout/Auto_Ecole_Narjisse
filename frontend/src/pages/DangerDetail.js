@@ -16,12 +16,12 @@ const [currentIndex, setCurrentIndex] = useState(null);
 
 const indications = [
 
-  { image: img11, video: "/video/Danger/ved11.mp4", title: "Parking" },
-  { image: img21, video: "/video/Danger/ved21.mp4", title: "Station service" },
-  { image: img31, video: "/video/Danger/ved31.mp4", title: "Hôpital" },
-  { image: img41, video: "/video/Danger/ved41.mp4", title: "Passage piéton" },
-  { image: img51, video: "/video/Danger/ved51.mp4", title: "Virage dangereux" },
-  { image: img51, video: "/video/Danger/ved5.mp4", title: "Route glissante" },
+  { image: img11, video: "/video/Danger/ved11.mp4", title: "فتحة في الحاجز الوسطي" },
+  { image: img21, video: "/video/Danger/ved21.mp4", title: "طريق فرعي من اليسار" },
+  { image: img31, video: "/video/Danger/ved31.mp4", title: "مدار" },
+  { image: img41, video: "/video/Danger/ved41.mp4", title: "سير في الاتجاهين" },
+  { image: img51, video: "/video/Danger/ved51.mp4", title: "أعط الأفضلية" },
+  { image: img51, video: "/video/Danger/ved5.mp4", title: "ليس لكم حق الأسبقية" },
 
 ]
 

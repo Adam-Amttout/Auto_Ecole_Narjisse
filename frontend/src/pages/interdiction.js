@@ -16,12 +16,12 @@ const [watched,setWatched] = useState([])
 const [currentIndex, setCurrentIndex] = useState(null);
 
 const indications = [
-  { image: img13, video: "/video/interdection/ved13.mp4", title: "Parking" },
-  { image: img23, video: "/video/interdection/ved23.mp4", title: "Station service" },
-  { image: img33, video: "/video/interdection/ved33.mp4", title: "Hôpital" },
-  { image: img43, video: "/video/interdection/ved43.mp4", title: "Passage piéton" },
-  { image: img53, video: "/video/interdection/ved53.mp4", title: "Virage dangereux" },
-  { image: img63, video: "/video/interdection/ved63.mp4", title: "Route glissante" },
+  { image: img13, video: "/video/interdection/ved13.mp4", title: "ممنوع الوقوف" },
+  { image: img23, video: "/video/interdection/ved23.mp4", title: "STOP" },
+  { image: img33, video: "/video/interdection/ved33.mp4", title: "ممنوع التوقف والوقوفHôpital" },
+  { image: img43, video: "/video/interdection/ved43.mp4", title: "ممنوع الدخول" },
+  { image: img53, video: "/video/interdection/ved53.mp4", title: "ممنوع الرجوع (الدوران)" },
+  { image: img63, video: "/video/interdection/ved63.mp4", title: "ممنوع الانعطاف" },
 ];
 
 // فتح الفيديو
