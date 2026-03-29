@@ -10,9 +10,7 @@ function Navbar() {
   const [expanded, setExpanded] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
 
-  // 🔥 scroll vers section (محسّن)
   const scrollToSection = (id) => {
-
     setExpanded(false);
 
     if (location.pathname !== "/") {
@@ -21,9 +19,8 @@ function Navbar() {
       setTimeout(() => {
         const el = document.getElementById(id);
         if (el) {
-          const offset = 80; // height navbar
+          const offset = 80;
           const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
-
           window.scrollTo({ top: y, behavior: "smooth" });
         }
       }, 100);
@@ -33,82 +30,85 @@ function Navbar() {
       if (el) {
         const offset = 80;
         const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
-
         window.scrollTo({ top: y, behavior: "smooth" });
       }
     }
   };
 
-  // 🔥 detect section active
+  // ✅ 🔥 الحل هنا (تبدل غير هذا الجزء)
   useEffect(() => {
-    const sections = ["home", "about", "services", "gallery", "faq", "contact"];
+  const sections = ["home", "about", "services", "gallery", "formation", "faq"];
 
-    const handleScroll = () => {
-      let current = "home";
+  const handleScroll = () => {
+    let current = "home";
 
-      sections.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) {
-          const top = el.offsetTop - 120;
-          if (window.scrollY >= top) {
-            current = id;
-          }
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+
+      if (el) {
+        const rect = el.getBoundingClientRect();
+
+        if (rect.top <= 120 && rect.bottom >= 120) {
+          current = id;
         }
-      });
+      }
+    });
 
-      setActiveSection(current);
-    };
+    // 🔥 contact غير فالأخير
+    const scrollBottom = window.innerHeight + window.scrollY;
+    const pageHeight = document.body.scrollHeight;
 
-    window.addEventListener("scroll", handleScroll);
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-  const handleScrollNavbar = () => {
-    const navbar = document.querySelector(".custom-navbar");
-
-    if (window.scrollY > 50) {
-      navbar.classList.add("scrolled");
-    } else {
-      navbar.classList.remove("scrolled");
+    if (scrollBottom >= pageHeight - 50) {
+      current = "contact";
     }
+
+    setActiveSection(current);
   };
 
-  window.addEventListener("scroll", handleScrollNavbar);
-
-  return () => window.removeEventListener("scroll", handleScrollNavbar);
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
 }, []);
 
-  return (
-    <BSNavbar
-      expand="md"
-      expanded={expanded}
-      className="custom-navbar"
-    >
+  useEffect(() => {
+    const handleScrollNavbar = () => {
+      const navbar = document.querySelector(".custom-navbar");
 
-      <Container>
+      if (window.scrollY > 50) {
+        navbar.classList.add("scrolled");
+      } else {
+        navbar.classList.remove("scrolled");
+      }
+    };
+
+    window.addEventListener("scroll", handleScrollNavbar);
+    return () => window.removeEventListener("scroll", handleScrollNavbar);
+  }, []);
+
+  return (
+    <BSNavbar expand="md" expanded={expanded} className="custom-navbar">
+
+      <Container fluid>
 
         {/* Logo */}
-          <BSNavbar.Brand
-              as={Link}
-              to="/"
-              onClick={() => setExpanded(false)}
-              className="brand-container"
-            >
-              <img
-                src="/logo.png"
-                alt="Auto École Narjiss"
-                className="navbar-logo"
-              />
+        <BSNavbar.Brand
+          as={Link}
+          to="/"
+          onClick={() => setExpanded(false)}
+          className="brand-container"
+        >
+          <img
+            src="/logo.png"
+            alt="Auto École Narjiss"
+            className="navbar-logo"
+          />
 
-              <div className="brand-texts">
-                <span className="brand-title">Auto École</span>
-                <span className="brand-name">Narjiss</span>
-              </div>
-            </BSNavbar.Brand>
+          <div className="brand-texts">
+            <span className="brand-title">Auto École</span>
+            <span className="brand-name">Narjiss</span>
+          </div>
+        </BSNavbar.Brand>
 
-        {/* Mobile toggle */}
+        {/* Toggle */}
         <BSNavbar.Toggle
           aria-controls="basic-navbar-nav"
           onClick={() => setExpanded(!expanded)}
@@ -116,9 +116,9 @@ function Navbar() {
 
         <BSNavbar.Collapse id="basic-navbar-nav">
 
-          <Nav className="ms-auto align-items-lg-center">
+          {/* LINKS */}
+          <Nav className="align-items-lg-center">
 
-            {/* Accueil */}
             <Nav.Link
               onClick={() => scrollToSection("home")}
               className={activeSection === "home" ? "nav-link active" : "nav-link"}
@@ -126,7 +126,6 @@ function Navbar() {
               Accueil
             </Nav.Link>
 
-            {/* À propos FIX */}
             <Nav.Link
               onClick={() => scrollToSection("about")}
               className={activeSection === "about" ? "nav-link active" : "nav-link"}
@@ -134,21 +133,27 @@ function Navbar() {
               <span className="no-break">À&nbsp;propos</span>
             </Nav.Link>
 
-            {/* Services */}
             <Nav.Link
               onClick={() => scrollToSection("services")}
               className={activeSection === "services" ? "nav-link active" : "nav-link"}
             >
               Services
             </Nav.Link>
-            {/* Gallery */}
-            <Nav.Link
-            onClick={() => scrollToSection("gallery")}
-            className={activeSection === "gallery" ? "nav-link active" : "nav-link"}>
-            Galerie
-          </Nav.Link>
 
-            {/* Cours */}
+            <Nav.Link
+              onClick={() => scrollToSection("gallery")}
+              className={activeSection === "gallery" ? "nav-link active" : "nav-link"}
+            >
+              Galerie
+            </Nav.Link>
+
+            <Nav.Link
+              onClick={() => scrollToSection("formation")}
+              className={activeSection === "formation" ? "nav-link active" : "nav-link"}
+            >
+              Formation
+            </Nav.Link>
+
             <Nav.Link
               as={Link}
               to="/cours"
@@ -158,7 +163,6 @@ function Navbar() {
               Cours
             </Nav.Link>
 
-            {/* FAQ */}
             <Nav.Link
               onClick={() => scrollToSection("faq")}
               className={activeSection === "faq" ? "nav-link active" : "nav-link"}
@@ -166,7 +170,6 @@ function Navbar() {
               FAQ
             </Nav.Link>
 
-            {/* Contact */}
             <Nav.Link
               onClick={() => scrollToSection("contact")}
               className={activeSection === "contact" ? "nav-link active" : "nav-link"}
@@ -174,27 +177,28 @@ function Navbar() {
               Contact
             </Nav.Link>
 
-            {/* 🔥 Inscription */}
+          </Nav>
+
+          {/* BUTTONS */}
+          <div className="nav-buttons">
             <Button
               as={Link}
               to="/reservation"
-              className="btn-register ms-lg-3 mt-3 mt-lg-0"
+              className="btn-register"
               onClick={() => setExpanded(false)}
             >
-              Inscription 
+              Inscription
             </Button>
 
-            {/* Connexion */}
             <Button
               as={Link}
               to="/connexion"
-              className="btn-login ms-2 mt-3 mt-lg-0"
+              className="btn-login"
               onClick={() => setExpanded(false)}
             >
               Connexion
             </Button>
-
-          </Nav>
+          </div>
 
         </BSNavbar.Collapse>
 

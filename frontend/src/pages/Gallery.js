@@ -429,7 +429,7 @@ function Gallery() {
       </section>
 
       {/* CTA SECTION */}
-      <section className="cta-section" id="contact">
+      <section className="cta-section" id="cta">
         <div className="cta-container" data-aos="zoom-in">
           <h2>Prêt à obtenir votre permis ?</h2>
           <p>Rejoignez nos 1500+ élèves satisfaits et commencez votre formation dès aujourd'hui</p>

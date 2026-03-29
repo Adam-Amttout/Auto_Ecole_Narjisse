@@ -8,6 +8,7 @@ import About from "../pages/About";
 import Services from "../pages/Services";
 import Gallery from "./Gallery";
 import Faq from "../pages/Faq";
+import Formation from "../pages/formation";
 
 function Home() {
   const location = useLocation();
@@ -65,11 +66,11 @@ function Home() {
       <section id="about"><About /></section>
       <section id="services"><Services /></section>
       <section id="gallery"><Gallery /></section>
+      <section id="formation"><Formation /></section>
       <section id="faq"><Faq /></section>
 
-      {/* 🔥 contact section (ماشي footer) */}
+      {/* contact */}
       <section id="contact" style={{ padding: "100px 0", textAlign: "center" }}>
-        
       </section>
 
       {/* WhatsApp */}
