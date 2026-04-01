@@ -8,43 +8,53 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    // ✅ REGISTER
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'nom' => 'required',
+            'prenom' => 'required',
+            'email' => 'required|email|unique:clients,email',
+            'password' => 'required|min:6|confirmed'
+        ]);
+
+        $client = Client::create([
+            'nom' => $validated['nom'],
+            'prenom' => $validated['prenom'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'user'
+        ]);
+
+        return response()->json([
+            'status' => 'created',
+            'user' => $client
+        ]);
+    }
+
+    // 🔥 LOGIN (هذا هو المهم)
     public function login(Request $request)
     {
         $client = Client::where('email', $request->email)->first();
 
-        if (!$client || !Hash::check($request->password, $client->password)) {
+        // ❌ user ما كاينش
+        if (!$client) {
             return response()->json([
-                'message' => 'Email ou mot de passe incorrect'
+                'status' => 'not_found'
+            ], 404);
+        }
+
+        // ❌ password غلط
+        if (!Hash::check($request->password, $client->password)) {
+            return response()->json([
+                'status' => 'wrong_password'
             ], 401);
         }
 
+        // ✅ success
         return response()->json([
-            'message' => 'Connexion réussie',
-            'client' => $client
+            'status' => 'success',
+            'user' => $client
         ]);
     }
-
-    // ✅ دابا راه داخل class
-    public function register(Request $request)
-{
-    try {
-        dd($request->all());
-        $client = Client::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        return response()->json([
-            'message' => 'Compte créé avec succès',
-            'client' => $client
-        ]);
-
-    } catch (\Exception $e) {
-    return response()->json([
-        'error' => $e->getMessage()
-    ], 500);
-}
-}
 }

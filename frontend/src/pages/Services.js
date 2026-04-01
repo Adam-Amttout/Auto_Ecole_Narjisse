@@ -176,20 +176,7 @@ Pourquoi choisir Auto-École Narjiss ?
 
 {/* CTA */}
 
-<section className="cta-section text-center text-white">
 
-<div className="container">
-
-<h2>Prêt à commencer votre formation ?</h2>
-
-<p>Inscrivez-vous dès maintenant et obtenez votre permis rapidement.</p>
-
-<Link to="/reservation" className="btn btn-warning btn-lg btn-inscription">
-S'inscrire maintenant
-</Link>
-</div>
-
-</section>
 
 </div>
 

@@ -1,43 +1,28 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\InscriptionController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
+// TEST
+Route::get('/test', fn() => ['message' => 'API OK']);
 
-// 🔹 Test GET
-Route::get('/test-connection', function () {
-    return response()->json([
-        'success' => true,
-        'message' => 'GET fonctionne !'
-    ]);
-});
-
-// 🔹 Clients
-Route::prefix('clients')->group(function () {
-
-    // Create client
-    Route::post('/', [ClientController::class, 'store']);
-
-    // Get all clients
-    Route::get('/', [ClientController::class, 'index']);
-});
-
-// 🔹 Register (optionnel)
-Route::post('/register', [ClientController::class, 'store']);
-
-// 🔹 Contact (email)
-Route::post('/contact', [ContactController::class, 'send']);
-
-// 🔹 Login
+// AUTH
+Route::post('/register-user', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// 🔥 REGISTER USER (بدون middleware)
-Route::post('/register-user', [AuthController::class, 'register']);
+// CLIENTS
+Route::get('/clients', [ClientController::class, 'index']);
+Route::get('/clients/{id}', [ClientController::class, 'show']);
+Route::delete('/clients/{id}', [ClientController::class, 'destroy']);
+
+// INSCRIPTIONS
+Route::get('/inscriptions', [InscriptionController::class, 'index']); 
+Route::post('/inscription', [InscriptionController::class, 'store']);
+
+Route::put('/clients/{id}', [ClientController::class, 'update']);
+Route::delete('/inscriptions/{id}', [InscriptionController::class, 'destroy']);
+Route::put('/inscriptions/{id}', [InscriptionController::class, 'update']);
+
+Route::post('/clients', [ClientController::class, 'store']);
