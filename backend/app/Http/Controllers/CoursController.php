@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/CoursController.php
 
 namespace App\Http\Controllers;
 
@@ -9,6 +10,16 @@ class CoursController extends Controller
 {
     /** GET /api/cours */
     public function index()
+    {
+        return response()->json(
+            Cours::where('actif', true)
+                ->orderBy('created_at', 'desc')
+                ->get()
+        );
+    }
+
+    /** GET /api/cours/all  (admin : tous y compris inactifs) */
+    public function all()
     {
         return response()->json(Cours::orderBy('created_at', 'desc')->get());
     }
@@ -22,15 +33,20 @@ class CoursController extends Controller
     /** POST /api/cours */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'titre'       => 'required|string|max:200',
-            'description' => 'nullable|string',
-            'categorie'   => 'required|in:danger,indication,interdiction,autre',
-            'image'       => 'nullable|string|max:500',
-            'niveau'      => 'required|in:debutant,intermediaire,avance',
+        $v = $request->validate([
+            'titre'          => 'required|string|max:200',
+            'description'    => 'nullable|string',
+            'categorie'      => 'required|in:danger,indication,interdiction,code_route,conduite,autre',
+            'niveau'         => 'required|in:debutant,intermediaire,avance',
+            'image'          => 'nullable|string|max:500',
+            'video_url'      => 'nullable|string|max:500',
+            'contenu'        => 'nullable|string',
+            'pdf_url'        => 'nullable|string|max:500',
+            'duree_minutes'  => 'nullable|integer|min:1|max:480',
+            'actif'          => 'sometimes|boolean',
         ]);
 
-        $cours = Cours::create($validated);
+        $cours = Cours::create($v);
 
         return response()->json([
             'message' => 'Cours créé avec succès',
@@ -43,16 +59,20 @@ class CoursController extends Controller
     {
         $cours = Cours::findOrFail($id);
 
-        $validated = $request->validate([
-            'titre'       => 'sometimes|required|string|max:200',
-            'description' => 'nullable|string',
-            'categorie'   => 'sometimes|in:danger,indication,interdiction,autre',
-            'image'       => 'nullable|string|max:500',
-            'niveau'      => 'sometimes|in:debutant,intermediaire,avance',
-            'actif'       => 'sometimes|boolean',
+        $v = $request->validate([
+            'titre'          => 'sometimes|required|string|max:200',
+            'description'    => 'nullable|string',
+            'categorie'      => 'sometimes|in:danger,indication,interdiction,code_route,conduite,autre',
+            'niveau'         => 'sometimes|in:debutant,intermediaire,avance',
+            'image'          => 'nullable|string|max:500',
+            'video_url'      => 'nullable|string|max:500',
+            'contenu'        => 'nullable|string',
+            'pdf_url'        => 'nullable|string|max:500',
+            'duree_minutes'  => 'nullable|integer|min:1|max:480',
+            'actif'          => 'sometimes|boolean',
         ]);
 
-        $cours->update($validated);
+        $cours->update($v);
 
         return response()->json([
             'message' => 'Cours mis à jour',
@@ -64,7 +84,6 @@ class CoursController extends Controller
     public function destroy($id)
     {
         Cours::findOrFail($id)->delete();
-
         return response()->json(['message' => 'Cours supprimé']);
     }
 }
