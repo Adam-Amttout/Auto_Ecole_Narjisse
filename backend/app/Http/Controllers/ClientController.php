@@ -10,7 +10,9 @@ class ClientController extends Controller
 {
     public function index()
     {
-        return response()->json(Client::orderBy('created_at', 'desc')->get());
+        $clients = \App\Models\Client::orderBy('created_at', 'desc')->get();
+        return response()->json($clients)
+            ->header('Cache-Control', 'public, max-age=30');
     }
 
     public function show($id)

@@ -16,23 +16,29 @@ export default function Navbar() {
   const initials = user ? `${user.prenom?.[0]||""}${user.nom?.[0]||""}`.toUpperCase() : "";
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
-
-  useEffect(() => {
+    let ticking = false;
     const ids = ["home","about","services","gallery","formation","faq"];
+
     const fn = () => {
-      let cur = "home";
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { const r = el.getBoundingClientRect(); if (r.top <= 100 && r.bottom >= 100) cur = id; }
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        // scrolled state
+        setScrolled(window.scrollY > 40);
+
+        // active section detection
+        let cur = "home";
+        ids.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { const r = el.getBoundingClientRect(); if (r.top <= 100 && r.bottom >= 100) cur = id; }
+        });
+        if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 50) cur = "contact";
+        setActiveSec(cur);
+        ticking = false;
       });
-      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 50) cur = "contact";
-      setActiveSec(cur);
     };
-    window.addEventListener("scroll", fn);
+
+    window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
@@ -73,7 +79,7 @@ export default function Navbar() {
       <div className="nb-inner">
 
         <Link to="/" className="nb-logo" onClick={()=>setMobileOpen(false)}>
-          <img src="/logo.png" alt="Narjiss" className="nb-logo-img"/>
+          <img src="/logo-small.png" alt="Narjiss" className="nb-logo-img"/>
           <div className="nb-logo-txt">
             <span className="nb-logo-sm">Auto École</span>
             <span className="nb-logo-big">Narjiss</span>

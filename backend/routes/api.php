@@ -9,6 +9,7 @@ use App\Http\Controllers\CoursController;
 use App\Http\Controllers\MoniteurController;
 use App\Http\Controllers\VehiculeController;
 use App\Http\Controllers\SeanceConduiteController;
+use App\Http\Controllers\AvisController;
 
 Route::get('/test', fn() => ['message' => 'API Narjiss OK']);
 
@@ -58,3 +59,10 @@ Route::post('/seances',               [SeanceConduiteController::class, 'store']
 Route::put('/seances/{id}',           [SeanceConduiteController::class, 'update']);
 Route::delete('/seances/{id}',        [SeanceConduiteController::class, 'destroy']);
 Route::patch('/seances/{id}/annuler', [SeanceConduiteController::class, 'annuler']);
+
+// ── AVIS (reviews)
+Route::get('/avis/approved',          [AvisController::class, 'approved']);   // public
+Route::get('/avis',                   [AvisController::class, 'index']);       // admin
+Route::post('/avis',                  [AvisController::class, 'store']);       // submit
+Route::patch('/avis/{id}/statut',     [AvisController::class, 'updateStatut']); // admin
+Route::delete('/avis/{id}',           [AvisController::class, 'destroy']);     // admin

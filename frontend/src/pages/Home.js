@@ -31,7 +31,7 @@ function Home() {
 
       {/* HERO */}
       <section id="home" className="hero">
-        <video className="hero-video" src="/video/hero/hero.mp4" autoPlay loop muted playsInline/>
+        <video className="hero-video" src="/video/hero/Hero.mp4" autoPlay loop muted playsInline preload="none"/>
         <div className="overlay"/>
         <Container className="hero-content text-center text-white">
           <div className="hero-badge">Auto École Narjiss — Marrakech</div>

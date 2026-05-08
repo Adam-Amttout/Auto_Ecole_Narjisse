@@ -21,7 +21,8 @@ class VehiculeController extends Controller
                 'libelle' => $v->libelle
             ]));
 
-        return response()->json($vehicules);
+        return response()->json($vehicules)
+            ->header('Cache-Control', 'public, max-age=30');
     }
 
     /** POST /api/vehicules */

@@ -15,13 +15,15 @@ class CoursController extends Controller
             Cours::where('actif', true)
                 ->orderBy('created_at', 'desc')
                 ->get()
-        );
+        )->header('Cache-Control', 'public, max-age=30');
     }
 
     /** GET /api/cours/all  (admin : tous y compris inactifs) */
     public function all()
     {
-        return response()->json(Cours::orderBy('created_at', 'desc')->get());
+        return response()->json(
+            Cours::orderBy('created_at', 'desc')->get()
+        )->header('Cache-Control', 'public, max-age=30');
     }
 
     /** GET /api/cours/{id} */
