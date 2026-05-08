@@ -1,85 +1,64 @@
-/* CONTENEUR PRINCIPAL */
-.dashboard-container {
-  height: 100vh;
-}
-
-/* SIDEBAR */
-.sidebar {
-  background: #002b5b;
-  color: white;
-  min-height: 100vh;
-  padding: 30px;
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-}
-
-.sidebar li {
-  padding: 15px 0;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s;
-}
-
-.sidebar li:hover {
-  color: #ffc107;
-}
-
-.logo {
-  margin-bottom: 40px;
-  font-size: 1.5rem;
-}
-
-/* CONTENT */
-.content {
-  padding: 40px;
-  background: #f5f5f5;
+.dashboard {
+  background: #f5f7fb;
   min-height: 100vh;
 }
 
-/* CARDS STATISTIQUES */
 .stat-card {
-  text-align: center;
-  padding: 25px;
   border-radius: 12px;
-  color: #002b5b;
-  margin-bottom: 20px;
 }
 
 .stat-card h3 {
-  font-size: 36px;
-  margin-bottom: 0;
-}
-
-.card-body h4 {
-  margin-bottom: 20px;
-}
-
-/* TABLEAU */
-.table th, .table td {
-  vertical-align: middle;
-}
-
-/* PROGRESS BAR CUSTOM */
-.progress {
-  height: 25px;
+  color: #e63946;
   font-weight: bold;
 }
 
-/* RESPONSIVE */
+.badge-admin {
+  background: #e63946;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.badge-user {
+  background: #2a9d8f;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.btn-edit {
+  background: #457b9d;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  margin-right: 5px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.btn-delete {
+  background: #e63946;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.table th {
+  font-size: 14px;
+}
+
+.table td {
+  font-size: 13px;
+}
+
 @media (max-width: 768px) {
-  .sidebar {
-    min-height: auto;
-    padding: 20px;
-  }
-
-  .content {
-    padding: 20px;
-  }
-
-  .stat-card h3 {
-    font-size: 28px;
+  .btn-edit,
+  .btn-delete {
+    font-size: 11px;
+    padding: 3px 6px;
   }
 }

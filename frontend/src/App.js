@@ -1,9 +1,9 @@
 import Interdiction from "./pages/interdiction";
 import Indication from "./pages/indication";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css"; // 🔥 مهم
 import Navbar from "./components/Navbar";
-import Footer from "./pages/Footer"; // 🔥 مهم
+import Footer from "./pages/Footer";
 import WhatsAppButton from "./pages/WhatsAppButton";
 import Home from "./pages/Home";
 import Connexion from "./pages/Connexion";
@@ -16,17 +16,49 @@ import Video1 from "./pages/VideoX";
 import AboutDetails from "./pages/AboutDetails";
 import Formation from "./pages/formation";
 
+// 🔐 USER ROUTE
+function PrivateRoute({ children }) {
+  const user = localStorage.getItem("user");
+  return user ? children : <Navigate to="/connexion" />;
+}
+
+// 🔐 ADMIN ROUTE
+function AdminRoute({ children }) {
+  const role = localStorage.getItem("role");
+  return role === "admin" ? children : <Navigate to="/" />;
+}
+
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/connexion" element={<Connexion />} />
         <Route path="/creer_compte" element={<Creer_compte />} />
         <Route path="/reservation" element={<Reservation />} />
-        <Route path="/cours" element={<Cours />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* 🔥 Cours protected */}
+        <Route
+          path="/cours"
+          element={
+            <PrivateRoute>
+              <Cours />
+            </PrivateRoute>
+          }
+        />
+
+        {/* 🔥 Admin only */}
+        <Route
+          path="/dashboard"
+          element={
+            <AdminRoute>
+              <Dashboard />
+            </AdminRoute>
+          }
+        />
+
         <Route path="/cours/danger" element={<DangerDetail />} />
         <Route path="/video1" element={<Video1 />} />
         <Route path="/indication" element={<Indication />} />
@@ -35,11 +67,10 @@ function App() {
         <Route path="/formation" element={<Formation />} />
       </Routes>
 
-      {/* 🔥 Footer ف جميع الصفحات */}
       <Footer />
       <WhatsAppButton />
-
     </BrowserRouter>
   );
 }
+
 export default App;

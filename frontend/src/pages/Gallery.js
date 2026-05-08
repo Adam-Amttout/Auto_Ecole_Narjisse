@@ -5,7 +5,7 @@ import "aos/dist/aos.css";
 
 function Gallery() {
   const scrollRef = useRef();
-  const [isLoading, setIsLoading] = useState(true);
+ 
   const [selectedImage, setSelectedImage] = useState(null);
 
   // Import all images dynamically with error handling
@@ -48,7 +48,7 @@ function Gallery() {
       delay: 100
     });
     
-    setTimeout(() => setIsLoading(false), 500);
+    
   }, []);
 
   const scrollLeft = () => {
@@ -148,16 +148,7 @@ function Gallery() {
     { value: "4.9/5", label: "Avis clients", icon: "💯", trend: "Top rating" }
   ];
 
-  if (isLoading) {
-    return (
-      <div className="loader-container">
-        <div className="loader">
-          <div className="loader-circle"></div>
-          <p>Chargement de la galerie...</p>
-        </div>
-      </div>
-    );
-  }
+ 
 
   return (
     <div className="gallery-page">

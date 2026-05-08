@@ -2,17 +2,29 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Inscription;
 
-class Client extends Model
+class Client extends Authenticatable
 {
-    use HasFactory;
+    protected $table = 'clients';
 
     protected $fillable = [
-    'nom',
-    'prenom',
-    'email',
-    'password'
-];
+        'nom',
+        'prenom',
+        'email',
+        'password',
+        'role'
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token'
+    ];
+
+    // 🔥 RELATION
+    public function inscriptions()
+    {
+        return $this->hasMany(Inscription::class);
+    }
 }

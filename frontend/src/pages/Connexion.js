@@ -5,112 +5,118 @@ import { FaEnvelope, FaLock, FaUserCircle, FaEye, FaEyeSlash } from "react-icons
 import "./Connexion.css";
 import axios from "axios";
 import WhatsAppButton from "./WhatsAppButton";
+
 function Connexion() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  const users = [
-    { email: "adam@mail.com", password: "123456" },
-    { email: "test@mail.com", password: "abcdef" },
-  ];
-
   const handleLogin = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  try {
-    const res = await axios.post("http://localhost:8000/api/login", {
-      email: email,
-      password: password,
-    });
+    try {
+      const res = await axios.post("http://127.0.0.1:8000/api/login", {
+        email,
+        password,
+      });
 
-    // ✅ نجاح
-    alert(res.data.message);
+      const data = res.data;
 
-    // نحفظ client
-    localStorage.setItem("client", JSON.stringify(res.data.client));
+      // ✅ succès
+      if (data.status === "success") {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("role", data.user.role);
 
-    navigate("/");
+        if (data.user.role === "admin") {
+          navigate("/dashboard");
+        } else {
+          navigate("/cours");
+        }
+      }
 
-  } catch (err) {
-    // ❌ خطأ
-    alert("Email ou mot de passe incorrect !");
-  }
+    } catch (err) {
+      const status = err.response?.data?.status;
 
-  setLoading(false);
-};
+      if (status === "not_found") {
+        setError("Compte introuvable → création en cours...");
+        setTimeout(() => {
+          navigate("/creer_compte");
+        }, 1500);
+      }
+
+      else if (status === "wrong_password") {
+        setError("Mot de passe incorrect");
+      }
+
+      else {
+        setError("Erreur serveur");
+      }
+    }
+
+    setLoading(false);
+  };
 
   return (
     <>
-    <div className="login-page">
-      <div className="login-box fade-in">
-        <span className="close-btn" onClick={() => navigate("/")}>×</span>
+      <div className="login-page">
+        <div className="login-box fade-in">
+          <span className="close-btn" onClick={() => navigate("/")}>×</span>
 
-        <FaUserCircle className="avatar" />
+          <FaUserCircle className="avatar" />
+          <h2>Connexion</h2>
 
-        <h2>Login</h2>
+          <Form onSubmit={handleLogin}>
 
-        <Form onSubmit={handleLogin}>
-          {/* EMAIL */}
-          <div className="input-box">
-            <FaEnvelope className="icon" />
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+            {error && <div className="error-message">{error}</div>}
 
-          {/* PASSWORD */}
-          <div className="input-box">
-            <FaLock className="icon" />
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="input-box">
+              <FaEnvelope className="icon" />
+              <input
+                type="email"
+                placeholder="Adresse e-mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-            {/* SHOW / HIDE PASSWORD */}
-            <span
-              className="toggle-password"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
-          </div>
+            <div className="input-box">
+              <FaLock className="icon" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
 
-          {/* OPTIONS */}
-          <div className="options">
-            <label>
-              <input type="checkbox" /> Remember me
-            </label>
-            <span className="forgot">Forgot?</span>
-          </div>
+              <span onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
 
-          {/* BUTTON */}
-          <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? "Loading..." : "Login"}
-          </button>
+            <button type="submit" className="login-btn" disabled={loading}>
+              {loading ? "Chargement..." : "Se connecter"}
+            </button>
 
-          {/* REGISTER */}
-          <p className="register">
-            Don't have an account?
-            <span onClick={() => navigate("/creer_compte")}>
-              Register
-            </span>
-          </p>
-        </Form>
+            <p className="register">
+              Vous n’avez pas de compte ?
+              <span onClick={() => navigate("/creer_compte")}>
+                S’inscrire
+              </span>
+            </p>
+
+          </Form>
+        </div>
       </div>
-    </div>
-    <WhatsAppButton/>
+
+      <WhatsAppButton />
     </>
   );
 }

@@ -10,6 +10,15 @@ function Navbar() {
   const [expanded, setExpanded] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
 
+  const user = JSON.parse(localStorage.getItem("user"));
+  const role = localStorage.getItem("role");
+
+  const logout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("role");
+    navigate("/connexion");
+  };
+
   const scrollToSection = (id) => {
     setExpanded(false);
 
@@ -35,39 +44,37 @@ function Navbar() {
     }
   };
 
-  // ✅ 🔥 الحل هنا (تبدل غير هذا الجزء)
   useEffect(() => {
-  const sections = ["home", "about", "services", "gallery", "formation", "faq"];
+    const sections = ["home", "about", "services", "gallery", "formation", "faq"];
 
-  const handleScroll = () => {
-    let current = "home";
+    const handleScroll = () => {
+      let current = "home";
 
-    sections.forEach((id) => {
-      const el = document.getElementById(id);
+      sections.forEach((id) => {
+        const el = document.getElementById(id);
 
-      if (el) {
-        const rect = el.getBoundingClientRect();
+        if (el) {
+          const rect = el.getBoundingClientRect();
 
-        if (rect.top <= 120 && rect.bottom >= 120) {
-          current = id;
+          if (rect.top <= 120 && rect.bottom >= 120) {
+            current = id;
+          }
         }
+      });
+
+      const scrollBottom = window.innerHeight + window.scrollY;
+      const pageHeight = document.body.scrollHeight;
+
+      if (scrollBottom >= pageHeight - 50) {
+        current = "contact";
       }
-    });
 
-    // 🔥 contact غير فالأخير
-    const scrollBottom = window.innerHeight + window.scrollY;
-    const pageHeight = document.body.scrollHeight;
+      setActiveSection(current);
+    };
 
-    if (scrollBottom >= pageHeight - 50) {
-      current = "contact";
-    }
-
-    setActiveSection(current);
-  };
-
-  window.addEventListener("scroll", handleScroll);
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const handleScrollNavbar = () => {
@@ -85,11 +92,11 @@ function Navbar() {
   }, []);
 
   return (
-    <BSNavbar expand="md" expanded={expanded} className="custom-navbar">
+    <BSNavbar expand="lg" expanded={expanded} className="custom-navbar">
 
-      <Container fluid>
+      <Container>
 
-        {/* Logo */}
+        {/* LOGO */}
         <BSNavbar.Brand
           as={Link}
           to="/"
@@ -108,7 +115,7 @@ function Navbar() {
           </div>
         </BSNavbar.Brand>
 
-        {/* Toggle */}
+        {/* TOGGLE */}
         <BSNavbar.Toggle
           aria-controls="basic-navbar-nav"
           onClick={() => setExpanded(!expanded)}
@@ -130,7 +137,7 @@ function Navbar() {
               onClick={() => scrollToSection("about")}
               className={activeSection === "about" ? "nav-link active" : "nav-link"}
             >
-              <span className="no-break">À&nbsp;propos</span>
+              À propos
             </Nav.Link>
 
             <Nav.Link
@@ -154,11 +161,17 @@ function Navbar() {
               Formation
             </Nav.Link>
 
+            {/* COURS */}
             <Nav.Link
-              as={Link}
-              to="/cours"
+              onClick={() => {
+                if (!user) {
+                  navigate("/connexion");
+                } else {
+                  navigate("/cours");
+                }
+                setExpanded(false);
+              }}
               className={location.pathname === "/cours" ? "nav-link active" : "nav-link"}
-              onClick={() => setExpanded(false)}
             >
               Cours
             </Nav.Link>
@@ -177,10 +190,24 @@ function Navbar() {
               Contact
             </Nav.Link>
 
+            {/* 🔥 DASHBOARD (admin only) */}
+            {user && role === "admin" && (
+              <Nav.Link
+                onClick={() => {
+                  navigate("/dashboard");
+                  setExpanded(false);
+                }}
+                className={location.pathname === "/dashboard" ? "nav-link active" : "nav-link"}
+              >
+                Dashboard
+              </Nav.Link>
+            )}
+
           </Nav>
 
           {/* BUTTONS */}
           <div className="nav-buttons">
+
             <Button
               as={Link}
               to="/reservation"
@@ -190,14 +217,26 @@ function Navbar() {
               Inscription
             </Button>
 
-            <Button
-              as={Link}
-              to="/connexion"
-              className="btn-login"
-              onClick={() => setExpanded(false)}
-            >
-              Connexion
-            </Button>
+            {!user && (
+              <Button
+                as={Link}
+                to="/connexion"
+                className="btn-login"
+                onClick={() => setExpanded(false)}
+              >
+                Connexion
+              </Button>
+            )}
+
+            {user && (
+              <Button
+                onClick={logout}
+                className="btn-login"
+              >
+                Logout
+              </Button>
+            )}
+
           </div>
 
         </BSNavbar.Collapse>

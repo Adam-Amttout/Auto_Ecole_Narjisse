@@ -1,109 +1,266 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Container, Row, Col, Card, Table,
+  Button, Modal, Form, Navbar, Nav
+} from "react-bootstrap";
 import "./Dashboard.css";
-import { Container, Row, Col, Card, Table, ProgressBar, Badge } from "react-bootstrap";
 
 function Dashboard() {
-  // Données simulées
-  const [stats] = useState({
-    coursesInProgress: 5,
-    upcomingTests: 3,
-    reservations: 2,
-    courseProgress: [
-      { name: "Code de la route", progress: 70 },
-      { name: "Conduite pratique", progress: 50 },
-      { name: "Conduite avancée", progress: 85 },
-    ],
+
+  const [clients, setClients] = useState([]);
+  const [inscriptions, setInscriptions] = useState([]);
+
+  const [showClientModal, setShowClientModal] = useState(false);
+  const [showInscriptionModal, setShowInscriptionModal] = useState(false);
+
+  const [clientData, setClientData] = useState({
+    nom: "", prenom: "", email: "", password: "", role: "user"
   });
 
-  const [recentCourses] = useState([
-    { name: "Code de la route", instructor: "Mr. Khalid", date: "12/03/2026" },
-    { name: "Conduite pratique", instructor: "Mme. Laila", date: "15/03/2026" },
-    { name: "Conduite avancée", instructor: "Mr. Yassine", date: "18/03/2026" },
-  ]);
+  const [inscriptionData, setInscriptionData] = useState({
+    nom: "", prenom: "", email: "", telephone: "", sujet: "", message: ""
+  });
+
+  const [editingClient, setEditingClient] = useState(null);
+  const [editingInscription, setEditingInscription] = useState(null);
+
+  useEffect(() => {
+    fetchClients();
+    fetchInscriptions();
+  }, []);
+
+  const fetchClients = async () => {
+    const res = await axios.get("http://127.0.0.1:8000/api/clients");
+    setClients(res.data);
+  };
+
+  const fetchInscriptions = async () => {
+    const res = await axios.get("http://127.0.0.1:8000/api/inscriptions");
+    setInscriptions(res.data);
+  };
+
+  const saveClient = async () => {
+    if (editingClient) {
+      await axios.put(`http://127.0.0.1:8000/api/clients/${editingClient.id}`, clientData);
+    } else {
+      await axios.post("http://127.0.0.1:8000/api/clients", clientData);
+    }
+
+    resetClientForm();
+    fetchClients();
+  };
+
+  const deleteClient = async (id) => {
+    await axios.delete(`http://127.0.0.1:8000/api/clients/${id}`);
+    fetchClients();
+  };
+
+  const editClient = (c) => {
+    setEditingClient(c);
+    setClientData({
+      nom: c.nom,
+      prenom: c.prenom,
+      email: c.email,
+      password: "",
+      role: c.role
+    });
+    setShowClientModal(true);
+  };
+
+  const saveInscription = async () => {
+    if (editingInscription) {
+      await axios.put(`http://127.0.0.1:8000/api/inscriptions/${editingInscription.id}`, inscriptionData);
+    } else {
+      await axios.post("http://127.0.0.1:8000/api/inscription", inscriptionData);
+    }
+
+    resetInscriptionForm();
+    fetchInscriptions();
+  };
+
+  const deleteInscription = async (id) => {
+    await axios.delete(`http://127.0.0.1:8000/api/inscriptions/${id}`);
+    fetchInscriptions();
+  };
+
+  const editInscription = (i) => {
+    setEditingInscription(i);
+    setInscriptionData({
+      nom: i.nom,
+      prenom: i.prenom,
+      email: i.email,
+      telephone: i.telephone,
+      sujet: i.sujet,
+      message: i.message
+    });
+    setShowInscriptionModal(true);
+  };
+
+  const resetClientForm = () => {
+    setShowClientModal(false);
+    setEditingClient(null);
+    setClientData({ nom:"", prenom:"", email:"", password:"", role:"user" });
+  };
+
+  const resetInscriptionForm = () => {
+    setShowInscriptionModal(false);
+    setEditingInscription(null);
+    setInscriptionData({ nom:"", prenom:"", email:"", telephone:"", sujet:"", message:"" });
+  };
 
   return (
-    <Container fluid style={{ height: "100vh" }}>
-      <Row>
+    <div className="dashboard">
 
-        {/* SIDEBAR */}
-        <Col md={3} style={{ background: "#002b5b", color: "white", minHeight: "100vh", padding: "30px" }}>
-          <h3 style={{ marginBottom: "40px" }}>Narjiss Student</h3>
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            <li style={{ padding: "15px 0", cursor: "pointer" }}>Mes Cours</li>
-            <li style={{ padding: "15px 0", cursor: "pointer" }}>Mes Tests</li>
-            <li style={{ padding: "15px 0", cursor: "pointer" }}>Mes Réservations</li>
-            <li style={{ padding: "15px 0", cursor: "pointer" }}>Mon Profil</li>
-            <li style={{ padding: "15px 0", cursor: "pointer" }}>Notifications</li>
-          </ul>
-        </Col>
+      <Navbar bg="dark" variant="dark" expand="lg" className="shadow-sm">
+        <Container>
+          <Navbar.Brand>Admin Dashboard</Navbar.Brand>
+          <Navbar.Toggle />
+          <Navbar.Collapse>
+            <Nav className="ms-auto">
+              <Button size="sm" className="me-2" onClick={() => setShowClientModal(true)}>+ Client</Button>
+              <Button size="sm" onClick={() => setShowInscriptionModal(true)}>+ Inscription</Button>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
 
-        {/* MAIN CONTENT */}
-        <Col md={9} style={{ padding: "40px", background: "#f5f5f5", minHeight: "100vh" }}>
-          <h2 style={{ marginBottom: "30px" }}>Bienvenue, Adam !</h2>
+      <Container className="mt-4">
 
-          {/* CARDS STATS */}
-          <Row style={{ marginBottom: "30px" }}>
-            <Col md={4}>
-              <Card style={{ textAlign: "center", padding: "25px", borderRadius: "12px", color: "#002b5b" }} className="shadow">
-                <h3>{stats.coursesInProgress}</h3>
-                <p>Cours en cours</p>
-              </Card>
-            </Col>
-            <Col md={4}>
-              <Card style={{ textAlign: "center", padding: "25px", borderRadius: "12px", color: "#002b5b" }} className="shadow">
-                <h3>{stats.upcomingTests}</h3>
-                <p>Tests à venir</p>
-              </Card>
-            </Col>
-            <Col md={4}>
-              <Card style={{ textAlign: "center", padding: "25px", borderRadius: "12px", color: "#002b5b" }} className="shadow">
-                <h3>{stats.reservations}</h3>
-                <p>Réservations</p>
-              </Card>
-            </Col>
-          </Row>
+        <Row className="g-3 mb-4">
+          <Col xs={12} md={6}>
+            <Card className="text-center shadow-sm stat-card">
+              <Card.Body>
+                <h3>{clients.length}</h3>
+                <p>Clients</p>
+              </Card.Body>
+            </Card>
+          </Col>
 
-          {/* BARRES DE PROGRESSION */}
-          <Card className="shadow" style={{ marginBottom: "30px", padding: "20px" }}>
-            <h4 style={{ marginBottom: "20px" }}>Progression des cours</h4>
-            {stats.courseProgress.map((course, idx) => (
-              <div key={idx} style={{ marginBottom: "15px" }}>
-                <p>{course.name}</p>
-                <ProgressBar now={course.progress} label={`${course.progress}%`} />
-              </div>
-            ))}
-          </Card>
+          <Col xs={12} md={6}>
+            <Card className="text-center shadow-sm stat-card">
+              <Card.Body>
+                <h3>{inscriptions.length}</h3>
+                <p>Inscriptions</p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
 
-          {/* TABLE DES COURS */}
-          <Card className="shadow" style={{ padding: "20px" }}>
-            <h4 style={{ marginBottom: "20px" }}>Mes cours récents</h4>
-            <Table striped hover responsive>
-              <thead>
-                <tr>
-                  <th>Cours</th>
-                  <th>Moniteur</th>
-                  <th>Date</th>
-                  <th>Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentCourses.map((c, idx) => (
-                  <tr key={idx}>
-                    <td>{c.name}</td>
-                    <td>{c.instructor}</td>
-                    <td>{c.date}</td>
-                    <td>
-                      <Badge bg="success">En cours</Badge>
-                    </td>
+        <Card className="mb-4 shadow-sm">
+          <Card.Body>
+            <h5>Clients</h5>
+            <div className="table-responsive">
+              <Table hover>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Card>
+                </thead>
+                <tbody>
+                  {clients.map((c) => (
+                    <tr key={c.id}>
+                      <td>{c.id}</td>
+                      <td>{c.nom} {c.prenom}</td>
+                      <td>{c.email}</td>
+                      <td>
+                        <span className={c.role === "admin" ? "badge-admin" : "badge-user"}>
+                          {c.role}
+                        </span>
+                      </td>
+                      <td>
+                        <Button size="sm" className="btn-edit" onClick={() => editClient(c)}>Edit</Button>
+                        <Button size="sm" className="btn-delete" onClick={() => deleteClient(c.id)}>Delete</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          </Card.Body>
+        </Card>
 
-        </Col>
-      </Row>
-    </Container>
+        <Card className="shadow-sm">
+          <Card.Body>
+            <h5>Inscriptions</h5>
+            <div className="table-responsive">
+              <Table hover>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Sujet</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inscriptions.map((i) => (
+                    <tr key={i.id}>
+                      <td>{i.id}</td>
+                      <td>{i.nom} {i.prenom}</td>
+                      <td>{i.email}</td>
+                      <td>{i.sujet}</td>
+                      <td>
+                        <Button size="sm" className="btn-edit" onClick={() => editInscription(i)}>Edit</Button>
+                        <Button size="sm" className="btn-delete" onClick={() => deleteInscription(i.id)}>Delete</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          </Card.Body>
+        </Card>
+
+      </Container>
+
+      {/* CLIENT MODAL */}
+      <Modal show={showClientModal} onHide={resetClientForm}>
+        <Modal.Header closeButton>
+          <Modal.Title>{editingClient ? "Edit Client" : "Add Client"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Control value={clientData.nom} placeholder="Nom" onChange={(e)=>setClientData({...clientData,nom:e.target.value})}/>
+            <Form.Control value={clientData.prenom} className="mt-2" placeholder="Prenom" onChange={(e)=>setClientData({...clientData,prenom:e.target.value})}/>
+            <Form.Control value={clientData.email} className="mt-2" placeholder="Email" onChange={(e)=>setClientData({...clientData,email:e.target.value})}/>
+            <Form.Control value={clientData.password} className="mt-2" placeholder="Password" onChange={(e)=>setClientData({...clientData,password:e.target.value})}/>
+            <Form.Select value={clientData.role} className="mt-2" onChange={(e)=>setClientData({...clientData,role:e.target.value})}>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </Form.Select>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={saveClient}>Save</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* INSCRIPTION MODAL */}
+      <Modal show={showInscriptionModal} onHide={resetInscriptionForm}>
+        <Modal.Header closeButton>
+          <Modal.Title>{editingInscription ? "Edit Inscription" : "Add Inscription"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Control value={inscriptionData.nom} placeholder="Nom" onChange={(e)=>setInscriptionData({...inscriptionData,nom:e.target.value})}/>
+            <Form.Control value={inscriptionData.prenom} className="mt-2" placeholder="Prenom" onChange={(e)=>setInscriptionData({...inscriptionData,prenom:e.target.value})}/>
+            <Form.Control value={inscriptionData.email} className="mt-2" placeholder="Email" onChange={(e)=>setInscriptionData({...inscriptionData,email:e.target.value})}/>
+            <Form.Control value={inscriptionData.sujet} className="mt-2" placeholder="Sujet" onChange={(e)=>setInscriptionData({...inscriptionData,sujet:e.target.value})}/>
+            <Form.Control value={inscriptionData.message} className="mt-2" placeholder="Message" onChange={(e)=>setInscriptionData({...inscriptionData,message:e.target.value})}/>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={saveInscription}>Save</Button>
+        </Modal.Footer>
+      </Modal>
+
+    </div>
   );
 }
 

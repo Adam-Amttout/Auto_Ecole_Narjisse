@@ -6,7 +6,7 @@
   --light: #f8f9fa;
 }
 
-/* ===== NAVBAR GENERAL ===== */
+/* ===== NAVBAR ===== */
 .custom-navbar {
   position: fixed;
   top: 0;
@@ -16,16 +16,14 @@
   background: linear-gradient(135deg, #f8fafc, #e9eef5);
   backdrop-filter: blur(10px);
 
-  padding: 12px 40px; /* 👈 هذا هو لي غادي يعطي المسافة */
+  padding: 12px 40px;
   transition: all 0.35s ease;
-
   box-shadow: 0 6px 25px rgba(0,0,0,0.08);
 }
 
-/* 🔥 Navbar عند scroll */
 .custom-navbar.scrolled {
   background: linear-gradient(135deg, #ffffff, #eef2f7);
-  padding: 8px 40px;
+  padding: 8px 30px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.12);
 }
 
@@ -33,12 +31,12 @@
 .brand-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 1px;
 }
 
 .navbar-logo {
-  width: 45px;
-  height: 45px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
   transition: 0.4s;
 }
@@ -53,32 +51,52 @@
 }
 
 .brand-title {
-  font-size: 13px;
+  font-size: 12px;
   color: #666;
 }
 
 .brand-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--primary);
   letter-spacing: 1px;
 }
 
 /* ===== LINKS ===== */
-.nav-link {
-  margin: 0 14px;
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+  margin-left: 40px; /* 🔥 distance logo */
+}
+
+.nav-link,
+.nav-link:focus,
+.nav-link:active,
+.nav-link:hover {
   color: var(--dark) !important;
   font-weight: 500;
   position: relative;
-  transition: all 0.3s ease;
+  transition: 0.3s;
   font-size: 14px;
+  white-space: nowrap;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
+/* 🔥 HOVER ROUGE */
 .nav-link:hover {
   color: var(--primary) !important;
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
+/* 🔥 ACTIVE */
+.nav-link.active {
+  color: var(--primary) !important;
+}
+
+/* 🔥 UNDERLINE */
 .nav-link::after {
   content: "";
   position: absolute;
@@ -87,7 +105,7 @@
   width: 0%;
   height: 2px;
   background: var(--primary);
-  transition: all 0.3s ease;
+  transition: 0.3s;
   transform: translateX(-50%);
 }
 
@@ -96,90 +114,128 @@
   width: 100%;
 }
 
-.nav-link.active {
-  color: var(--primary) !important;
+/* ===== BUTTONS ===== */
+.nav-buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
-/* ===== BUTTONS ===== */
-.btn-register {
-  background: var(--primary);
-  border: none;
+.btn-register,
+.btn-login {
   padding: 6px 12px;
   border-radius: 25px;
-  font-weight: 500;
-  font-size: 13.5px;
-  height: 36px;
-  color: white;
+  font-size: 13px;
+  height: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: 0.3s;
+  white-space: nowrap;
+}
+
+/* REGISTER */
+.btn-register {
+  background: var(--primary);
+  border: none;
+  color: white;
   box-shadow: 0 4px 15px rgba(230,57,70,0.3);
 }
 
 .btn-register:hover {
   background: var(--primary-dark);
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
+/* LOGIN */
 .btn-login {
   background: transparent;
   border: 1px solid var(--primary);
   color: var(--primary);
-  padding: 6px 12px;
-  border-radius: 25px;
-  font-size: 13.5px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: 0.3s;
 }
 
 .btn-login:hover {
   background: var(--primary);
   color: white;
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
-/* ===== FIX ALIGNMENT ===== */
-.navbar-nav {
-  gap: 10px;
+/* ===================================================== */
+/* 🔥 RESPONSIVE */
+/* ===================================================== */
+
+/* 💻 Laptop */
+@media (max-width: 1200px) {
+
+  .custom-navbar {
+    padding: 10px 25px;
+  }
+
+  .navbar-nav {
+    gap: 1px;
+    margin-left: 0px;
+  }
+
+  .nav-link {
+    font-size: 13px;
+  }
+
+  .btn-register,
+  .btn-login {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
 }
 
-/* 🔥 التحكم فـ buttons */
-.nav-buttons {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* 💻 Petit laptop */
+@media (max-width: 992px) {
+
+  .navbar-nav {
+    gap: 1px;
+    margin-left: 3px;
+  }
+
+  .nav-link {
+    font-size: 12px;
+  }
+
+  .brand-name {
+    font-size: 13px;
+  }
 }
 
-/* ===== MOBILE ===== */
+/* 📱 Mobile */
 @media (max-width: 768px) {
+
   .custom-navbar {
     padding: 10px 20px;
+  }
+
+  .navbar-nav {
+    margin-top: 15px;
   }
 
   .nav-link {
     margin: 10px 0;
   }
 
+  /* 🔥 buttons nafs ster */
+  .nav-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+  }
+
   .btn-register,
   .btn-login {
-    width: 100%;
+    width: auto;
+    flex: 1;
+    font-size: 12px;
+    padding: 6px;
   }
-}
-/* 🔥 الحل النهائي */
-.nav-buttons {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  transform: translateX(-20px); /* 👈 هنا الحل */
-}
-/* 🔥 نبعد Contact شوية */
-.navbar-nav {
-  margin-right: 20px;
 }

@@ -39,9 +39,6 @@ function CreerCompte() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("CLICKED"); // ✅ debug
-    alert("Button clicked"); // ✅ باش تشوف واش خدام
-
     if (formData.password !== formData.confirmPassword) {
       setErrors({ confirmPassword: "Les mots de passe ne correspondent pas" });
       return;
@@ -56,153 +53,158 @@ function CreerCompte() {
         password_confirmation: formData.confirmPassword
       });
 
-      console.log(res.data); // ✅ debug
+      // ✅ SUCCESS
+      alert("Compte créé avec succès");
 
       setSuccess(true);
+
+      setFormData({
+        nom: "",
+        prenom: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+      });
 
       setTimeout(() => {
         setSuccess(false);
       }, 3000);
 
     } catch (error) {
-      console.log(error); // ✅ مهم بزاف
-      alert("Error from server"); // 👈 باش يبان ليك
-
-      if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors);
-      }
-    }
+  console.log(error.response);
+  alert(JSON.stringify(error.response?.data));
+}
   };
 
   return (
     <>
-    <div className="form-bg">
+      <div className="form-bg">
 
-      {/* ✅ FIX VIDEO CLICK */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="bg-video"
-        style={{ pointerEvents: "none" }} // 🔥 هذا هو الحل
-      >
-        <source src="/video/cree_un_compte/Cree_un_compte.mp4" type="video/mp4" />
-      </video>
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="bg-video"
+          style={{ pointerEvents: "none" }}
+        >
+          <source src="/video/cree_un_compte/Cree_un_compte.mp4" type="video/mp4" />
+        </video>
 
-      <Container className="form-container">
-        <div className="form-box">
+        <Container className="form-container">
+          <div className="form-box">
 
-          <h2 className="form-title">Créer un compte</h2>
-          <p className="form-subtitle">Rejoignez-nous dès maintenant</p>
+            <h2 className="form-title">Créer un compte</h2>
+            <p className="form-subtitle">Rejoignez-nous dès maintenant</p>
 
-          {success && (
-            <div className="success-box">
-              ✔ Compte créé avec succès !
-            </div>
-          )}
+            {success && (
+              <div className="success-box">
+                ✔ Compte créé avec succès !
+              </div>
+            )}
 
-          <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit}>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Control
-                    type="text"
-                    name="nom"
-                    value={formData.nom}
-                    onChange={handleChange}
-                    placeholder="Nom"
-                    required
-                  />
-                </Form.Group>
-              </Col>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Control
+                      type="text"
+                      name="nom"
+                      value={formData.nom}
+                      onChange={handleChange}
+                      placeholder="Nom"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
 
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Control
-                    type="text"
-                    name="prenom"
-                    value={formData.prenom}
-                    onChange={handleChange}
-                    placeholder="Prénom"
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Control
+                      type="text"
+                      name="prenom"
+                      value={formData.prenom}
+                      onChange={handleChange}
+                      placeholder="Prénom"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Control
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                required
-              />
-              {errors.email && <small className="error">{errors.email}</small>}
-            </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  required
+                />
+                {errors.email && <small className="error">{errors.email}</small>}
+              </Form.Group>
 
-            <Form.Group className="mb-2 position-relative">
-              <Form.Control
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Mot de passe"
-                required
-              />
-              <span className="toggle-eye" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </span>
-            </Form.Group>
+              <Form.Group className="mb-2 position-relative">
+                <Form.Control
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Mot de passe"
+                  required
+                />
+                <span className="toggle-eye" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </Form.Group>
 
-            <div className={`strength-bar ${getPasswordStrength()}`}></div>
+              <div className={`strength-bar ${getPasswordStrength()}`}></div>
 
-            <p className={`strength-text ${getPasswordStrength()}`}>
-              {getPasswordStrength() === "weak" && "Faible"}
-              {getPasswordStrength() === "medium" && "Moyen"}
-              {getPasswordStrength() === "strong" && "Fort"}
-            </p>
-
-            <div className="password-rules">
-              <p className={formData.password.length >= 8 ? "valid" : "invalid"}>
-                {formData.password.length >= 8 ? "✔" : "✖"} 8 caractères minimum
+              <p className={`strength-text ${getPasswordStrength()}`}>
+                {getPasswordStrength() === "weak" && "Faible"}
+                {getPasswordStrength() === "medium" && "Moyen"}
+                {getPasswordStrength() === "strong" && "Fort"}
               </p>
 
-              <p className={/[A-Z]/.test(formData.password) ? "valid" : "invalid"}>
-                {/[A-Z]/.test(formData.password) ? "✔" : "✖"} Une majuscule
-              </p>
+              <div className="password-rules">
+                <p className={formData.password.length >= 8 ? "valid" : "invalid"}>
+                  {formData.password.length >= 8 ? "✔" : "✖"} 8 caractères minimum
+                </p>
 
-              <p className={/\d/.test(formData.password) ? "valid" : "invalid"}>
-                {/\d/.test(formData.password) ? "✔" : "✖"} Un chiffre
-              </p>
-            </div>
+                <p className={/[A-Z]/.test(formData.password) ? "valid" : "invalid"}>
+                  {/[A-Z]/.test(formData.password) ? "✔" : "✖"} Une majuscule
+                </p>
 
-            <Form.Group className="mb-4 mt-2">
-              <Form.Control
-                type={showPassword ? "text" : "password"}
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirmer mot de passe"
-                required
-              />
-              {errors.confirmPassword && (
-                <small className="error">{errors.confirmPassword}</small>
-              )}
-            </Form.Group>
+                <p className={/\d/.test(formData.password) ? "valid" : "invalid"}>
+                  {/\d/.test(formData.password) ? "✔" : "✖"} Un chiffre
+                </p>
+              </div>
 
-            <Button type="submit" className="btn-send w-100">
-              Créer votre compte
-            </Button>
+              <Form.Group className="mb-4 mt-2">
+                <Form.Control
+                  type={showPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirmer mot de passe"
+                  required
+                />
+                {errors.confirmPassword && (
+                  <small className="error">{errors.confirmPassword}</small>
+                )}
+              </Form.Group>
 
-          </Form>
-        </div>
-      </Container>
-    </div>
-    <WhatsAppButton/>
+              <Button type="submit" className="btn-send w-100">
+                Créer votre compte
+              </Button>
+
+            </Form>
+          </div>
+        </Container>
+      </div>
+
+      <WhatsAppButton />
     </>
   );
 }
