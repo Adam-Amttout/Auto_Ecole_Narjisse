@@ -10,7 +10,7 @@ class ClientController extends Controller
 {
     public function index()
     {
-        return response()->json(Client::all());
+        return response()->json(Client::orderBy('created_at', 'desc')->get());
     }
 
     public function show($id)
@@ -21,16 +21,16 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         $client = Client::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
+            'nom'      => $request->nom,
+            'prenom'   => $request->prenom,
+            'email'    => $request->email,
             'password' => Hash::make($request->password ?? '123456'),
-            'role' => $request->role ?? 'user'
+            'role'     => $request->role ?? 'user',
         ]);
 
         return response()->json([
-            'message' => 'Client created',
-            'data' => $client
+            'message' => 'Client créé',
+            'data'    => $client
         ]);
     }
 
@@ -38,15 +38,23 @@ class ClientController extends Controller
     {
         $client = Client::findOrFail($id);
 
-        $client->update([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
-            'role' => $request->role
-        ]);
+        $data = [
+            'nom'    => $request->nom    ?? $client->nom,
+            'prenom' => $request->prenom ?? $client->prenom,
+            'email'  => $request->email  ?? $client->email,
+            'role'   => $request->role   ?? $client->role,
+        ];
+
+        // Hash le mot de passe seulement s'il est fourni et non vide
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $client->update($data);
 
         return response()->json([
-            'message' => 'Client updated'
+            'message' => 'Client mis à jour',
+            'data'    => $client
         ]);
     }
 
@@ -54,8 +62,6 @@ class ClientController extends Controller
     {
         Client::destroy($id);
 
-        return response()->json([
-            'message' => 'Client deleted'
-        ]);
+        return response()->json(['message' => 'Client supprimé']);
     }
 }

@@ -1,0 +1,36 @@
+/* src/pages/PlanifierSeance.css */
+
+.planifier-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.planifier-header {
+  background: linear-gradient(135deg, #1a3a5c, #2c6fad);
+  color: white;
+  padding: 1rem 1.5rem;
+}
+
+.planifier-header h5 {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.btn-planifier {
+  background: linear-gradient(135deg, #1a3a5c, #2c6fad);
+  border: none;
+  color: white;
+  padding: 0.6rem 1.8rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.btn-planifier:hover {
+  opacity: 0.9;
+  color: white;
+}
+
+.btn-planifier:disabled {
+  opacity: 0.7;
+}

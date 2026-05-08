@@ -1,0 +1,23 @@
+/* src/pages/SeancesConduite.css */
+
+.seances-title {
+  font-weight: 700;
+  color: #1a3a5c;
+}
+
+.btn-planifier {
+  background: linear-gradient(135deg, #1a3a5c, #2c6fad);
+  border: none;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.btn-planifier:hover,
+.btn-planifier:focus {
+  opacity: 0.9;
+  color: white;
+  background: linear-gradient(135deg, #1a3a5c, #2c6fad);
+}
