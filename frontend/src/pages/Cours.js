@@ -57,6 +57,7 @@ export default function Cours() {
   const [avisSubmitting, setAvisSubmitting] = useState(false);
   const [avisSuccess, setAvisSuccess] = useState(false);
   const [avisErr, setAvisErr] = useState("");
+  const [dynamicTestimonials, setDynamicTestimonials] = useState([]);
 
   const submitAvis = async (e) => {
     e.preventDefault();
@@ -90,7 +91,12 @@ export default function Cours() {
   const toast_ = (msg, ok=true) => { setToast({show:true,msg,ok}); setTimeout(()=>setToast(t=>({...t,show:false})),3000); };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { load(); }, [admin]);
+  useEffect(() => { 
+    load(); 
+    axios.get(`${API}/avis/approved`)
+      .then(r => { if (r.data && r.data.length > 0) setDynamicTestimonials(r.data); })
+      .catch(() => {});
+  }, [admin]);
 
   useEffect(() => {
     const t = setInterval(() => setActiveTestimonial(i => (i+1) % TESTIMONIALS.length), 4000);
@@ -425,26 +431,48 @@ export default function Cours() {
           <h2>Ce que disent <span className="cp-gradient-text">Nos Élèves</span></h2>
           <p>Des retours authentiques sur notre formation</p>
         </div>
-        <div className="cp-testimonials-grid">
-          {TESTIMONIALS.map((t, i) => (
-            <div key={t.id} className={`cp-testimonial-card ${i === activeTestimonial ? "active" : ""}`} onClick={()=>setActiveTestimonial(i)}>
-              <div className="cp-t-header">
-                <div className="cp-t-img"><img src={t.image} alt={t.name}/></div>
-                <div className="cp-t-info"><h4>{t.name}</h4><span>{t.role}</span></div>
-                <div className="cp-t-quote">"</div>
+        <div className="cp-testimonials-scroll-container">
+          {(dynamicTestimonials.length > 0 ? dynamicTestimonials : TESTIMONIALS).map((t, index) => {
+            const isDynamic = dynamicTestimonials.length > 0;
+            const name   = isDynamic ? `${t.nom}${t.prenom ? ' ' + t.prenom : ''}` : t.name;
+            const role   = isDynamic ? t.role_label : t.role;
+            const text   = isDynamic ? t.texte : t.text;
+            const rating = isDynamic ? t.note : t.rating;
+            const date   = isDynamic
+              ? new Date(t.created_at).toLocaleDateString('fr-FR', {month:'long', year:'numeric'})
+              : t.date;
+            const image  = isDynamic ? t.photo_url : t.image;
+            const initials   = name ? name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : '?';
+            const COLORS = ['#e63946','#2563eb','#7c3aed','#059669','#d97706','#0891b2'];
+            const avatarBg   = COLORS[index % COLORS.length];
+
+            return (
+              <div key={t.id} className="cp-testimonial-card scrollable">
+                <div className="cp-t-header">
+                  <div className="cp-t-img">
+                    {image
+                      ? <img src={image} alt={name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}/>
+                      : null
+                    }
+                    <div style={{
+                      display: image ? 'none' : 'flex',
+                      width:'100%', height:'100%',
+                      alignItems:'center', justifyContent:'center',
+                      background: avatarBg, color:'white',
+                      fontWeight:800, fontSize:18, borderRadius:'50%'
+                    }}>{initials}</div>
+                  </div>
+                  <div className="cp-t-info"><h4>{name}</h4><span>{role}</span></div>
+                  <div className="cp-t-quote">"</div>
+                </div>
+                <div className="cp-t-content">
+                  <p>{text}</p>
+                  <div className="cp-t-rating">{[...Array(rating)].map((_,i)=><span key={i} className="cp-star">★</span>)}</div>
+                  <div className="cp-t-date">{date}</div>
+                </div>
               </div>
-              <div className="cp-t-content">
-                <p>{t.text}</p>
-                <div className="cp-t-rating">{[...Array(t.rating)].map((_,i)=><span key={i} className="cp-star">★</span>)}</div>
-                <div className="cp-t-date">{t.date}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="cp-testimonials-dots">
-          {TESTIMONIALS.map((_,i) => (
-            <button key={i} className={`cp-dot ${i===activeTestimonial?"active":""}`} onClick={()=>setActiveTestimonial(i)}/>
-          ))}
+            );
+          })}
         </div>
       </section>
 
