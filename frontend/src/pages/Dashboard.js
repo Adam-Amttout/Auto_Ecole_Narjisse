@@ -16,6 +16,7 @@ const TABS = [
   { key:"moniteurs",    icon:"🧑‍🏫", label:"Moniteurs"      },
   { key:"vehicules",    icon:"🚗", label:"Véhicules"        },
   { key:"seances",      icon:"📅", label:"Séances"          },
+  { key:"avis",         icon:"⭐", label:"Avis"             },
 ];
 
 const STATUT_SEANCE = {
@@ -89,6 +90,10 @@ export default function Dashboard() {
   const [moniteurs,    setMoniteurs]    = useState([]);
   const [vehicules,    setVehicules]    = useState([]);
   const [seances,      setSeances]      = useState([]);
+  const [avis,         setAvis]         = useState([]);
+
+  /* ── track which tabs have already been loaded ── */
+  const loadedTabs = React.useRef(new Set());
 
   /* ── modal ── */
   const [modal,      setModal]      = useState({ show:false, title:"", entity:"" });
@@ -100,27 +105,58 @@ export default function Dashboard() {
 
   const showToast = (msg, ok=true) => { setToast({show:true,msg,ok}); setTimeout(()=>setToast(t=>({...t,show:false})),3000); };
 
-  /* ── chargement ── */
-  const load = useCallback(async () => {
+  /* ── Per-tab loaders (only fetches what each tab needs) ── */
+  const loadTab = useCallback(async (activeTab) => {
+    if (loadedTabs.current.has(activeTab)) return; // already loaded
+    loadedTabs.current.add(activeTab);
+
     try {
-      const [cl,ins,co,mo,ve,se] = await Promise.allSettled([
-        axios.get(`${API}/clients`),
-        axios.get(`${API}/inscriptions`),
-        axios.get(`${API}/cours`),
-        axios.get(`${API}/moniteurs`),
-        axios.get(`${API}/vehicules`),
-        axios.get(`${API}/seances`),
-      ]);
-      if (cl.status==="fulfilled")  setClients(cl.value.data);
-      if (ins.status==="fulfilled") setInscriptions(ins.value.data);
-      if (co.status==="fulfilled")  setCours(co.value.data);
-      if (mo.status==="fulfilled")  setMoniteurs(mo.value.data);
-      if (ve.status==="fulfilled")  setVehicules(ve.value.data);
-      if (se.status==="fulfilled")  setSeances(se.value.data);
+      if (activeTab === "accueil") {
+        const [cl, se] = await Promise.allSettled([
+          axios.get(`${API}/clients`),
+          axios.get(`${API}/seances`),
+        ]);
+        if (cl.status === "fulfilled") setClients(cl.value.data);
+        if (se.status === "fulfilled") setSeances(se.value.data);
+      } else if (activeTab === "clients") {
+        const res = await axios.get(`${API}/clients`);
+        setClients(res.data);
+      } else if (activeTab === "inscriptions") {
+        const res = await axios.get(`${API}/inscriptions`);
+        setInscriptions(res.data);
+      } else if (activeTab === "cours") {
+        const res = await axios.get(`${API}/cours`);
+        setCours(res.data);
+      } else if (activeTab === "moniteurs") {
+        const res = await axios.get(`${API}/moniteurs`);
+        setMoniteurs(res.data);
+      } else if (activeTab === "vehicules") {
+        const res = await axios.get(`${API}/vehicules`);
+        setVehicules(res.data);
+      } else if (activeTab === "seances") {
+        const [mo, ve, se] = await Promise.allSettled([
+          axios.get(`${API}/moniteurs`),
+          axios.get(`${API}/vehicules`),
+          axios.get(`${API}/seances`),
+        ]);
+        if (mo.status === "fulfilled") setMoniteurs(mo.value.data);
+        if (ve.status === "fulfilled") setVehicules(ve.value.data);
+        if (se.status === "fulfilled") setSeances(se.value.data);
+      } else if (activeTab === "avis") {
+        const res = await axios.get(`${API}/avis`);
+        setAvis(res.data);
+      }
     } catch {}
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  /* ── Full reload after mutation (clear cache for current tab) ── */
+  const load = useCallback(async () => {
+    loadedTabs.current.delete(tab);
+    await loadTab(tab);
+  }, [tab, loadTab]);
+
+  /* ── Load data when tab changes ── */
+  useEffect(() => { loadTab(tab); }, [tab, loadTab]);
 
   /* ── ouvrir modal ── */
   const openModal = (entity, title, data={}, id=null) => {
@@ -541,6 +577,64 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* ══════════ AVIS ══════════ */}
+        {tab === "avis" && (
+          <div className="db-section">
+            <div className="db-section-head">
+              <h4 className="db-title">Avis Élèves ({avis.length})</h4>
+            </div>
+            <div className="db-card">
+              <div className="db-table-wrap">
+                <table className="db-table">
+                  <thead><tr><th>#</th><th>Auteur</th><th>Témoignage</th><th>Note</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {avis.length === 0 && <tr><td colSpan={7} className="db-empty">Aucun avis reçu</td></tr>}
+                    {avis.map(a => {
+                      const statutConfig = {
+                        pending:  { label:"En attente", bg:"#fef9c3", color:"#a16207" },
+                        approved: { label:"Approuvé",  bg:"#dcfce7", color:"#15803d" },
+                        rejected: { label:"Rejeté",    bg:"#fee2e2", color:"#b91c1c" },
+                      }[a.statut] || { label: a.statut, bg:"#f1f5f9", color:"#64748b" };
+                      return (
+                        <tr key={a.id}>
+                          <td className="db-id">{a.id}</td>
+                          <td><b>{a.nom}{a.prenom ? ' ' + a.prenom : ''}</b><div style={{fontSize:11.5,color:"#94a3b8"}}>{a.role_label}</div></td>
+                          <td style={{maxWidth:280,fontSize:12.5,color:"#475569",fontStyle:"italic"}}>“{a.texte?.slice(0,100)}{a.texte?.length > 100 ? '...' : ''}”</td>
+                          <td style={{color:"#fbbf24",fontWeight:700}}>{'★'.repeat(a.note)}</td>
+                          <td><Badge text={statutConfig.label} bg={statutConfig.bg} color={statutConfig.color}/></td>
+                          <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
+                          <td>
+                            <div className="db-actions">
+                              {a.statut !== 'approved' && (
+                                <button className="db-btn view" title="Approuver" onClick={async () => {
+                                  await axios.patch(`${API}/avis/${a.id}/statut`, { statut: 'approved' });
+                                  loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis approuvé !');
+                                }}>✅</button>
+                              )}
+                              {a.statut !== 'rejected' && (
+                                <button className="db-btn warn" title="Rejeter" onClick={async () => {
+                                  await axios.patch(`${API}/avis/${a.id}/statut`, { statut: 'rejected' });
+                                  loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis rejeté.');
+                                }}>❌</button>
+                              )}
+                              {confirmId === a.id ? (
+                                <><button className="db-btn danger" onClick={async () => { await axios.delete(`${API}/avis/${a.id}`); setConfirmId(null); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Supprimé.'); }}>Oui</button>
+                                <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button></>
+                              ) : (
+                                <button className="db-btn danger" onClick={() => setConfirmId(a.id)} title="Supprimer">🗑️</button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ══════════ MODAL ══════════ */}
@@ -580,13 +674,41 @@ export default function Dashboard() {
           <div className="db-form-row">
             {F("categorie","Catégorie","text",[
               {v:"danger",l:"Danger"},{v:"indication",l:"Indication"},
-              {v:"interdiction",l:"Interdiction"},{v:"autre",l:"Autre"}
+              {v:"interdiction",l:"Interdiction"},{v:"code_route",l:"Code Route"},
+              {v:"conduite",l:"Conduite"},{v:"autre",l:"Autre"}
             ])}
             {F("niveau","Niveau","text",[
               {v:"debutant",l:"Débutant"},{v:"intermediaire",l:"Intermédiaire"},{v:"avance",l:"Avancé"}
             ])}
           </div>
-          {F("image","URL Image (optionnel)")}
+          <div className="db-field">
+            <label>🖼️ Image du cours (URL)</label>
+            <input
+              className="db-input"
+              type="text"
+              placeholder="https://... (lien direct vers une image)"
+              value={formData.image || ""}
+              onChange={e => setFormData({...formData, image: e.target.value})}
+            />
+            {formData.image && (
+              <div style={{marginTop:10,borderRadius:10,overflow:"hidden",border:"2px solid #e2e8f0",maxHeight:160}}>
+                <img
+                  src={formData.image}
+                  alt="Aperçu"
+                  onError={e => { e.target.style.display="none"; e.target.nextSibling.style.display="block"; }}
+                  style={{width:"100%",height:160,objectFit:"cover",display:"block"}}
+                />
+                <div style={{display:"none",padding:"8px 12px",background:"#fee2e2",color:"#b91c1c",fontSize:12}}>
+                  ⚠️ Lien invalide — l'image ne peut pas être chargée
+                </div>
+              </div>
+            )}
+            <span style={{fontSize:11.5,color:"#94a3b8",display:"block",marginTop:5}}>
+              💡 Conseil : utilisez un lien direct (ex: Imgur, Cloudinary, Google Drive direct link)
+            </span>
+          </div>
+          {F("video_url","🎬 Lien Vidéo YouTube")}
+          {F("pdf_url","📄 Lien PDF (Google Drive...)")}
         </>}
 
         {modal.entity === "moniteur" && <>

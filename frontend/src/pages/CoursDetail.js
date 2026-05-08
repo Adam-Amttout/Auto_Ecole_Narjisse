@@ -20,275 +20,165 @@ const NIV = {
   avance:        { label:"Avancé",        color:"#b91c1c", bg:"#fee2e2" },
 };
 
-function ytEmbed(url) {
+const ytEmbed = (url) => {
   if (!url) return null;
   const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  return m ? `https://www.youtube.com/embed/${m[1]}?rel=0&modestbranding=1` : null;
-}
+  return m ? `https://www.youtube.com/embed/${m[1]}?rel=0` : url;
+};
 
 export default function CoursDetail() {
-  const { id }   = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-
-  const [cours,   setCours]   = useState(null);
+  const [cours, setCours] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState("");
-  const [activeTab, setActiveTab] = useState(""); // sera défini après chargement
+  const [error, setError] = useState("");
+  const [videoOpen, setVideoOpen] = useState(false);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`${API}/cours/${id}`);
-        const c   = res.data;
-        setCours(c);
-        // Définit l'onglet par défaut selon les médias disponibles
-        if (c.video_url) setActiveTab("video");
-        else if (c.contenu) setActiveTab("contenu");
-        else if (c.pdf_url) setActiveTab("pdf");
-        else setActiveTab("info");
-      } catch { setError("Cours introuvable."); }
-      finally  { setLoading(false); }
-    };
-    load();
+    setLoading(true);
+    axios.get(`${API}/cours/${id}`)
+      .then(r => setCours(r.data))
+      .catch(() => setError("Cours introuvable."))
+      .finally(() => setLoading(false));
   }, [id]);
 
+  const downloadPdf = (url) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.click();
+  };
+
   if (loading) return (
-    <div className="cd-page">
-      <div className="cd-center">
-        <div className="cd-spinner"/>
-        <p>Chargement du cours...</p>
-      </div>
+    <div className="cd-loading">
+      <div className="cd-spinner"/>
+      <p>Chargement du cours...</p>
     </div>
   );
 
-  if (error) return (
-    <div className="cd-page">
-      <div className="cd-center">
-        <div style={{fontSize:52,marginBottom:12}}>😕</div>
-        <h3>{error}</h3>
-        <button className="cd-btn-back" onClick={()=>navigate("/cours")}>← Retour aux cours</button>
-      </div>
+  if (error || !cours) return (
+    <div className="cd-error-page">
+      <div className="cd-error-ico">📚</div>
+      <h2>Cours introuvable</h2>
+      <p>{error}</p>
+      <button className="cd-back-btn" onClick={() => navigate("/cours")}>← Retour aux cours</button>
     </div>
   );
 
-  const cat  = CAT[cours.categorie] || CAT.autre;
-  const niv  = NIV[cours.niveau]    || NIV.debutant;
-  const embed = ytEmbed(cours.video_url);
-
-  const TABS = [
-    ...(cours.video_url                          ? [{ k:"video",   ico:"▶️",  label:"Vidéo"   }] : []),
-    ...(cours.contenu && cours.contenu.length>10 ? [{ k:"contenu", ico:"📝",  label:"Cours"   }] : []),
-    ...(cours.pdf_url                            ? [{ k:"pdf",     ico:"📄",  label:"PDF"     }] : []),
-    { k:"info", ico:"ℹ️", label:"À propos" },
-  ];
+  const cat = CAT[cours.categorie] || CAT.autre;
+  const niv = NIV[cours.niveau] || NIV.debutant;
+  const hasVideo = !!cours.video_url;
+  const hasPdf   = !!cours.pdf_url;
+  const embedUrl = ytEmbed(cours.video_url);
 
   return (
     <div className="cd-page">
 
-      {/* ── HERO COURS ── */}
-      <div className="cd-hero" style={{background:`linear-gradient(135deg, ${cat.color}22, ${cat.color}08)`}}>
+      {/* HERO */}
+      <div className="cd-hero" style={{background:`linear-gradient(135deg, ${cat.color}dd, ${cat.color}99)`}}>
         <div className="cd-hero-inner">
-          <button className="cd-btn-back" onClick={()=>navigate("/cours")}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
-            Retour aux cours
+          <button className="cd-back" onClick={() => navigate("/cours")}>
+            ← Retour aux cours
           </button>
-
-          <div className="cd-hero-meta">
-            <span className="cd-badge-cat" style={{background:cat.color}}>{cat.icon} {cat.label}</span>
-            <span className="cd-badge-niv" style={{background:niv.bg,color:niv.color}}>{niv.label}</span>
-            {cours.duree_minutes && (
-              <span className="cd-badge-dur">⏱ {cours.duree_minutes} min</span>
-            )}
+          <div className="cd-hero-badge" style={{background:"rgba(255,255,255,.2)"}}>
+            {cat.icon} {cat.label}
           </div>
-
           <h1 className="cd-hero-title">{cours.titre}</h1>
-
-          {cours.description && (
-            <p className="cd-hero-desc">{cours.description}</p>
-          )}
-
-          {/* Indicateurs de contenu */}
-          <div className="cd-hero-media">
-            {cours.video_url && <div className="cd-media-chip video">▶ Vidéo disponible</div>}
-            {cours.contenu   && <div className="cd-media-chip text">📝 Cours écrit</div>}
-            {cours.pdf_url   && <div className="cd-media-chip pdf">📄 PDF téléchargeable</div>}
+          {cours.description && <p className="cd-hero-desc">{cours.description}</p>}
+          <div className="cd-hero-meta">
+            <span className="cd-meta-pill" style={{background:niv.bg, color:niv.color}}>{niv.label}</span>
+            {cours.duree_minutes && <span className="cd-meta-pill cd-meta-dur">⏱ {cours.duree_minutes} min</span>}
+            {hasVideo && <span className="cd-meta-pill cd-meta-vid">▶ Vidéo incluse</span>}
+            {hasPdf   && <span className="cd-meta-pill cd-meta-pdf">📄 PDF inclus</span>}
           </div>
         </div>
-
-        {/* Image de fond si disponible */}
-        {cours.image && (
-          <div className="cd-hero-img-wrap">
-            <img src={cours.image} alt={cours.titre} className="cd-hero-img"/>
-          </div>
-        )}
+        <svg className="cd-hero-wave" viewBox="0 0 1440 55" preserveAspectRatio="none">
+          <path d="M0,28 C360,56 1080,0 1440,32 L1440,55 L0,55 Z" fill="#f4f6fa"/>
+        </svg>
       </div>
 
-      {/* ── CONTENU ── */}
-      <div className="cd-container">
+      <div className="cd-body">
 
-        {/* ONGLETS */}
-        {TABS.length > 1 && (
-          <div className="cd-tabs">
-            {TABS.map(t => (
-              <button key={t.k} className={`cd-tab ${activeTab===t.k?"active":""}`}
-                onClick={()=>setActiveTab(t.k)}>
-                {t.ico} {t.label}
-              </button>
-            ))}
+        {/* ACTION BUTTONS */}
+        <div className="cd-actions">
+          {hasVideo && (
+            <button className={`cd-btn-video ${videoOpen?"active":""}`} onClick={() => setVideoOpen(!videoOpen)}>
+              {videoOpen ? "⏹ Fermer la vidéo" : "▶ Regarder la vidéo"}
+            </button>
+          )}
+          {hasPdf && (
+            <button className="cd-btn-pdf" onClick={() => downloadPdf(cours.pdf_url)}>
+              📄 Télécharger le PDF
+            </button>
+          )}
+        </div>
+
+        {/* INLINE VIDEO */}
+        {videoOpen && hasVideo && embedUrl && (
+          <div className="cd-video-wrap">
+            <div className="cd-video-header">
+              <span>▶ {cours.titre}</span>
+              <button onClick={() => setVideoOpen(false)}>✕ Fermer</button>
+            </div>
+            <iframe
+              src={embedUrl}
+              title={cours.titre}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="cd-iframe"
+            />
           </div>
         )}
 
-        <div className="cd-content">
+        {/* COVER IMAGE */}
+        {cours.image && !videoOpen && (
+          <div className="cd-cover">
+            <img src={cours.image} alt={cours.titre} onError={e => e.target.style.display="none"}/>
+          </div>
+        )}
 
-          {/* ── VIDÉO ── */}
-          {activeTab === "video" && embed && (
-            <div className="cd-section">
-              <h2 className="cd-section-title">🎬 Vidéo du cours</h2>
-              <div className="cd-video-wrap">
-                <iframe
-                  src={embed}
-                  title={cours.titre}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="cd-video"
-                />
-              </div>
-              <p className="cd-video-hint">
-                💡 Regardez cette vidéo explicative pour mieux comprendre le cours.
-              </p>
+        {/* COURSE CONTENT */}
+        {cours.contenu && (
+          <div className="cd-content-wrap">
+            <h2 className="cd-content-title">📝 Contenu du cours</h2>
+            <div
+              className="cd-content"
+              dangerouslySetInnerHTML={{ __html: cours.contenu }}
+            />
+          </div>
+        )}
+
+        {/* NO CONTENT FALLBACK */}
+        {!cours.contenu && !hasVideo && !hasPdf && (
+          <div className="cd-no-content">
+            <span>📚</span>
+            <p>Le contenu de ce cours sera bientôt disponible.</p>
+          </div>
+        )}
+
+        {/* PDF PREVIEW HINT */}
+        {hasPdf && (
+          <div className="cd-pdf-banner">
+            <div className="cd-pdf-banner-icon">📄</div>
+            <div>
+              <h4>Support PDF disponible</h4>
+              <p>Téléchargez le support de cours en PDF pour étudier à votre rythme.</p>
             </div>
-          )}
+            <button className="cd-btn-pdf" onClick={() => downloadPdf(cours.pdf_url)}>
+              Télécharger
+            </button>
+          </div>
+        )}
 
-          {activeTab === "video" && !embed && (
-            <div className="cd-section">
-              <div className="cd-no-content">
-                <div style={{fontSize:48,marginBottom:12}}>🎬</div>
-                <p>Vidéo non disponible pour le moment.</p>
-              </div>
-            </div>
-          )}
-
-          {/* ── CONTENU ÉCRIT ── */}
-          {activeTab === "contenu" && (
-            <div className="cd-section">
-              <h2 className="cd-section-title">📝 Contenu du cours</h2>
-              {cours.contenu ? (
-                <div
-                  className="cd-written-content"
-                  dangerouslySetInnerHTML={{ __html: cours.contenu }}
-                />
-              ) : (
-                <div className="cd-no-content">
-                  <div style={{fontSize:48,marginBottom:12}}>📝</div>
-                  <p>Contenu écrit non disponible.</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── PDF ── */}
-          {activeTab === "pdf" && (
-            <div className="cd-section">
-              <h2 className="cd-section-title">📄 Document PDF</h2>
-              {cours.pdf_url ? (
-                <div className="cd-pdf-zone">
-                  <div className="cd-pdf-card">
-                    <div className="cd-pdf-icon">📄</div>
-                    <div className="cd-pdf-info">
-                      <div className="cd-pdf-name">{cours.titre}.pdf</div>
-                      <div className="cd-pdf-sub">Document de cours — format PDF</div>
-                    </div>
-                    <a href={cours.pdf_url} target="_blank" rel="noreferrer" className="cd-pdf-btn">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7 10 12 15 17 10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
-                      </svg>
-                      Télécharger
-                    </a>
-                  </div>
-
-                  {/* Aperçu inline si lien direct */}
-                  <div className="cd-pdf-preview">
-                    <iframe
-                      src={cours.pdf_url.includes("drive.google.com")
-                        ? cours.pdf_url.replace("/view", "/preview")
-                        : `https://docs.google.com/viewer?url=${encodeURIComponent(cours.pdf_url)}&embedded=true`
-                      }
-                      title="PDF Preview"
-                      className="cd-pdf-frame"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="cd-no-content">
-                  <div style={{fontSize:48,marginBottom:12}}>📄</div>
-                  <p>PDF non disponible.</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── INFO ── */}
-          {activeTab === "info" && (
-            <div className="cd-section">
-              <h2 className="cd-section-title">ℹ️ À propos de ce cours</h2>
-              <div className="cd-info-grid">
-                <div className="cd-info-card">
-                  <div className="cd-info-icon">{cat.icon}</div>
-                  <div className="cd-info-label">Catégorie</div>
-                  <div className="cd-info-val" style={{color:cat.color}}>{cat.label}</div>
-                </div>
-                <div className="cd-info-card">
-                  <div className="cd-info-icon">📊</div>
-                  <div className="cd-info-label">Niveau</div>
-                  <div className="cd-info-val" style={{color:niv.color}}>{niv.label}</div>
-                </div>
-                <div className="cd-info-card">
-                  <div className="cd-info-icon">⏱</div>
-                  <div className="cd-info-label">Durée</div>
-                  <div className="cd-info-val">{cours.duree_minutes || "—"} min</div>
-                </div>
-                <div className="cd-info-card">
-                  <div className="cd-info-icon">🎬</div>
-                  <div className="cd-info-label">Vidéo</div>
-                  <div className="cd-info-val">{cours.video_url ? "✅ Disponible" : "—"}</div>
-                </div>
-                <div className="cd-info-card">
-                  <div className="cd-info-icon">📄</div>
-                  <div className="cd-info-label">PDF</div>
-                  <div className="cd-info-val">{cours.pdf_url ? "✅ Disponible" : "—"}</div>
-                </div>
-                <div className="cd-info-card">
-                  <div className="cd-info-icon">📝</div>
-                  <div className="cd-info-label">Cours écrit</div>
-                  <div className="cd-info-val">{cours.contenu ? "✅ Disponible" : "—"}</div>
-                </div>
-              </div>
-
-              {cours.description && (
-                <div className="cd-desc-block">
-                  <h3>Description</h3>
-                  <p>{cours.description}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-        </div>
-
-        {/* Navigation entre cours */}
-        <div className="cd-nav-bottom">
-          <button className="cd-btn-back" onClick={()=>navigate("/cours")}>
-            ← Tous les cours
-          </button>
-          <button className="cd-btn-seance" onClick={()=>navigate("/seances")}>
-            🚗 Planifier une séance →
+        {/* BACK */}
+        <div className="cd-footer-nav">
+          <button className="cd-back-btn" onClick={() => navigate("/cours")}>
+            ← Retour à la liste des cours
           </button>
         </div>
+
       </div>
     </div>
   );

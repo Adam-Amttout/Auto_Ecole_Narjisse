@@ -17,7 +17,8 @@ class MoniteurController extends Controller
                 'nom_complet' => $m->nom_complet
             ]));
 
-        return response()->json($moniteurs);
+        return response()->json($moniteurs)
+            ->header('Cache-Control', 'public, max-age=30');
     }
 
     /** POST /api/moniteurs */

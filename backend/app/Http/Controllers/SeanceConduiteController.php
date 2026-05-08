@@ -32,7 +32,8 @@ class SeanceConduiteController extends Controller
 
         $seances = $query->orderBy('date')->orderBy('heure_debut')->get();
 
-        return response()->json($seances);
+        return response()->json($seances)
+            ->header('Cache-Control', 'public, max-age=30');
     }
 
     /** POST /api/seances */

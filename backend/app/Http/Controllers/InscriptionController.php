@@ -12,7 +12,7 @@ class InscriptionController extends Controller
     {
         return response()->json(
             Inscription::with('client')->get()
-        );
+        )->header('Cache-Control', 'public, max-age=30');
     }
 
     public function store(Request $request)

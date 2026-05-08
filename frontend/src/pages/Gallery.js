@@ -2,11 +2,21 @@ import React, { useEffect, useRef, useState } from "react";
 import "./Gallery.css";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import axios from "axios";
+
+const API = "http://127.0.0.1:8000/api";
 
 function Gallery() {
   const scrollRef = useRef();
  
   const [selectedImage, setSelectedImage] = useState(null);
+  const [dynamicTestimonials, setDynamicTestimonials] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${API}/avis/approved`)
+      .then(r => { if (r.data && r.data.length > 0) setDynamicTestimonials(r.data); })
+      .catch(() => {});
+  }, []);
 
   // Import all images dynamically with error handling
   const importAllImages = () => {
@@ -41,11 +51,11 @@ function Gallery() {
 
   useEffect(() => {
     AOS.init({
-      duration: 1000,
+      duration: 400,
       once: true,
-      offset: 120,
-      easing: 'ease-in-out-cubic',
-      delay: 100
+      offset: 60,
+      easing: 'ease-out',
+      delay: 0
     });
     
     
@@ -388,34 +398,48 @@ function Gallery() {
         </div>
 
         <div className="testimonials-grid">
-          {testimonials.map((testimonial, index) => (
-            <div 
-              className="testimonial-card" 
-              key={testimonial.id}
-              data-aos="zoom-in" 
-              data-aos-delay={index * 150}
-            >
-              <div className="testimonial-header">
-                <div className="testimonial-image">
-                  <img src={testimonial.image} alt={testimonial.name} />
+          {(dynamicTestimonials.length > 0 ? dynamicTestimonials : testimonials).map((t, index) => {
+            const isDynamic = dynamicTestimonials.length > 0;
+            const name   = isDynamic ? `${t.nom}${t.prenom ? ' ' + t.prenom : ''}` : t.name;
+            const role   = isDynamic ? t.role_label : t.role;
+            const text   = isDynamic ? t.texte : t.text;
+            const rating = isDynamic ? t.note : t.rating;
+            const date   = isDynamic
+              ? new Date(t.created_at).toLocaleDateString('fr-FR', {month:'long', year:'numeric'})
+              : t.date;
+            const image  = isDynamic ? t.photo_url : t.image;
+            const initials   = name ? name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : '?';
+            const COLORS = ['#e63946','#2563eb','#7c3aed','#059669','#d97706','#0891b2'];
+            const avatarBg   = COLORS[index % COLORS.length];
+            return (
+              <div className="testimonial-card" key={t.id} data-aos="zoom-in" data-aos-delay={index * 150}>
+                <div className="testimonial-header">
+                  <div className="testimonial-image">
+                    {image
+                      ? <img src={image} alt={name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}/>
+                      : null
+                    }
+                    <div style={{
+                      display: image ? 'none' : 'flex',
+                      width:'100%', height:'100%',
+                      alignItems:'center', justifyContent:'center',
+                      background: avatarBg, color:'white',
+                      fontWeight:800, fontSize:20, borderRadius:'50%'
+                    }}>{initials}</div>
+                  </div>
+                  <div className="testimonial-info"><h4>{name}</h4><span>{role}</span></div>
+                  <div className="quote-icon">"</div>
                 </div>
-                <div className="testimonial-info">
-                  <h4>{testimonial.name}</h4>
-                  <span>{testimonial.role}</span>
+                <div className="testimonial-content">
+                  <p>{text}</p>
+                  <div className="testimonial-rating">
+                    {[...Array(rating)].map((_,i) => <span key={i} className="star">★</span>)}
+                  </div>
+                  <div className="testimonial-date">{date}</div>
                 </div>
-                <div className="quote-icon">"</div>
               </div>
-              <div className="testimonial-content">
-                <p>{testimonial.text}</p>
-                <div className="testimonial-rating">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <span key={i} className="star">★</span>
-                  ))}
-                </div>
-                <div className="testimonial-date">{testimonial.date}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
