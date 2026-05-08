@@ -34,10 +34,11 @@
     margin-bottom: 20px;
   }
 }
+
 .cours-card img {
-  width: 100%;       /* l’image prend toute la largeur de la carte */
-  height: 200px;     /* fixe une hauteur pour que toutes les cartes aient la même taille */
-  object-fit: cover; /* l’image garde son ratio sans être déformée */
-  border-top-left-radius: 15px;  /* arrondi si tu veux comme la carte */
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-top-left-radius: 15px;
   border-top-right-radius: 15px;
 }

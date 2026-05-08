@@ -1,11 +1,8 @@
 import React from "react";
 import "./About.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate } from "react-router-dom";
 
 function About() {
-
-  const navigate = useNavigate();
 
   const team = [
     {
@@ -55,13 +52,17 @@ function About() {
             <h2>Qui sommes-nous ?</h2>
             <p>
               Auto-École Narjiss est spécialisée dans la formation à la
-              conduite avec des méthodes modernes.
+              conduite. Notre objectif est d'offrir une formation de qualité
+              avec des méthodes modernes et un accompagnement personnalisé.
             </p>
 
-            <button 
-              className="custom-btn mt-3"
-              onClick={() => navigate("/about-details")}
-            >
+            <p>
+              Nos moniteurs expérimentés accompagnent chaque élève pour
+              développer les compétences nécessaires à une conduite sûre et
+              responsable.
+            </p>
+
+            <button className="btn btn-primary">
               En savoir plus
             </button>
           </div>

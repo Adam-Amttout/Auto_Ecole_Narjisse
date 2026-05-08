@@ -7,9 +7,6 @@ import img31 from "../assets/images/Danger/img31.png";
 import img41 from "../assets/images/Danger/img41.png";
 import img51 from "../assets/images/Danger/img51.png";
 
-
-
-
 function Indication() {
 
 const [video,setVideo] = useState(null)
@@ -25,7 +22,6 @@ const indications = [
   { image: img41, video: "/video/Danger/ved41.mp4", title: "Passage piéton" },
   { image: img51, video: "/video/Danger/ved51.mp4", title: "Virage dangereux" },
   { image: img51, video: "/video/Danger/ved5.mp4", title: "Route glissante" },
-
 
 ]
 
@@ -146,10 +142,11 @@ onClick={()=>setVideo(null)}
 <div className="video-container">
 
 <video 
-controls 
-autoPlay 
-className="video-player"
-onEnded={nextVideo}
+  key={video}   // 🔥 الحل هنا
+  controls 
+  autoPlay 
+  className="video-player"
+  onEnded={nextVideo}
 >
 <source src={video} type="video/mp4"/>
 </video>

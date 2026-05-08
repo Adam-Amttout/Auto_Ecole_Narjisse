@@ -41,7 +41,7 @@ function Navbar() {
 
   // 🔥 detect section active
   useEffect(() => {
-    const sections = ["home", "about", "services", "faq", "contact"];
+    const sections = ["home", "about", "services", "gallery", "faq", "contact"];
 
     const handleScroll = () => {
       let current = "home";
@@ -141,6 +141,12 @@ function Navbar() {
             >
               Services
             </Nav.Link>
+            {/* Gallery */}
+            <Nav.Link
+            onClick={() => scrollToSection("gallery")}
+            className={activeSection === "gallery" ? "nav-link active" : "nav-link"}>
+            Galerie
+          </Nav.Link>
 
             {/* Cours */}
             <Nav.Link

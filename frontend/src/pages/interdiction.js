@@ -141,12 +141,13 @@ onClick={()=>setVideo(null)}
 <div className="video-container">
 
 <video 
-controls 
-autoPlay 
-className="video-player"
-onEnded={nextVideo}
+  key={video}   // 🔥 الحل
+  controls 
+  autoPlay 
+  className="video-player"
+  onEnded={nextVideo}
 >
-<source src={video} type="video/mp4"/>
+  <source src={video} type="video/mp4"/>
 </video>
 
 <div className="video-actions">

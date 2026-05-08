@@ -1,22 +1,24 @@
 import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import {
-  FaFacebookF,
-  FaWhatsapp,
-  FaMapMarkerAlt,
-  FaPhoneAlt,
-  FaEnvelope,
-  FaClock,
-  FaCar,
-} from "react-icons/fa";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaPhone, FaEnvelope } from "react-icons/fa";
 import "./Footer.css";
 
 function Footer() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const scrollToSection = (id) => {
-    navigate("/", { state: { sectionId: id } });
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    } else {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   return (
@@ -24,59 +26,38 @@ function Footer() {
       <Container>
         <Row className="py-5">
 
-          {/* LOGO + DESCRIPTION */}
+          {/* Logo + description */}
           <Col md={4} className="mb-4">
-            <h4 className="footer-title">
-              Auto École Narjisse
-            </h4>
-
+            <h4> Auto École Marrakech</h4>
             <p>
-              Apprenez à conduire en toute sécurité avec des moniteurs qualifiés
-              et une formation adaptée à votre rythme.
+              Votre partenaire pour une formation de qualité en conduite et sécurité routière.
             </p>
-
-            <p className="footer-highlight">
-              🚗 Votre réussite est notre priorité !
-            </p>
-
-            <p><FaCar /> Permis B | Moto | Conduite accompagnée</p>
           </Col>
 
-          {/* NAVIGATION */}
-          <Col md={3} className="mb-4">
-            <h5 className="footer-title">Navigation</h5>
-
+          {/* Liens rapides */}
+          <Col md={2} className="mb-4">
+            <h5>Liens rapides</h5>
             <ul className="footer-links">
-              <li onClick={() => scrollToSection("home")}>Accueil</li>
-              <li onClick={() => scrollToSection("about")}>À propos</li>
-              <li onClick={() => scrollToSection("services")}>Services</li>
-              <li onClick={() => scrollToSection("faq")}>FAQ</li>
-              <li onClick={() => scrollToSection("contact")}>Contact</li>
+              <li><span onClick={() => scrollToSection("home")}>Accueil</span></li>
+              <li><span onClick={() => scrollToSection("about")}>À propos</span></li>
+              <li><span onClick={() => scrollToSection("contact")}>Contact</span></li>
             </ul>
           </Col>
 
-          {/* CONTACT */}
-          <Col md={5} className="mb-4">
-            <h5 className="footer-title">Contact & Infos</h5>
+          {/* Contact */}
+          <Col md={3} className="mb-4">
+            <h5>Contact</h5>
+            <p><FaPhone /> +212 524303811</p>
+            <p><FaEnvelope /> info@autoecolemarrakech.com</p>
+          </Col>
 
-            <p><FaMapMarkerAlt /> Allal Elfassi, Marrakech, Maroc</p>
-            <p><FaPhoneAlt /> +212 524303811</p>
-            <p><FaEnvelope /> info@autoecole.com</p>
-
-            <p>
-              <FaClock /> Lun - Ven: 08h - 19h <br />
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sam: 09h - 13h
-            </p>
-
-            {/* SOCIAL */}
-            <div className="social-icons-vertical mt-3">
-              <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">
-                <FaFacebookF /> Facebook
-              </a>
-
-              <a href="https://wa.me/212698837698" target="_blank" rel="noopener noreferrer">
-                <FaWhatsapp /> WhatsApp
-              </a>
+          {/* Social */}
+          <Col md={3} className="mb-4">
+            <h5>Suivez-nous</h5>
+            <div className="social-icons d-flex gap-3 mt-3">
+              <a href="https://facebook.com" target="_blank" rel="noreferrer"><FaFacebookF /></a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer"><FaInstagram /></a>
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer"><FaLinkedinIn /></a>
             </div>
           </Col>
 
@@ -84,10 +65,11 @@ function Footer() {
 
         <hr />
 
-        <div className="text-center copy">
-          © {new Date().getFullYear()} Smit'ha Auto École Narjisse — Tous droits réservés
-        </div>
-
+        <Row>
+          <Col className="text-center py-3">
+            © {new Date().getFullYear()} Tous droits réservés à Auto École Marrakech
+          </Col>
+        </Row>
       </Container>
     </footer>
   );

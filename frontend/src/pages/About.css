@@ -48,20 +48,3 @@ transition:0.3s;
 .team-card:hover{
 transform:translateY(-10px);
 }
-
-/* 🔥 BUTTON STYLE (comme image) */
-.custom-btn {
-  background: linear-gradient(90deg, #ff4b5c, #ff6b6b);
-  border: none;
-  color: white;
-  padding: 12px 25px;
-  border-radius: 30px;
-  font-weight: 600;
-  transition: 0.3s;
-  box-shadow: 0 5px 15px rgba(255, 75, 92, 0.4);
-}
-
-.custom-btn:hover {
-  opacity: 0.9;
-  transform: scale(1.05);
-}
