@@ -59,6 +59,11 @@ export default function Cours() {
   const [avisErr, setAvisErr] = useState("");
   const [dynamicTestimonials, setDynamicTestimonials] = useState([]);
 
+  /* ── Progression state ── */
+  const [completedIds, setCompletedIds] = useState([]);
+  const [progTotal, setProgTotal]       = useState(0);
+  const [progPct, setProgPct]           = useState(0);
+
   const submitAvis = async (e) => {
     e.preventDefault();
     if (!avisForm.texte.trim() || !avisForm.nom.trim()) { setAvisErr("Veuillez remplir les champs obligatoires."); return; }
@@ -96,12 +101,38 @@ export default function Cours() {
     axios.get(`${API}/avis/approved`)
       .then(r => { if (r.data && r.data.length > 0) setDynamicTestimonials(r.data); })
       .catch(() => {});
+    if (user?.id) {
+      axios.get(`${API}/progression?client_id=${user.id}`)
+        .then(r => {
+          setCompletedIds(r.data.completed || []);
+          setProgTotal(r.data.total || 0);
+          setProgPct(r.data.pourcentage || 0);
+        })
+        .catch(() => {});
+    }
   }, [admin]);
 
   useEffect(() => {
     const t = setInterval(() => setActiveTestimonial(i => (i+1) % TESTIMONIALS.length), 4000);
     return () => clearInterval(t);
   }, []);
+
+  const toggleProgression = async (coursId) => {
+    if (!user?.id) return;
+    try {
+      const res = await axios.post(`${API}/progression/toggle`, { client_id: user.id, cours_id: coursId });
+      const wasAdded = res.data.status === 'added';
+      setCompletedIds(prev =>
+        wasAdded ? [...prev, coursId] : prev.filter(id => id !== coursId)
+      );
+      setProgPct(prev => {
+        const newCount = wasAdded
+          ? completedIds.length + 1
+          : completedIds.length - 1;
+        return progTotal > 0 ? Math.round((newCount / progTotal) * 100) : 0;
+      });
+    } catch { /* silent */ }
+  };
 
   const load = async () => {
     setLoading(true); setError("");
@@ -202,6 +233,22 @@ export default function Cours() {
             <h2>Sélectionnez une <span className="cp-gradient-text">Catégorie</span></h2>
             <p>Cliquez sur une catégorie pour accéder aux cours correspondants</p>
           </div>
+
+          {/* ── PROGRESS BAR ── */}
+          {!admin && progTotal > 0 && (
+            <div className="cp-progress-widget">
+              <div className="cp-progress-top">
+                <span className="cp-progress-label">🎯 Votre progression</span>
+                <span className="cp-progress-pct">{progPct}%</span>
+              </div>
+              <div className="cp-progress-track">
+                <div className="cp-progress-fill" style={{width: `${progPct}%`}} />
+              </div>
+              <p className="cp-progress-sub">
+                {completedIds.length} cours terminé{completedIds.length !== 1 ? 's' : ''} sur {progTotal}
+              </p>
+            </div>
+          )}
 
           <div className="cp-cat-grid">
             {Object.entries(CAT).map(([key, cat]) => {
@@ -414,6 +461,15 @@ export default function Cours() {
                           Voir le cours
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                         </button>
+                        {user && !admin && (
+                          <button
+                            className={`cp-btn-done ${completedIds.includes(c.id) ? 'completed' : ''}`}
+                            onClick={() => toggleProgression(c.id)}
+                            title={completedIds.includes(c.id) ? 'Marquer comme non terminé' : 'Marquer comme terminé'}
+                          >
+                            {completedIds.includes(c.id) ? '✅ Terminé' : '⬜ Terminé ?'}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

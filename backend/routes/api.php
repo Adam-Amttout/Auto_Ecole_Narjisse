@@ -10,6 +10,7 @@ use App\Http\Controllers\MoniteurController;
 use App\Http\Controllers\VehiculeController;
 use App\Http\Controllers\SeanceConduiteController;
 use App\Http\Controllers\AvisController;
+use App\Http\Controllers\ProgressionController;
 
 Route::get('/test', fn() => ['message' => 'API Narjiss OK']);
 
@@ -66,3 +67,7 @@ Route::get('/avis',                   [AvisController::class, 'index']);       /
 Route::post('/avis',                  [AvisController::class, 'store']);       // submit
 Route::patch('/avis/{id}/statut',     [AvisController::class, 'updateStatut']); // admin
 Route::delete('/avis/{id}',           [AvisController::class, 'destroy']);     // admin
+
+// ── PROGRESSION (suivi de cours)
+Route::get('/progression',            [ProgressionController::class, 'index']);  // ?client_id=X
+Route::post('/progression/toggle',    [ProgressionController::class, 'toggle']); // toggle done/undone

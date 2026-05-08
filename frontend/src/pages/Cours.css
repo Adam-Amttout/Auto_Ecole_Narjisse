@@ -396,4 +396,76 @@
   font-size: 11.5px;
   color: #94a3b8;
   font-weight: 500;
-}
+}
+
+/* ══ PROGRESS WIDGET ══ */
+.cp-progress-widget {
+  background: white;
+  border-radius: 18px;
+  padding: 22px 28px;
+  margin: 0 0 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.07);
+  border: 1.5px solid #e2e8f0;
+  max-width: 560px;
+}
+.cp-progress-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.cp-progress-label {
+  font-weight: 700;
+  font-size: 14.5px;
+  color: #1d3557;
+}
+.cp-progress-pct {
+  font-size: 22px;
+  font-weight: 800;
+  color: #e63946;
+}
+.cp-progress-track {
+  width: 100%;
+  height: 10px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.cp-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e63946, #ff6b6b);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(.4,0,.2,1);
+}
+.cp-progress-sub {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ══ DONE BUTTON ══ */
+.cp-btn-done {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.cp-btn-done:hover {
+  border-color: #059669;
+  color: #059669;
+  background: #ecfdf5;
+}
+.cp-btn-done.completed {
+  background: #ecfdf5;
+  border-color: #059669;
+  color: #059669;
+}
+
