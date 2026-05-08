@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Cours.css";
+import QuizQCM from "./QuizQCM";
 
 const API = "http://127.0.0.1:8000/api";
 const isAdmin = () => localStorage.getItem("role") === "admin";
@@ -520,6 +521,18 @@ export default function Cours() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* ── QCM QUIZ (Code de la Route only) ── */}
+          {!admin && selectedCat === "code_route" && (
+            <div className="cp-qcm-section">
+              <div className="cp-cat-header" style={{marginBottom:8}}>
+                <span className="cp-cat-tag" style={{background:"rgba(124,58,237,.1)",color:"#7c3aed"}}>Quiz interactif</span>
+                <h2>Testez vos <span className="cp-gradient-text">Connaissances</span></h2>
+                <p>Répondez à 12 questions aléatoires et obtenez votre score immédiatement</p>
+              </div>
+              <QuizQCM />
             </div>
           )}
         </div>

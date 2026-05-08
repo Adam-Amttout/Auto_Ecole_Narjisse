@@ -11,6 +11,7 @@ use App\Http\Controllers\VehiculeController;
 use App\Http\Controllers\SeanceConduiteController;
 use App\Http\Controllers\AvisController;
 use App\Http\Controllers\ProgressionController;
+use App\Http\Controllers\QcmController;
 
 Route::get('/test', fn() => ['message' => 'API Narjiss OK']);
 
@@ -72,3 +73,6 @@ Route::delete('/avis/{id}',           [AvisController::class, 'destroy']);     /
 Route::get('/progression',              [ProgressionController::class, 'index']);       // ?client_id=X
 Route::get('/progression/by-category',  [ProgressionController::class, 'byCategory']); // ?client_id=X
 Route::post('/progression/toggle',      [ProgressionController::class, 'toggle']);      // toggle done/undone
+
+// ── QCM (quiz code de la route)
+Route::get('/qcm/questions', [QcmController::class, 'random']); // ?categorie=code_route&limit=12

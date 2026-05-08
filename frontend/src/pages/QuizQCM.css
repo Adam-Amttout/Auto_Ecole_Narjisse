@@ -1,0 +1,176 @@
+/* ════════════════════════════════════════
+   QUIZQCM.CSS — QCM Quiz Component
+   ════════════════════════════════════════ */
+
+.qcm-card {
+  background: white;
+  border-radius: 20px;
+  padding: 36px 32px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.10);
+  border: 1.5px solid #e2e8f0;
+  margin: 32px 0;
+  max-width: 760px;
+  animation: qcmFadeIn .35s ease;
+}
+@keyframes qcmFadeIn {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:none; }
+}
+
+/* ── IDLE SCREEN ── */
+.qcm-idle-icon  { font-size: 56px; text-align:center; margin-bottom:12px; }
+.qcm-idle-title { font-size:24px; font-weight:800; color:#1d3557; text-align:center; margin-bottom:10px; font-family:'Poppins',sans-serif; }
+.qcm-idle-desc  { font-size:14.5px; color:#64748b; text-align:center; line-height:1.7; margin-bottom:24px; }
+.qcm-idle-stats { display:flex; justify-content:center; gap:24px; margin-bottom:28px; flex-wrap:wrap; }
+.qcm-stat       { text-align:center; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:14px 22px; min-width:90px; }
+.qcm-stat span  { display:block; font-size:22px; font-weight:800; color:#7c3aed; }
+.qcm-stat small { font-size:11.5px; color:#64748b; font-weight:500; }
+
+.qcm-start-btn {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 15.5px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  transition: all .25s;
+  box-shadow: 0 6px 20px rgba(124,58,237,.3);
+  margin-top: 8px;
+}
+.qcm-start-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(124,58,237,.42);
+}
+.qcm-start-btn:disabled { opacity:.65; cursor:not-allowed; }
+
+.qcm-error { color:#b91c1c; background:#fee2e2; border:1px solid #fecaca; border-radius:10px; padding:10px 14px; font-size:13.5px; margin-bottom:16px; text-align:center; }
+
+/* ── QUIZ HEADER ── */
+.qcm-header { margin-bottom:24px; }
+.qcm-counter { font-size:13px; font-weight:700; color:#7c3aed; display:block; margin-bottom:8px; letter-spacing:.3px; }
+.qcm-progress-track { width:100%; height:8px; background:#f1f5f9; border-radius:999px; overflow:hidden; }
+.qcm-progress-fill  { height:100%; background:linear-gradient(90deg,#7c3aed,#a78bfa); border-radius:999px; transition:width .4s ease; }
+
+/* ── QUESTION ── */
+.qcm-question-box { background:#f5f3ff; border:1.5px solid #ddd6fe; border-radius:14px; padding:20px 24px; margin-bottom:20px; }
+.qcm-question-text { font-size:16.5px; font-weight:700; color:#1e1b4b; line-height:1.55; margin:0; }
+
+/* ── OPTIONS ── */
+.qcm-options { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+.qcm-opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  color: #1e293b;
+  transition: all .2s;
+  font-weight: 500;
+}
+.qcm-opt:hover:not(.dimmed) { border-color:#7c3aed; background:#f5f3ff; transform:translateX(4px); }
+.qcm-opt.selected { border-color:#7c3aed; background:#f5f3ff; }
+.qcm-opt.correct  { border-color:#059669; background:#ecfdf5; color:#065f46; }
+.qcm-opt.wrong    { border-color:#dc2626; background:#fef2f2; color:#991b1b; }
+.qcm-opt.dimmed   { opacity:.5; cursor:default; }
+
+.qcm-opt-label {
+  min-width: 30px; height: 30px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 12.5px; font-weight: 800;
+  flex-shrink: 0;
+}
+.qcm-opt.correct .qcm-opt-label  { background:#059669; color:white; }
+.qcm-opt.wrong   .qcm-opt-label  { background:#dc2626; color:white; }
+.qcm-opt.selected .qcm-opt-label { background:#7c3aed; color:white; }
+.qcm-opt-text { flex:1; }
+
+/* ── EXPLANATION ── */
+.qcm-explication {
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.qcm-explication.ok { background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; }
+.qcm-explication.ko { background:#fff1f2; border:1px solid #fecdd3; color:#9f1239; }
+.qcm-explication strong { display:block; margin-bottom:4px; font-size:14px; }
+.qcm-explication p { margin:0; }
+
+/* ── NEXT BUTTON ── */
+.qcm-next-btn {
+  display: block; width:100%;
+  padding: 13px;
+  background: linear-gradient(135deg,#1d3557,#457b9d);
+  color: white; border:none; border-radius:12px;
+  font-size:14.5px; font-weight:700;
+  font-family:'Outfit',sans-serif; cursor:pointer;
+  transition:.25s;
+  box-shadow: 0 4px 14px rgba(29,53,87,.25);
+}
+.qcm-next-btn:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(29,53,87,.35); }
+
+/* ── RESULTS ── */
+.qcm-results-card { text-align:center; }
+.qcm-score-circle {
+  width: 130px; height:130px; border-radius:50%;
+  display: flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  margin: 0 auto 20px;
+  font-weight: 800;
+  box-shadow: 0 8px 30px rgba(0,0,0,.15);
+}
+.qcm-score-circle.pass { background:linear-gradient(135deg,#059669,#34d399); color:white; }
+.qcm-score-circle.fail { background:linear-gradient(135deg,#dc2626,#f87171); color:white; }
+.qcm-score-num  { font-size:36px; line-height:1; }
+.qcm-score-num small { font-size:18px; opacity:.8; }
+.qcm-score-pct  { font-size:15px; opacity:.85; }
+
+.qcm-verdict { font-size:26px; font-weight:900; margin-bottom:6px; font-family:'Poppins',sans-serif; }
+.qcm-verdict.pass { color:#059669; }
+.qcm-verdict.fail { color:#dc2626; }
+.qcm-verdict-sub  { color:#64748b; font-size:14px; margin-bottom:28px; line-height:1.6; }
+
+/* ── REVIEW ── */
+.qcm-review { text-align:left; margin-bottom:28px; }
+.qcm-review-title { font-size:16px; font-weight:800; color:#1d3557; margin-bottom:14px; font-family:'Poppins',sans-serif; }
+.qcm-review-item  { border-radius:12px; margin-bottom:10px; overflow:hidden; border:1.5px solid #e2e8f0; }
+.qcm-review-item.ok { border-color:#a7f3d0; }
+.qcm-review-item.ko { border-color:#fecdd3; }
+.qcm-review-q {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 16px;
+  background:#f8fafc;
+  cursor:default;
+}
+.qcm-review-item.ok .qcm-review-q { background:#f0fdf4; }
+.qcm-review-item.ko .qcm-review-q { background:#fff1f2; }
+.qcm-review-num  { min-width:26px; height:26px; background:#e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+.qcm-review-text { flex:1; font-size:13.5px; color:#1e293b; font-weight:600; }
+.qcm-review-badge { font-size:16px; font-weight:800; flex-shrink:0; }
+.qcm-review-badge.ok { color:#059669; }
+.qcm-review-badge.ko { color:#dc2626; }
+.qcm-review-ans { padding:10px 16px; background:white; display:flex; flex-direction:column; gap:4px; border-top:1px solid #fee2e2; }
+.wrong-ans { font-size:13px; color:#dc2626; }
+.right-ans  { font-size:13px; color:#059669; }
+.expl-ans   { font-size:12.5px; color:#64748b; font-style:italic; margin-top:2px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .qcm-card { padding:24px 16px; }
+  .qcm-score-circle { width:110px; height:110px; }
+  .qcm-score-num { font-size:28px; }
+}

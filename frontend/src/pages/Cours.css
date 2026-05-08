@@ -120,6 +120,9 @@
 .cp-btn-add:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(230,57,70,.38); }
 .cp-count { color:#64748b; font-size:13.5px; margin-bottom:22px; }
 
+/* ── QCM SECTION ── */
+.cp-qcm-section { margin-top:52px; border-top:2px solid #f1f5f9; padding-top:40px; }
+
 /* ── GRID ── */
 .cp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:24px; }
 
