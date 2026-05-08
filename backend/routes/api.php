@@ -69,5 +69,6 @@ Route::patch('/avis/{id}/statut',     [AvisController::class, 'updateStatut']); 
 Route::delete('/avis/{id}',           [AvisController::class, 'destroy']);     // admin
 
 // ── PROGRESSION (suivi de cours)
-Route::get('/progression',            [ProgressionController::class, 'index']);  // ?client_id=X
-Route::post('/progression/toggle',    [ProgressionController::class, 'toggle']); // toggle done/undone
+Route::get('/progression',              [ProgressionController::class, 'index']);       // ?client_id=X
+Route::get('/progression/by-category',  [ProgressionController::class, 'byCategory']); // ?client_id=X
+Route::post('/progression/toggle',      [ProgressionController::class, 'toggle']);      // toggle done/undone

@@ -63,6 +63,7 @@ export default function Cours() {
   const [completedIds, setCompletedIds] = useState([]);
   const [progTotal, setProgTotal]       = useState(0);
   const [progPct, setProgPct]           = useState(0);
+  const [catProgression, setCatProgression] = useState({}); // { danger: {total,done,completed,pct}, ... }
 
   const submitAvis = async (e) => {
     e.preventDefault();
@@ -109,6 +110,9 @@ export default function Cours() {
           setProgPct(r.data.pourcentage || 0);
         })
         .catch(() => {});
+      axios.get(`${API}/progression/by-category?client_id=${user.id}`)
+        .then(r => setCatProgression(r.data || {}))
+        .catch(() => {});
     }
   }, [admin]);
 
@@ -131,6 +135,10 @@ export default function Cours() {
           : completedIds.length - 1;
         return progTotal > 0 ? Math.round((newCount / progTotal) * 100) : 0;
       });
+      // Refresh per-category stats after toggle
+      axios.get(`${API}/progression/by-category?client_id=${user.id}`)
+        .then(r => setCatProgression(r.data || {}))
+        .catch(() => {});
     } catch { /* silent */ }
   };
 
@@ -253,14 +261,31 @@ export default function Cours() {
           <div className="cp-cat-grid">
             {Object.entries(CAT).map(([key, cat]) => {
               const count = cours.filter(c => c.categorie === key).length;
+              const cp = catProgression[key];
+              const catDone = cp?.completed || false;
+              const catPct  = cp?.pct || 0;
+              const catDoneCount = cp?.done || 0;
               return (
-                <div key={key} className="cp-cat-card" style={{"--cat-color": cat.color, "--cat-bg": cat.bg}} onClick={() => selectCategory(key)}>
-                  <div className="cp-cat-card-icon">{cat.icon}</div>
+                <div key={key} className={`cp-cat-card ${catDone ? 'cp-cat-card--done' : ''}`} style={{"--cat-color": cat.color, "--cat-bg": cat.bg}} onClick={() => selectCategory(key)}>
+                  <div className="cp-cat-card-icon">
+                    {cat.icon}
+                    {catDone && <span className="cp-cat-done-badge">✓</span>}
+                  </div>
                   <h3>{cat.label}</h3>
                   <p>{cat.desc}</p>
+                  {!admin && cp && count > 0 && (
+                    <div className="cp-cat-mini-prog">
+                      <div className="cp-cat-mini-track">
+                        <div className="cp-cat-mini-fill" style={{width: `${catPct}%`, background: catDone ? '#059669' : cat.color}} />
+                      </div>
+                      <span className="cp-cat-mini-label" style={{color: catDone ? '#059669' : cat.color}}>
+                        {catDone ? '✅ Complété !' : `${catDoneCount}/${count} cours`}
+                      </span>
+                    </div>
+                  )}
                   <div className="cp-cat-card-footer">
                     <span className="cp-cat-count">{loading ? "..." : `${count} cours`}</span>
-                    <span className="cp-cat-arrow">Voir les cours →</span>
+                    <span className="cp-cat-arrow">{catDone ? 'Revoir →' : 'Voir les cours →'}</span>
                   </div>
                 </div>
               );

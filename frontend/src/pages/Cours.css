@@ -468,4 +468,70 @@
   border-color: #059669;
   color: #059669;
 }
+
+/* ══ CATEGORY COMPLETION ══ */
+
+/* Green glow on fully-completed category card */
+.cp-cat-card--done {
+  border-color: #059669 !important;
+  box-shadow: 0 4px 24px rgba(5, 150, 105, .15);
+}
+.cp-cat-card--done:hover {
+  box-shadow: 0 16px 40px rgba(5, 150, 105, .22);
+}
+.cp-cat-card--done::before {
+  background: #ecfdf5;
+}
+
+/* Checkmark badge overlaid on the category icon */
+.cp-cat-card-icon {
+  position: relative;
+  display: inline-block;
+}
+.cp-cat-done-badge {
+  position: absolute;
+  top: -4px;
+  right: -12px;
+  background: #059669;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(5,150,105,.35);
+  animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* Mini progress bar inside category card */
+.cp-cat-mini-prog {
+  margin: 10px 0 14px;
+  position: relative;
+  z-index: 1;
+}
+.cp-cat-mini-track {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.cp-cat-mini-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.cp-cat-mini-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
 
