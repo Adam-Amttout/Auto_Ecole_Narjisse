@@ -20,62 +20,34 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
-        try {
+        $client = Client::create([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'password' => Hash::make($request->password ?? '123456'),
+            'role' => $request->role ?? 'user'
+        ]);
 
-            $validated = $request->validate([
-                'nom' => 'required',
-                'prenom' => 'required',
-                'email' => 'required|email|unique:clients,email',
-                'password' => 'nullable|min:6',
-                'role' => 'nullable'
-            ]);
-
-            $client = Client::create([
-                'nom' => $validated['nom'],
-                'prenom' => $validated['prenom'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password'] ?? '123456'),
-                'role' => $validated['role'] ?? 'user'
-            ]);
-
-            return response()->json([
-                'message' => 'Client créé',
-                'data' => $client
-            ]);
-
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'message' => 'Erreur: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Client created',
+            'data' => $client
+        ]);
     }
 
     public function update(Request $request, $id)
     {
-        try {
+        $client = Client::findOrFail($id);
 
-            $client = Client::findOrFail($id);
+        $client->update([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'role' => $request->role
+        ]);
 
-            $validated = $request->validate([
-                'nom' => 'required',
-                'prenom' => 'required',
-                'email' => 'required|email',
-                'role' => 'nullable'
-            ]);
-
-            $client->update($validated);
-
-            return response()->json([
-                'message' => 'Client modifié'
-            ]);
-
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'message' => 'Erreur: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Client updated'
+        ]);
     }
 
     public function destroy($id)
@@ -83,7 +55,7 @@ class ClientController extends Controller
         Client::destroy($id);
 
         return response()->json([
-            'message' => 'Client supprimé'
+            'message' => 'Client deleted'
         ]);
     }
 }
