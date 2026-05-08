@@ -444,6 +444,22 @@
   margin: 0;
 }
 
+/* ══ PROGRESS ROW ══ */
+.cp-progress-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.cp-progress-row .cp-progress-widget {
+  flex: 1;
+  min-width: 280px;
+  margin-bottom: 0;
+}
+.cp-cat-progress-widget .cp-progress-pct {
+  color: #059669;
+}
+
 /* ══ DONE BUTTON ══ */
 .cp-btn-done {
   padding: 8px 14px;

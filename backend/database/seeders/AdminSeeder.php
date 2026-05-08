@@ -19,5 +19,15 @@ class AdminSeeder extends Seeder
                 'role'     => 'admin',
             ]
         );
+
+        Client::updateOrCreate(
+            ['email' => 'eleve@narjiss.ma'],
+            [
+                'nom'      => 'Eleve',
+                'prenom'   => 'Test',
+                'password' => Hash::make('password123'),
+                'role'     => 'user',
+            ]
+        );
     }
 }

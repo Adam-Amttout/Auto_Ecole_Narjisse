@@ -65,6 +65,10 @@ export default function Cours() {
   const [progPct, setProgPct]           = useState(0);
   const [catProgression, setCatProgression] = useState({}); // { danger: {total,done,completed,pct}, ... }
 
+  const completedCats = Object.values(catProgression).filter(cp => cp.completed).length;
+  const totalCats = Object.keys(CAT).length;
+  const catPct = totalCats > 0 ? Math.round((completedCats / totalCats) * 100) : 0;
+
   const submitAvis = async (e) => {
     e.preventDefault();
     if (!avisForm.texte.trim() || !avisForm.nom.trim()) { setAvisErr("Veuillez remplir les champs obligatoires."); return; }
@@ -114,7 +118,8 @@ export default function Cours() {
         .then(r => setCatProgression(r.data || {}))
         .catch(() => {});
     }
-  }, [admin]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [admin, user?.id]);
 
   useEffect(() => {
     const t = setInterval(() => setActiveTestimonial(i => (i+1) % TESTIMONIALS.length), 4000);
@@ -242,19 +247,34 @@ export default function Cours() {
             <p>Cliquez sur une catégorie pour accéder aux cours correspondants</p>
           </div>
 
-          {/* ── PROGRESS BAR ── */}
-          {!admin && progTotal > 0 && (
-            <div className="cp-progress-widget">
-              <div className="cp-progress-top">
-                <span className="cp-progress-label">🎯 Votre progression</span>
-                <span className="cp-progress-pct">{progPct}%</span>
+          {/* ── PROGRESS SECTION ── */}
+          {!admin && (progTotal > 0 || totalCats > 0) && (
+            <div className="cp-progress-row">
+              <div className="cp-progress-widget">
+                <div className="cp-progress-top">
+                  <span className="cp-progress-label">🎯 Progression Cours</span>
+                  <span className="cp-progress-pct">{progPct}%</span>
+                </div>
+                <div className="cp-progress-track">
+                  <div className="cp-progress-fill" style={{width: `${progPct}%`}} />
+                </div>
+                <p className="cp-progress-sub">
+                  {completedIds.length} cours sur {progTotal} terminés
+                </p>
               </div>
-              <div className="cp-progress-track">
-                <div className="cp-progress-fill" style={{width: `${progPct}%`}} />
+
+              <div className="cp-progress-widget cp-cat-progress-widget">
+                <div className="cp-progress-top">
+                  <span className="cp-progress-label">🏆 Catégories Validées</span>
+                  <span className="cp-progress-pct">{completedCats}/{totalCats}</span>
+                </div>
+                <div className="cp-progress-track">
+                  <div className="cp-progress-fill" style={{width: `${catPct}%`, background: 'linear-gradient(90deg, #059669, #34d399)'}} />
+                </div>
+                <p className="cp-progress-sub">
+                   {completedCats === totalCats ? "Toutes les catégories sont validées ! 🎉" : `${totalCats - completedCats} catégorie(s) restante(s)`}
+                </p>
               </div>
-              <p className="cp-progress-sub">
-                {completedIds.length} cours terminé{completedIds.length !== 1 ? 's' : ''} sur {progTotal}
-              </p>
             </div>
           )}
 
