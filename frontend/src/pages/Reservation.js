@@ -3,7 +3,6 @@ import { Container, Row, Col, Form, Button, Alert, Spinner } from "react-bootstr
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaClock } from "react-icons/fa";
 import axios from "axios";
 import "./Reservation.css";
-import Footer from "./Footer";
 import WhatsAppButton from "./WhatsAppButton";
 
 function Reservation() {
@@ -183,16 +182,12 @@ function Reservation() {
                 <p>Dimanche: Fermé</p>
               </div>
             </div>
-
           </div>
         </Col>
-
       </Row>
     </Container>
-    <Footer />
     <WhatsAppButton/>
     </>
   );
 }
-
 export default Reservation;

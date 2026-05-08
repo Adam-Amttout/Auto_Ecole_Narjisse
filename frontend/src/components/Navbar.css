@@ -13,12 +13,10 @@
   width: 100%;
   z-index: 999;
 
-  /* 🔥 NEW BACKGROUND (gradient خفيف classy) */
   background: linear-gradient(135deg, #f8fafc, #e9eef5);
-
   backdrop-filter: blur(10px);
 
-  padding: 12px 40px;
+  padding: 12px 40px; /* 👈 هذا هو لي غادي يعطي المسافة */
   transition: all 0.35s ease;
 
   box-shadow: 0 6px 25px rgba(0,0,0,0.08);
@@ -73,15 +71,14 @@
   font-weight: 500;
   position: relative;
   transition: all 0.3s ease;
+  font-size: 14px;
 }
 
-/* 🔥 Hover */
 .nav-link:hover {
   color: var(--primary) !important;
   transform: translateY(-3px);
 }
 
-/* 🔥 underline animation (من الوسط) */
 .nav-link::after {
   content: "";
   position: absolute;
@@ -99,7 +96,6 @@
   width: 100%;
 }
 
-/* active */
 .nav-link.active {
   color: var(--primary) !important;
 }
@@ -108,33 +104,55 @@
 .btn-register {
   background: var(--primary);
   border: none;
-  padding: 8px 22px;
+  padding: 6px 12px;
   border-radius: 25px;
   font-weight: 500;
+  font-size: 13.5px;
+  height: 36px;
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: 0.3s;
   box-shadow: 0 4px 15px rgba(230,57,70,0.3);
 }
 
 .btn-register:hover {
   background: var(--primary-dark);
-  transform: scale(1.08);
+  transform: scale(1.04);
 }
 
-/* login */
 .btn-login {
   background: transparent;
   border: 1px solid var(--primary);
   color: var(--primary);
-  padding: 8px 22px;
+  padding: 6px 12px;
   border-radius: 25px;
+  font-size: 13.5px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: 0.3s;
 }
 
 .btn-login:hover {
   background: var(--primary);
   color: white;
-  transform: scale(1.08);
+  transform: scale(1.04);
+}
+
+/* ===== FIX ALIGNMENT ===== */
+.navbar-nav {
+  gap: 10px;
+}
+
+/* 🔥 التحكم فـ buttons */
+.nav-buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* ===== MOBILE ===== */
@@ -151,4 +169,17 @@
   .btn-login {
     width: 100%;
   }
+}
+/* 🔥 الحل النهائي */
+.nav-buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  transform: translateX(-20px); /* 👈 هنا الحل */
+}
+/* 🔥 نبعد Contact شوية */
+.navbar-nav {
+  margin-right: 20px;
 }
