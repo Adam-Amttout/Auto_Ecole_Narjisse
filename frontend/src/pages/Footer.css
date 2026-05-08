@@ -1,25 +1,43 @@
-/* BACKGROUND */
 .custom-footer {
   background: #0b1220;
-  color: #fff;
-  padding: 25px 0; /* نقصنا شوية */
+  color: #cbd5e1;
+  padding: 50px 0;
   font-family: 'Segoe UI', sans-serif;
 }
 
 /* TITLES */
-.custom-footer h4,
-.custom-footer h5 {
-  color: #ffffff;
+.footer-title {
+  color: #fff;
   font-weight: 600;
-  margin-bottom: 12px; /* نقصنا */
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.footer-title::after {
+  content: "";
+  width: 40px;
+  height: 3px;
+  background: #e63946;
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+}
+
+/* BRAND COLOR */
+.brand-red {
+  color: #e63946;
 }
 
 /* TEXT */
 .custom-footer p {
-  font-size: 13px; /* نقصنا */
-  color: #cbd5e1;
-  margin-bottom: 8px; /* نقصنا */
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.footer-highlight {
+  color: #e63946;
+  font-weight: 500;
+  margin-top: 10px;
 }
 
 /* LINKS */
@@ -29,93 +47,53 @@
 }
 
 .footer-links li {
-  margin-bottom: 6px; /* نقصنا */
-}
-
-.footer-links span {
   cursor: pointer;
-  color: #e2e8f0;
-  transition: 0.3s;
-  position: relative;
-}
-
-/* hover underline animation */
-.footer-links span::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -3px;
-  width: 0%;
-  height: 2px;
-  background: #e63946; /* بدلنا للـ red */
+  margin-bottom: 10px;
   transition: 0.3s;
 }
 
-.footer-links span:hover {
-  color: #e63946; /* نفس red ديال site */
+.footer-links li:hover {
+  color: #e63946;
+  transform: translateX(6px);
 }
 
-.footer-links span:hover::after {
-  width: 100%;
-}
-
-/* CONTACT ICONS */
+/* ICONS */
 .custom-footer svg {
   margin-right: 8px;
-  color: #e63946; /* بدلنا للـ red */
+  color: #e63946;
 }
 
-/* SOCIAL ICONS */
-.social-icons a {
-  width: 36px; /* صغرنا */
-  height: 36px;
-  background: #1e293b;
-  border-radius: 50%;
+/* SOCIAL */
+.social-icons-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-icons-vertical a {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #e63946; /* red */
-  font-size: 15px;
-  transition: 0.3s;
+  gap: 10px;
   text-decoration: none;
+  color: #e2e8f0;
+  transition: 0.3s;
 }
 
-/* hover effect */
-.social-icons a:hover {
-  background: #e63946;
-  color: #ffffff; /* icon يبقى واضح */
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 0 10px rgba(230, 57, 70, 0.6);}
-.social-icons a svg {
-  color: inherit;
+.social-icons-vertical a:hover {
+  color: #e63946;
+  transform: translateX(5px);
 }
 
 /* LINE */
 .custom-footer hr {
   border-color: rgba(255, 255, 255, 0.1);
-  margin: 15px 0; /* نقصنا */
+  margin: 25px 0;
 }
 
 /* COPYRIGHT */
-.custom-footer .text-center {
-  font-size: 12px; /* نقصنا */
+.copy {
+  font-size: 13px;
   color: #94a3b8;
-}
-
-/* ANIMATION (fade up) */
-.custom-footer .row {
-  animation: fadeUp 0.8s ease;
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* RESPONSIVE */
@@ -124,12 +102,12 @@
     text-align: center;
   }
 
-  .social-icons {
-    justify-content: center !important;
-  }
-
-  .footer-links span::after {
+  .footer-title::after {
     left: 50%;
     transform: translateX(-50%);
+  }
+
+  .social-icons-vertical {
+    align-items: center;
   }
 }
