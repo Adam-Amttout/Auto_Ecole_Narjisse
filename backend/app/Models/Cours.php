@@ -1,4 +1,7 @@
 <?php
+// ═══════════════════════════════════════════
+// app/Models/Cours.php
+// ═══════════════════════════════════════════
 
 namespace App\Models;
 
@@ -10,8 +13,12 @@ class Cours extends Model
         'titre',
         'description',
         'categorie',
-        'image',
         'niveau',
+        'image',
+        'video_url',
+        'contenu',
+        'pdf_url',
+        'duree_minutes',
         'actif',
     ];
 
