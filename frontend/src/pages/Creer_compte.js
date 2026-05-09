@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Container, Form, Button, Row, Col } from "react-bootstrap";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "./CreerCompte.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import WhatsAppButton from "./WhatsAppButton";
 
 function CreerCompte() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -17,11 +19,11 @@ function CreerCompte() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-
     if (name === "email" && !value.includes("@")) {
       setErrors({ ...errors, email: "Email invalide" });
     } else {
@@ -36,6 +38,23 @@ function CreerCompte() {
     return "weak";
   };
 
+  // Auto-login après inscription
+  const autoLogin = async (email, password) => {
+    try {
+      const res = await axios.post("http://127.0.0.1:8000/api/login", { email, password });
+      const data = res.data;
+      if (data.status === "success") {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("role", data.user.role);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Auto-login error", err);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -44,8 +63,10 @@ function CreerCompte() {
       return;
     }
 
+    setLoading(true);
     try {
-      const res = await axios.post("http://localhost:8000/api/register-user", {
+      // 1. Inscription
+      await axios.post("http://127.0.0.1:8000/api/register-user", {
         nom: formData.nom,
         prenom: formData.prenom,
         email: formData.email,
@@ -53,11 +74,7 @@ function CreerCompte() {
         password_confirmation: formData.confirmPassword
       });
 
-      // ✅ SUCCESS
-      alert("Compte créé avec succès");
-
       setSuccess(true);
-
       setFormData({
         nom: "",
         prenom: "",
@@ -66,45 +83,36 @@ function CreerCompte() {
         confirmPassword: ""
       });
 
-      setTimeout(() => {
-        setSuccess(false);
-      }, 3000);
-
+      // 2. Connexion automatique
+      const logged = await autoLogin(formData.email, formData.password);
+      if (logged) {
+        navigate("/cours");
+      } else {
+        navigate("/connexion");
+      }
     } catch (error) {
-  console.log(error.response);
-  alert(JSON.stringify(error.response?.data));
-}
+      console.error(error);
+      alert(error.response?.data?.message || "Erreur lors de l'inscription");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
       <div className="form-bg">
-
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="bg-video"
-          style={{ pointerEvents: "none" }}
-        >
+        <video autoPlay loop muted playsInline className="bg-video" style={{ pointerEvents: "none" }}>
           <source src="/video/cree_un_compte/Cree_un_compte.mp4" type="video/mp4" />
         </video>
 
         <Container className="form-container">
           <div className="form-box">
-
             <h2 className="form-title">Créer un compte</h2>
             <p className="form-subtitle">Rejoignez-nous dès maintenant</p>
 
-            {success && (
-              <div className="success-box">
-                ✔ Compte créé avec succès !
-              </div>
-            )}
+            {success && <div className="success-box">✔ Compte créé avec succès ! Redirection...</div>}
 
             <Form onSubmit={handleSubmit}>
-
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
@@ -118,7 +126,6 @@ function CreerCompte() {
                     />
                   </Form.Group>
                 </Col>
-
                 <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Control
@@ -160,7 +167,6 @@ function CreerCompte() {
               </Form.Group>
 
               <div className={`strength-bar ${getPasswordStrength()}`}></div>
-
               <p className={`strength-text ${getPasswordStrength()}`}>
                 {getPasswordStrength() === "weak" && "Faible"}
                 {getPasswordStrength() === "medium" && "Moyen"}
@@ -171,11 +177,9 @@ function CreerCompte() {
                 <p className={formData.password.length >= 8 ? "valid" : "invalid"}>
                   {formData.password.length >= 8 ? "✔" : "✖"} 8 caractères minimum
                 </p>
-
                 <p className={/[A-Z]/.test(formData.password) ? "valid" : "invalid"}>
                   {/[A-Z]/.test(formData.password) ? "✔" : "✖"} Une majuscule
                 </p>
-
                 <p className={/\d/.test(formData.password) ? "valid" : "invalid"}>
                   {/\d/.test(formData.password) ? "✔" : "✖"} Un chiffre
                 </p>
@@ -190,20 +194,16 @@ function CreerCompte() {
                   placeholder="Confirmer mot de passe"
                   required
                 />
-                {errors.confirmPassword && (
-                  <small className="error">{errors.confirmPassword}</small>
-                )}
+                {errors.confirmPassword && <small className="error">{errors.confirmPassword}</small>}
               </Form.Group>
 
-              <Button type="submit" className="btn-send w-100">
-                Créer votre compte
+              <Button type="submit" className="btn-send w-100" disabled={loading}>
+                {loading ? "Création en cours..." : "Créer votre compte"}
               </Button>
-
             </Form>
           </div>
         </Container>
       </div>
-
       <WhatsAppButton />
     </>
   );

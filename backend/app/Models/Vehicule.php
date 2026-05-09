@@ -13,6 +13,8 @@ class Vehicule extends Model
         'disponibilite',
     ];
 
+    const MAX_ELEVES_PAR_CRENEAU = 3;
+
     /** Relation : un véhicule a plusieurs séances */
     public function seances()
     {
@@ -26,10 +28,13 @@ class Vehicule extends Model
     }
 
     /**
-     * Vérifie si le véhicule est libre sur un créneau.
+     * Vérifie si le véhicule peut encore accepter un élève sur ce créneau.
+     * Un véhicule peut transporter au maximum MAX_ELEVES_PAR_CRENEAU élèves simultanément.
+     * On exclut la séance $excludeId pour permettre la modification.
      */
     public function estDisponible(string $date, string $heureDebut, string $heureFin, ?int $excludeId = null): bool
     {
+        // Véhicule hors service ou en maintenance → indisponible
         if ($this->disponibilite !== 'disponible') {
             return false;
         }
@@ -38,12 +43,35 @@ class Vehicule extends Model
             ->where('date', $date)
             ->where('statut', '!=', 'annulee')
             ->where('heure_debut', '<', $heureFin)
-            ->where('heure_fin', '>', $heureDebut);
+            ->where('heure_fin',   '>', $heureDebut);
 
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
         }
 
-        return $query->count() === 0;
+        // Le véhicule est disponible si le nombre de réservations < MAX
+        return $query->count() < self::MAX_ELEVES_PAR_CRENEAU;
+    }
+
+    /**
+     * Retourne le nombre de places restantes dans le véhicule sur ce créneau.
+     */
+    public function placesRestantes(string $date, string $heureDebut, string $heureFin, ?int $excludeId = null): int
+    {
+        if ($this->disponibilite !== 'disponible') {
+            return 0;
+        }
+
+        $query = $this->seances()
+            ->where('date', $date)
+            ->where('statut', '!=', 'annulee')
+            ->where('heure_debut', '<', $heureFin)
+            ->where('heure_fin',   '>', $heureDebut);
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        return max(0, self::MAX_ELEVES_PAR_CRENEAU - $query->count());
     }
 }

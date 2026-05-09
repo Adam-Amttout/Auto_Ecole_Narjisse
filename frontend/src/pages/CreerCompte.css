@@ -8,7 +8,6 @@
   overflow: hidden;
 }
 
-
 /* 👁️ eye icon */
 .toggle-eye {
   position: absolute;
@@ -44,19 +43,19 @@
   transition: 0.4s;
 }
 
-/* ضعيف */
+/* weak */
 .strength-bar.weak {
   width: 30%;
   background: linear-gradient(to right, #e63946, #ff6b6b);
 }
 
-/* متوسط */
+/* medium */
 .strength-bar.medium {
   width: 60%;
   background: linear-gradient(to right, #ff9f1c, #ffd166);
 }
 
-/* قوي */
+/* strong */
 .strength-bar.strong {
   width: 100%;
   background: linear-gradient(to right, #2ecc71, #27ae60);
@@ -69,7 +68,6 @@
   font-weight: 500;
 }
 
-/* colors */
 .strength-text.weak {
   color: #e63946;
 }
@@ -81,7 +79,6 @@
 .strength-text.strong {
   color: #2ecc71;
 }
-
 
 /* ===== PASSWORD RULES ===== */
 .password-rules {
@@ -96,41 +93,17 @@
   gap: 5px;
 }
 
-/* ❌ invalid */
+/* invalid */
 .password-rules .invalid {
   color: #999;
 }
 
-/* ✅ valid */
+/* valid */
 .password-rules .valid {
   color: #2ecc71;
   font-weight: 500;
 }
-/* strength bar */
-.strength {
-  display: flex;
-  gap: 5px;
-  margin: 10px 0;
-}
 
-.strength span {
-  width: 25%;
-  height: 6px;
-  background: #ddd;
-  border-radius: 10px;
-}
-
-.strength.weak span:nth-child(1) {
-  background: red;
-}
-
-.strength.medium span:nth-child(-n+2) {
-  background: orange;
-}
-
-.strength.strong span {
-  background: green;
-}
 /* 🎬 VIDEO */
 .bg-video {
   position: absolute;
@@ -140,15 +113,15 @@
   height: 100%;
   object-fit: cover;
   z-index: -1;
-  filter: brightness(0.5); /* 🔥 نخلو الفيديو يبان شوية */
+  filter: brightness(0.5);
 }
 
-/* overlay خفيف (ماشي أبيض بزاف) */
+/* overlay */
 .form-bg::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.35); /* 🔥 dark خفيف باش الفيديو يبان */
+  background: rgba(0,0,0,0.35);
   z-index: 0;
 }
 
@@ -234,6 +207,16 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ===== SUCCESS MESSAGE ===== */
+.success-box {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
 /* ========================= */
