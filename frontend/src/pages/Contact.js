@@ -32,7 +32,7 @@ export default function Contact() {
 
     setLoading(true); setError("");
     try {
-      await axios.post(`${API}/inscription`, { ...form, email: user?.email || form.email });
+      await axios.post(`${API}/contact`, { ...form, email: user?.email || form.email });
       setSuccess(true);
       setForm(f => ({ ...f, telephone:"", sujet:"", message:"" }));
       setTimeout(() => setSuccess(false), 5000);

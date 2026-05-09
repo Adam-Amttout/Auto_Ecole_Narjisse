@@ -1,31 +1,35 @@
+/* ── Page FAQ ── */
 .faq-section {
-  padding: 60px 0;
-}
-
-.faq-section h2 {
-  font-weight: bold;
-  color: #002b5b;
+  padding: 40px 20px 60px;
 }
 
 .faq-card {
-  width: 500px;
-  border-radius: 15px;
+  max-width: 640px;
+  width: 100%;
+  border-radius: 18px;
   overflow: hidden;
-  transition: transform 0.4s ease;
+  border: none;
 }
 
-.faq-card img {
-  height: 250px;
+.faq-card .card-img-top {
+  height: 220px;
   object-fit: cover;
 }
 
-/* .faq-card:hover {
-  transform: scale(1.05);
-} */
+.faq-card .card-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
 
-.carousel-control-prev-icon,
-.carousel-control-next-icon {
-  background-color: #002b5b;
-  border-radius: 50%;
-  padding: 20px;
+.faq-card .card-text {
+  color: #475569;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.faq-loading {
+  color: #94a3b8;
+  font-size: 16px;
+  padding: 40px;
 }
