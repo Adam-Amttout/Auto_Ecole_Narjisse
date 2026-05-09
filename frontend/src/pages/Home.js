@@ -35,14 +35,14 @@ function Home() {
         <div className="overlay"/>
         <Container className="hero-content text-center text-white">
           <div className="hero-badge">Auto École Narjiss — Marrakech</div>
-          <h1>Obtenez votre permis <span className="hero-accent">en toute confiance</span></h1>
-          <p>Formation rapide · Moniteurs experts · Résultat garanti</p>
+          <h1>Votre Permis <span className="hero-accent">En Toute Confiance</span></h1>
+          <p>Formation professionnelle, accompagnement personnalisé et taux de réussite exceptionnel de 98%</p>
           <div className="hero-btns">
             <Button href="/reservation" className="hero-btn-primary">
               S'inscrire maintenant
             </Button>
             <button className="hero-btn-secondary" onClick={() => navigate("/cours")}>
-              Voir les cours
+              Explorer les cours
             </button>
           </div>
 

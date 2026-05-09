@@ -111,7 +111,7 @@ Nos Formations et Services
 
 {/* PROCESS */}
 
-<section className="process-section text-center">
+<section id="demarches" className="process-section text-center">
 
 <div className="container">
 

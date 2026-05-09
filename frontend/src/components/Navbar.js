@@ -17,7 +17,7 @@ export default function Navbar({ theme, toggleTheme }) {
 
   useEffect(() => {
     let ticking = false;
-    const ids = ["home","about","services","gallery","formation","faq"];
+    const ids = ["home","about","services","demarches","gallery","formation","faq"];
 
     const fn = () => {
       if (ticking) return;
@@ -62,6 +62,7 @@ export default function Navbar({ theme, toggleTheme }) {
     { l:"Accueil",   a:()=>scrollTo("home"),      active: activeSec==="home" },
     { l:"À propos",  a:()=>scrollTo("about"),     active: activeSec==="about" },
     { l:"Services",  a:()=>scrollTo("services"),  active: activeSec==="services" },
+    { l:"Démarches", a:()=>scrollTo("demarches"), active: activeSec==="demarches" },
     { l:"Galerie",   a:()=>scrollTo("gallery"),   active: activeSec==="gallery" },
     { l:"Formation", a:()=>scrollTo("formation"), active: activeSec==="formation" },
     { l:"Cours",     a:()=>goTo(user?"/cours":"/connexion"), active: location.pathname==="/cours" },
