@@ -249,7 +249,7 @@ export default function Cours() {
           </div>
 
           {/* ── PROGRESS SECTION ── */}
-          {!admin && (progTotal > 0 || totalCats > 0) && (
+          {!admin && (
             <div className="cp-progress-row">
               <div className="cp-progress-widget">
                 <div className="cp-progress-top">
@@ -267,13 +267,17 @@ export default function Cours() {
               <div className="cp-progress-widget cp-cat-progress-widget">
                 <div className="cp-progress-top">
                   <span className="cp-progress-label">🏆 Catégories Validées</span>
-                  <span className="cp-progress-pct">{completedCats}/{totalCats}</span>
+                  <span className="cp-progress-pct" style={{fontSize:26}}>{completedCats}<small style={{fontSize:16,opacity:.7}}>/{totalCats}</small></span>
                 </div>
                 <div className="cp-progress-track">
                   <div className="cp-progress-fill" style={{width: `${catPct}%`, background: 'linear-gradient(90deg, #059669, #34d399)'}} />
                 </div>
                 <p className="cp-progress-sub">
-                   {completedCats === totalCats ? "Toutes les catégories sont validées ! 🎉" : `${totalCats - completedCats} catégorie(s) restante(s)`}
+                  {completedCats === 0
+                    ? "Commencez à valider des catégories !"
+                    : completedCats === totalCats
+                    ? "🎉 Toutes les catégories sont validées !"
+                    : `${completedCats} validée${completedCats > 1 ? 's' : ''} · ${totalCats - completedCats} restante${totalCats - completedCats > 1 ? 's' : ''}`}
                 </p>
               </div>
             </div>
@@ -397,6 +401,42 @@ export default function Cours() {
               </div>
             )}
           </div>
+
+          {/* ── CATEGORY PROGRESS BANNER ── */}
+          {!admin && selectedCat !== "tous" && catProgression[selectedCat] && (() => {
+            const cp = catProgression[selectedCat];
+            const catTotal = cours.filter(c => c.categorie === selectedCat).length;
+            return (
+              <div className="cp-cat-prog-banner" style={{
+                background: cp.completed ? 'linear-gradient(135deg,#ecfdf5,#d1fae5)' : CAT[selectedCat]?.bg,
+                borderColor: cp.completed ? '#059669' : CAT[selectedCat]?.color + '44'
+              }}>
+                <div className="cp-cat-prog-banner-left">
+                  <span className="cp-cat-prog-icon">{cp.completed ? '🏆' : CAT[selectedCat]?.icon}</span>
+                  <div>
+                    <div className="cp-cat-prog-title" style={{color: cp.completed ? '#059669' : CAT[selectedCat]?.color}}>
+                      {cp.completed ? 'Catégorie validée !' : `Progression – ${CAT[selectedCat]?.label}`}
+                    </div>
+                    <div className="cp-cat-prog-sub">
+                      {cp.done}/{catTotal} cours terminés
+                      {cp.completed && ' · Tous les cours complétés 🎉'}
+                    </div>
+                  </div>
+                </div>
+                <div className="cp-cat-prog-right">
+                  <div className="cp-cat-prog-pct" style={{color: cp.completed ? '#059669' : CAT[selectedCat]?.color}}>
+                    {cp.pct}%
+                  </div>
+                  <div className="cp-cat-prog-track">
+                    <div className="cp-cat-prog-fill" style={{
+                      width: `${cp.pct}%`,
+                      background: cp.completed ? '#059669' : CAT[selectedCat]?.color
+                    }}/>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="cp-toolbar">
             <div className="cp-search">

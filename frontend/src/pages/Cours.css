@@ -270,6 +270,66 @@
 .cp-avis-success h3   { font-size:22px; font-weight:800; color:#1d3557; margin-bottom:8px; }
 .cp-avis-success p    { color:#64748b; margin-bottom:20px; line-height:1.65; }
 
+/* ── CATEGORY PROGRESS BANNER (inside courses view) ── */
+.cp-cat-prog-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 22px;
+  border-radius: 14px;
+  border: 2px solid;
+  margin-bottom: 20px;
+  animation: qcmFadeIn .3s ease;
+  flex-wrap: wrap;
+}
+.cp-cat-prog-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cp-cat-prog-icon { font-size: 32px; flex-shrink: 0; }
+.cp-cat-prog-title {
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Poppins', sans-serif;
+  margin-bottom: 3px;
+}
+.cp-cat-prog-sub {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+.cp-cat-prog-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 120px;
+}
+.cp-cat-prog-pct {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+.cp-cat-prog-track {
+  width: 120px;
+  height: 8px;
+  background: rgba(0,0,0,.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.cp-cat-prog-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+@media (max-width: 500px) {
+  .cp-cat-prog-banner { flex-direction: column; align-items: flex-start; }
+  .cp-cat-prog-right  { align-items: flex-start; width: 100%; }
+  .cp-cat-prog-track  { width: 100%; }
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width:768px) {
   .cp-hero-title { font-size:26px; }
