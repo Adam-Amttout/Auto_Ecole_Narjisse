@@ -223,13 +223,11 @@ export default function Dashboard() {
   const [vehicules,    setVehicules]    = useState([]);
   const [seances,      setSeances]      = useState([]);
   const [avis,         setAvis]         = useState([]);
-<<<<<<< HEAD
   const [faqs,         setFaqs]         = useState([]);
   const [messages,     setMessages]     = useState([]);
-=======
   const [questions,    setQuestions]    = useState([]);
   const [qcmCat,       setQcmCat]       = useState("danger");
->>>>>>> 116c943 (feat(dashboard): organize QCM tab by category with sub-tabs per category)
+
 
   /* ── messages : conversation ouverte + filtres ── */
   const [convMsg,      setConvMsg]      = useState(null);   // message ouvert dans ConversationView
