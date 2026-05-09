@@ -223,10 +223,13 @@ export default function Dashboard() {
   const [vehicules,    setVehicules]    = useState([]);
   const [seances,      setSeances]      = useState([]);
   const [avis,         setAvis]         = useState([]);
+<<<<<<< HEAD
   const [faqs,         setFaqs]         = useState([]);
   const [messages,     setMessages]     = useState([]);
+=======
   const [questions,    setQuestions]    = useState([]);
   const [qcmCat,       setQcmCat]       = useState("danger");
+>>>>>>> 116c943 (feat(dashboard): organize QCM tab by category with sub-tabs per category)
 
   /* ── messages : conversation ouverte + filtres ── */
   const [convMsg,      setConvMsg]      = useState(null);   // message ouvert dans ConversationView
@@ -788,37 +791,33 @@ export default function Dashboard() {
               <h4 className="db-title">Séances ({seances.length})</h4>
               <button className="db-btn primary" onClick={() => openModal("seance","➕ Planifier une séance",{client_id:"",moniteur_id:"",vehicule_id:"",date:"",heure_debut:"",heure_fin:"",notes:""})}>+ Planifier</button>
             </div>
-            <div className="db-card">
-              <div className="db-table-wrap">
-                <table className="db-table">
-                  <thead><tr><th>#</th><th>Élève</th><th>Moniteur</th><th>Véhicule</th><th>Date</th><th>Horaire</th><th>Statut</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {seances.length===0 && <tr><td colSpan={8} className="db-empty">Aucune séance</td></tr>}
-                    {seances.map(s=>{
-                      const st = STATUT_SEANCE[s.statut]||{label:s.statut,bg:"#f1f5f9",color:"#64748b"};
-                      return (
-                        <tr key={s.id}>
-                          <td className="db-id">{s.id}</td>
-                          <td><b>{s.client?.nom} {s.client?.prenom}</b></td>
-                          <td>{s.moniteur?.prenom} {s.moniteur?.nom}</td>
-                          <td style={{fontSize:12}}>{s.vehicule?.marque} {s.vehicule?.modele}</td>
-                          <td style={{fontSize:12}}>{new Date(s.date).toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})}</td>
-                          <td style={{fontSize:12,whiteSpace:"nowrap"}}>{s.heure_debut} – {s.heure_fin}</td>
-                          <td><Badge text={st.label} bg={st.bg} color={st.color}/></td>
-                          <td>
-                            <ActionBtns
-                              onAnnuler={s.statut==="planifiee" ? annulerSeance : null}
-                              onDelete ={() => handleDelete("seance",s.id)}
-                              confirmId={confirmId} setConfirmId={setConfirmId} id={s.id}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <div className="db-card"><div className="db-table-wrap">
+              <table className="db-table">
+                <thead><tr><th>#</th><th>Élève</th><th>Moniteur</th><th>Véhicule</th><th>Date</th><th>Horaire</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {seances.length===0 && <tr><td colSpan={8} className="db-empty">Aucune séance</td></tr>}
+                  {seances.map(s=>{
+                    const st = STATUT_SEANCE[s.statut]||{label:s.statut,bg:"#f1f5f9",color:"#64748b"};
+                    return (
+                      <tr key={s.id}>
+                        <td className="db-id">{s.id}</td>
+                        <td><b>{s.client?.nom} {s.client?.prenom}</b></td>
+                        <td>{s.moniteur?.prenom} {s.moniteur?.nom}</td>
+                        <td style={{fontSize:12}}>{s.vehicule?.marque} {s.vehicule?.modele}</td>
+                        <td style={{fontSize:12}}>{new Date(s.date).toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})}</td>
+                        <td style={{fontSize:12,whiteSpace:"nowrap"}}>{s.heure_debut} – {s.heure_fin}</td>
+                        <td><Badge text={st.label} bg={st.bg} color={st.color}/></td>
+                        <td><ActionBtns
+                          onAnnuler={s.statut==="planifiee" ? annulerSeance : null}
+                          onDelete ={() => handleDelete("seance",s.id)}
+                          confirmId={confirmId} setConfirmId={setConfirmId} id={s.id}
+                        /></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div></div>
           </div>
         )}
 
