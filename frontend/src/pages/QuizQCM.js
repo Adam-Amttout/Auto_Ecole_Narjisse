@@ -3,11 +3,10 @@ import axios from "axios";
 import "./QuizQCM.css";
 
 const API = "http://127.0.0.1:8000/api";
-const PASS_RATIO = 0.75; // 75% = 9/12 to pass
-
+const PASS_RATIO = 0.75;
 const LABELS = { a: "A", b: "B", c: "C", d: "D" };
 
-export default function QuizQCM() {
+export default function QuizQCM({ categorie = "code_route", label = "Code de la Route" }) {
   const [state, setState] = useState("idle"); // idle | loading | quiz | results
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -24,7 +23,7 @@ export default function QuizQCM() {
     setSelected(null);
     setRevealed(false);
     try {
-      const res = await axios.get(`${API}/qcm/questions?categorie=code_route&limit=12`);
+      const res = await axios.get(`${API}/qcm/questions?categorie=${categorie}&limit=6`);
       setQuestions(res.data);
       setState("quiz");
     } catch {
@@ -60,15 +59,15 @@ export default function QuizQCM() {
   if (state === "idle" || state === "loading") return (
     <div className="qcm-card">
       <div className="qcm-idle-icon">📋</div>
-      <h2 className="qcm-idle-title">Quiz – Code de la Route</h2>
+      <h2 className="qcm-idle-title">Quiz – {label}</h2>
       <p className="qcm-idle-desc">
-        Testez vos connaissances avec <strong>12 questions</strong> tirées aléatoirement.<br/>
-        Score minimum pour valider : <strong>9/12 (75%)</strong>
+        Testez vos connaissances avec <strong>6 questions</strong> tirées aléatoirement.<br/>
+        Score minimum pour valider : <strong>5/6 (≥ 75%)</strong>
       </p>
       <div className="qcm-idle-stats">
-        <div className="qcm-stat"><span>12</span><small>Questions</small></div>
-        <div className="qcm-stat"><span>9/12</span><small>Pour réussir</small></div>
-        <div className="qcm-stat"><span>75%</span><small>Seuil de réussite</small></div>
+        <div className="qcm-stat"><span>6</span><small>Questions</small></div>
+        <div className="qcm-stat"><span>5/6</span><small>Pour réussir</small></div>
+        <div className="qcm-stat"><span>75%</span><small>Seuil</small></div>
       </div>
       {error && <p className="qcm-error">⚠️ {error}</p>}
       <button

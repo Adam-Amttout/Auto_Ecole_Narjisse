@@ -564,15 +564,15 @@ export default function Cours() {
             </div>
           )}
 
-          {/* ── QCM QUIZ (Code de la Route only) ── */}
-          {!admin && selectedCat === "code_route" && (
+          {/* ── QCM QUIZ (all categories) ── */}
+          {!admin && selectedCat !== "tous" && (
             <div className="cp-qcm-section">
               <div className="cp-cat-header" style={{marginBottom:8}}>
                 <span className="cp-cat-tag" style={{background:"rgba(124,58,237,.1)",color:"#7c3aed"}}>Quiz interactif</span>
                 <h2>Testez vos <span className="cp-gradient-text">Connaissances</span></h2>
-                <p>Répondez à 12 questions aléatoires et obtenez votre score immédiatement</p>
+                <p>6 questions aléatoires sur <strong>{CAT[selectedCat]?.label}</strong> — résultat immédiat</p>
               </div>
-              <QuizQCM />
+              <QuizQCM categorie={selectedCat} label={CAT[selectedCat]?.label || selectedCat} />
             </div>
           )}
         </div>
