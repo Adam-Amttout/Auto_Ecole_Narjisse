@@ -11,6 +11,7 @@ class Avis extends Model
     protected $fillable = [
         'nom',
         'prenom',
+        'email',
         'role_label',
         'texte',
         'note',

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Avis;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AvisApprovedMail;
 
 class AvisController extends Controller
 {
@@ -31,6 +33,7 @@ class AvisController extends Controller
         $v = $request->validate([
             'nom'        => 'required|string|max:100',
             'prenom'     => 'nullable|string|max:100',
+            'email'      => 'nullable|email|max:150',
             'role_label' => 'nullable|string|max:150',
             'texte'      => 'required|string|max:1000',
             'note'       => 'required|integer|min:1|max:5',
@@ -50,7 +53,20 @@ class AvisController extends Controller
     {
         $avis = Avis::findOrFail($id);
         $request->validate(['statut' => 'required|in:approved,rejected,pending']);
+        
+        $oldStatut = $avis->statut;
         $avis->update(['statut' => $request->statut]);
+
+        // Send email if status changes from anything to approved
+        if ($request->statut === 'approved' && $oldStatut !== 'approved' && $avis->email) {
+            try {
+                Mail::to($avis->email)->send(new AvisApprovedMail($avis));
+            } catch (\Exception $e) {
+                // Log error but don't fail the response
+                \Log::error("Failed to send AvisApprovedMail: " . $e->getMessage());
+            }
+        }
+
         return response()->json(['message' => 'Statut mis à jour', 'data' => $avis]);
     }
 

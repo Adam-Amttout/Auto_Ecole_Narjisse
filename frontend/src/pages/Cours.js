@@ -361,6 +361,10 @@ export default function Cours() {
                   </div>
                 </div>
                 <div className="cp-avis-field">
+                  <label>Email (pour recevoir une notification de validation)</label>
+                  <input type="email" className="cp-fi" value={avisForm.email} onChange={e => setAvisForm({...avisForm, email: e.target.value})} placeholder="votre-email@exemple.com"/>
+                </div>
+                <div className="cp-avis-field">
                   <label>Votre situation (ex: Permis B obtenu en 20h)</label>
                   <input className="cp-fi" value={avisForm.role_label} onChange={e => setAvisForm({...avisForm, role_label: e.target.value})} placeholder="Ex: Permis B obtenu en 20h"/>
                 </div>

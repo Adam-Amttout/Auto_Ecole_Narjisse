@@ -40,7 +40,7 @@ function Reservation() {
 
     // 🔐 user خاصو يكون login
     if (!user) {
-      setError("Vous devez vous connecter d'abord");
+      setError("Veuillez vous connecter à votre compte pour envoyer votre inscription.");
       return;
     }
 
@@ -101,7 +101,7 @@ function Reservation() {
 
               <h2>Inscription</h2>
               <p className="contact-highlight">
-                Inscrivez-vous dès maintenant et commencez votre formation !
+                ✨ Inscrivez-vous dès maintenant et commencez votre formation !
               </p>
 
               {success && <Alert variant="success">✅ Inscription réussie !</Alert>}

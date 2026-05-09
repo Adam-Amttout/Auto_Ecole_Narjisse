@@ -51,9 +51,20 @@ function AdminRoute({ children }) {
 }
 
 function App() {
+  const [theme, setTheme] = React.useState(localStorage.getItem("theme") || "light");
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === "light" ? "dark" : "light");
+  };
+
   return (
     <BrowserRouter>
-      <Navbar />
+      <Navbar theme={theme} toggleTheme={toggleTheme} />
       <Suspense fallback={<PageLoader />}>
         <Routes>
 

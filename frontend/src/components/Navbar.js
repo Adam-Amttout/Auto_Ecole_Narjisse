@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./Navbar.css";
 import { useState, useEffect, useRef } from "react";
 
-export default function Navbar() {
+export default function Navbar({ theme, toggleTheme }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen,   setMobileOpen]   = useState(false);
@@ -23,10 +23,7 @@ export default function Navbar() {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        // scrolled state
         setScrolled(window.scrollY > 40);
-
-        // active section detection
         let cur = "home";
         ids.forEach(id => {
           const el = document.getElementById(id);
@@ -93,6 +90,19 @@ export default function Navbar() {
         </div>
 
         <div className="nb-actions">
+          {/* 🌓 Dark Mode Toggle */}
+          <button className="nb-theme-toggle" onClick={toggleTheme} title={theme === "light" ? "Mode Sombre" : "Mode Clair"}>
+            {theme === "light" ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+            )}
+          </button>
+
           <Link to="/reservation" className="nb-btn-reg" onClick={()=>setMobileOpen(false)}>Inscription</Link>
 
           {!user ? (
@@ -141,6 +151,11 @@ export default function Navbar() {
             <button key={i} className={`nb-mob-link ${l.active?"active":""}`} onClick={l.a}>{l.l}</button>
           ))}
           <div className="nb-mob-sep"/>
+          
+          <button className="nb-mob-link" onClick={toggleTheme}>
+            {theme === "light" ? "🌙 Mode Sombre" : "☀️ Mode Clair"}
+          </button>
+
           {!user ? (
             <div style={{display:"flex",gap:8,padding:"4px 0"}}>
               <Link to="/reservation" className="nb-btn-reg" style={{flex:1,textAlign:"center"}} onClick={()=>setMobileOpen(false)}>Inscription</Link>
@@ -151,8 +166,8 @@ export default function Navbar() {
               <div className="nb-mob-user-info">
                 <div className="nb-avatar lg">{initials}</div>
                 <div>
-                  <div style={{fontWeight:700,color:"#1d3557",fontSize:14}}>{user.prenom} {user.nom}</div>
-                  <div style={{fontSize:12,color:"#94a3b8"}}>{user.email}</div>
+                  <div style={{fontWeight:700,color:"var(--text-primary)",fontSize:14}}>{user.prenom} {user.nom}</div>
+                  <div style={{fontSize:12,color:"var(--text-secondary)"}}>{user.email}</div>
                 </div>
               </div>
               <button className="nb-mob-link" onClick={()=>goTo("/profil")}>👤 Mon profil</button>

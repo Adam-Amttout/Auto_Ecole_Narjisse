@@ -22,14 +22,21 @@
   position: relative;
   min-height: 100vh;
   padding: 60px 20px;
-  background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
+  background: var(--bg-primary);
   overflow: hidden;
+  transition: background 0.3s ease;
 }
-/* ===== H2 ===== */
+
+/* ===== HIGHLIGHT (Changed from red to blue to avoid error confusion) ===== */
 .contact-highlight {
-  color: #e63946;
+  color: var(--db-dark, #1d3557);
   font-weight: 600;
   margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+[data-theme='dark'] .contact-highlight {
+  color: #a5b4fc; /* Indigo light for dark mode */
 }
 
 /* BACKGROUND EFFECT */
@@ -69,13 +76,18 @@
   z-index: 2;
   padding: 30px;
   border-radius: 20px;
-  background: linear-gradient(145deg, #ffffff, #f1f5f9);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08),
-              inset 0 1px 0 rgba(255,255,255,0.6);
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
   transition: 0.3s;
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+[data-theme='dark'] .contact-form {
+  background: var(--card-bg);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
 }
 
 .contact-form:hover {
@@ -88,10 +100,19 @@
 .select-style {
   border-radius: 10px;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color, #ddd);
+  background: var(--bg-secondary, #f8fafc);
+  color: var(--text-primary, #1e293b);
   margin-bottom: 15px;
   font-size: 14px;
   transition: 0.3s;
+}
+
+[data-theme='dark'] .form-control,
+[data-theme='dark'] .select-style {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
 }
 
 .form-control:focus,
@@ -104,21 +125,10 @@
 .btn-send {
   position: relative;
   overflow: hidden;
-}
-
-.btn-send::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: -100%;
-  background: rgba(255,255,255,0.2);
-  transition: 0.4s;
-}
-
-.btn-send:hover::after {
-  left: 100%;
+  background-color: #e63946;
+  border: none;
+  font-weight: 700;
+  padding: 12px;
 }
 
 /* ===== RIGHT SIDE ===== */
@@ -134,13 +144,22 @@
   display: flex;
   align-items: flex-start;
   gap: 15px;
-  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #f1f5f9);
   padding: 20px;
   border-radius: 18px;
   box-shadow: 0 5px 20px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
   flex: 1; /* 🔥 يخليهم متساويين */
   cursor: pointer;
+}
+
+[data-theme='dark'] .info-box {
+  background: var(--bg-secondary);
+}
+
+[data-theme='dark'] .info-content p {
+  color: var(--text-secondary) !important;
 }
 .info-box:hover {
   transform: translateY(-6px) scale(1.01);
