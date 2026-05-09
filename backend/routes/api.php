@@ -75,4 +75,8 @@ Route::get('/progression/by-category',  [ProgressionController::class, 'byCatego
 Route::post('/progression/toggle',      [ProgressionController::class, 'toggle']);      // toggle done/undone
 
 // ── QCM (quiz code de la route)
-Route::get('/qcm/questions', [QcmController::class, 'random']); // ?categorie=code_route&limit=12
+Route::get('/qcm/questions',  [QcmController::class, 'random']);   // public: 12 random
+Route::get('/qcm',            [QcmController::class, 'index']);    // admin: all
+Route::post('/qcm',           [QcmController::class, 'store']);    // admin: create
+Route::put('/qcm/{id}',       [QcmController::class, 'update']);   // admin: update
+Route::delete('/qcm/{id}',    [QcmController::class, 'destroy']);  // admin: delete

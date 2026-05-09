@@ -13,6 +13,7 @@ const TABS = [
   { key:"clients",      icon:"👤", label:"Clients"          },
   { key:"inscriptions", icon:"📋", label:"Inscriptions"     },
   { key:"cours",        icon:"📚", label:"Cours"            },
+  { key:"qcm",          icon:"📝", label:"Quiz QCM"         },
   { key:"moniteurs",    icon:"🧑‍🏫", label:"Moniteurs"      },
   { key:"vehicules",    icon:"🚗", label:"Véhicules"        },
   { key:"seances",      icon:"📅", label:"Séances"          },
@@ -91,6 +92,7 @@ export default function Dashboard() {
   const [vehicules,    setVehicules]    = useState([]);
   const [seances,      setSeances]      = useState([]);
   const [avis,         setAvis]         = useState([]);
+  const [questions,    setQuestions]    = useState([]);
 
   /* ── track which tabs have already been loaded ── */
   const loadedTabs = React.useRef(new Set());
@@ -145,6 +147,9 @@ export default function Dashboard() {
       } else if (activeTab === "avis") {
         const res = await axios.get(`${API}/avis`);
         setAvis(res.data);
+      } else if (activeTab === "qcm") {
+        const res = await axios.get(`${API}/qcm`);
+        setQuestions(res.data);
       }
     } catch {}
   }, []);
@@ -177,6 +182,7 @@ export default function Dashboard() {
       moniteur:    { post: `${API}/moniteurs`,              put: `${API}/moniteurs/${editId}`        },
       vehicule:    { post: `${API}/vehicules`,              put: `${API}/vehicules/${editId}`        },
       seance:      { post: `${API}/seances`,                put: `${API}/seances/${editId}`          },
+      question:    { post: `${API}/qcm`,                   put: `${API}/qcm/${editId}`              },
     };
     try {
       if (editId) await axios.put(urls[entity].put, formData);
@@ -198,6 +204,7 @@ export default function Dashboard() {
       moniteur:    `${API}/moniteurs/${id}`,
       vehicule:    `${API}/vehicules/${id}`,
       seance:      `${API}/seances/${id}`,
+      question:    `${API}/qcm/${id}`,
     };
     try {
       await axios.delete(urls[entity]);
@@ -578,6 +585,48 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* ══════════ QCM QUESTIONS ══════════ */}
+        {tab === "qcm" && (
+          <div className="db-section">
+            <div className="db-section-head">
+              <h4 className="db-title">Questions QCM ({questions.length})</h4>
+              <button className="db-btn primary" onClick={() => openModal("question","➕ Ajouter une question",{correct_answer:"a",categorie:"code_route"})}>
+                + Ajouter
+              </button>
+            </div>
+            <div className="db-card">
+              <div className="db-table-wrap">
+                <table className="db-table">
+                  <thead><tr><th>#</th><th>Question</th><th>A</th><th>B</th><th>C</th><th>D</th><th>Bonne rép.</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {questions.length===0 && <tr><td colSpan={8} className="db-empty">Aucune question</td></tr>}
+                    {questions.map(q=>(
+                      <tr key={q.id}>
+                        <td className="db-id">{q.id}</td>
+                        <td style={{maxWidth:260,fontSize:13}}><b>{q.question}</b>
+                          {q.explication && <div style={{fontSize:11,color:"#94a3b8",marginTop:2,fontStyle:"italic"}}>{q.explication.slice(0,60)}...</div>}
+                        </td>
+                        <td style={{fontSize:12,color:"#475569",maxWidth:120}}>{q.option_a}</td>
+                        <td style={{fontSize:12,color:"#475569",maxWidth:120}}>{q.option_b}</td>
+                        <td style={{fontSize:12,color:"#475569",maxWidth:120}}>{q.option_c}</td>
+                        <td style={{fontSize:12,color:"#475569",maxWidth:120}}>{q.option_d}</td>
+                        <td><Badge text={q.correct_answer?.toUpperCase()} bg="#dcfce7" color="#15803d"/></td>
+                        <td>
+                          <ActionBtns
+                            onEdit  ={() => openModal("question","✏️ Modifier la question",{question:q.question,option_a:q.option_a,option_b:q.option_b,option_c:q.option_c,option_d:q.option_d,correct_answer:q.correct_answer,explication:q.explication||"" ,categorie:q.categorie||"code_route"},q.id)}
+                            onDelete={() => handleDelete("question",q.id)}
+                            confirmId={confirmId} setConfirmId={setConfirmId} id={q.id}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ══════════ AVIS ══════════ */}
         {tab === "avis" && (
           <div className="db-section">
@@ -732,6 +781,20 @@ export default function Dashboard() {
           {F("disponibilite","Disponibilité","text",[
             {v:"disponible",l:"Disponible"},{v:"en_maintenance",l:"En maintenance"},{v:"hors_service",l:"Hors service"}
           ])}
+        </>}
+
+        {modal.entity === "question" && <>
+          {F("question","Question *","textarea")}
+          <div className="db-form-row">
+            {F("option_a","Choix A *")}
+            {F("option_b","Choix B *")}
+          </div>
+          <div className="db-form-row">
+            {F("option_c","Choix C *")}
+            {F("option_d","Choix D *")}
+          </div>
+          {F("correct_answer","Bonne réponse","text",[{v:"a",l:"A"},{v:"b",l:"B"},{v:"c",l:"C"},{v:"d",l:"D"}])}
+          {F("explication","Explication (optionnel)","textarea")}
         </>}
 
         {modal.entity === "seance" && <>
