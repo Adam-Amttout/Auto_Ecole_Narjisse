@@ -60,6 +60,34 @@ class ClientController extends Controller
         ]);
     }
 
+    public function updatePhoto(Request $request, $id)
+    {
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        $client = Client::findOrFail($id);
+
+        if ($request->hasFile('photo')) {
+            // Delete old photo if exists
+            if ($client->photo_profil && \Illuminate\Support\Facades\Storage::disk('public')->exists($client->photo_profil)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($client->photo_profil);
+            }
+
+            $path = $request->file('photo')->store('profils', 'public');
+            $client->photo_profil = $path;
+            $client->save();
+
+            return response()->json([
+                'message' => 'Photo mise à jour',
+                'photo_url' => asset('storage/' . $path),
+                'photo_profil' => $path
+            ]);
+        }
+
+        return response()->json(['message' => 'Aucune photo fournie'], 400);
+    }
+
     public function destroy($id)
     {
         Client::destroy($id);

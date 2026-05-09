@@ -11,9 +11,28 @@ export default function Navbar({ theme, toggleTheme }) {
   const [activeSec,    setActiveSec]    = useState("home");
   const ddRef = useRef(null);
 
-  const user     = JSON.parse(localStorage.getItem("user"));
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
   const role     = localStorage.getItem("role");
+  
+  // Custom storage event listener to update user when profile picture changes
+  useEffect(() => {
+    const handleStorage = () => {
+      setUser(JSON.parse(localStorage.getItem("user")));
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   const initials = user ? `${user.prenom?.[0]||""}${user.nom?.[0]||""}`.toUpperCase() : "";
+  
+  const renderAvatar = (large = false) => {
+    if (user?.photo_url) {
+      return <img src={user.photo_url} alt="Profil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />;
+    } else if (user?.photo_profil) {
+      return <img src={`http://127.0.0.1:8000/storage/${user.photo_profil}`} alt="Profil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />;
+    }
+    return initials;
+  };
 
   useEffect(() => {
     let ticking = false;
@@ -111,7 +130,9 @@ export default function Navbar({ theme, toggleTheme }) {
           ) : (
             <div className="nb-dd-wrap" ref={ddRef}>
               <button className="nb-user-btn" onClick={()=>setDropdownOpen(!dropdownOpen)}>
-                <span className="nb-avatar">{initials}</span>
+                <span className="nb-avatar" style={{ padding: user?.photo_url || user?.photo_profil ? 0 : undefined, overflow: 'hidden' }}>
+                  {renderAvatar()}
+                </span>
                 <span className="nb-uname">{user.prenom}</span>
                 <svg className={`nb-chev ${dropdownOpen?"open":""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="11" height="11">
                   <path d="M6 9l6 6 6-6"/>
@@ -121,7 +142,9 @@ export default function Navbar({ theme, toggleTheme }) {
               {dropdownOpen && (
                 <div className="nb-dd">
                   <div className="nb-dd-top">
-                    <div className="nb-dd-av">{initials}</div>
+                    <div className="nb-dd-av" style={{ padding: user?.photo_url || user?.photo_profil ? 0 : undefined, overflow: 'hidden' }}>
+                      {renderAvatar(true)}
+                    </div>
                     <div>
                       <div className="nb-dd-name">{user.prenom} {user.nom}</div>
                       <div className="nb-dd-mail">{user.email}</div>
@@ -165,7 +188,9 @@ export default function Navbar({ theme, toggleTheme }) {
           ) : (
             <>
               <div className="nb-mob-user-info">
-                <div className="nb-avatar lg">{initials}</div>
+                <div className="nb-avatar lg" style={{ padding: user?.photo_url || user?.photo_profil ? 0 : undefined, overflow: 'hidden' }}>
+                  {renderAvatar(true)}
+                </div>
                 <div>
                   <div style={{fontWeight:700,color:"var(--text-primary)",fontSize:14}}>{user.prenom} {user.nom}</div>
                   <div style={{fontSize:12,color:"var(--text-secondary)"}}>{user.email}</div>

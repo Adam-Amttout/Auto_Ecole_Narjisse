@@ -33,6 +33,9 @@ export default function Profil() {
   const [pwErr,  setPwErr]  = useState("");
   const [pwOk,   setPwOk]   = useState(false);
 
+  // ── photo ──
+  const [photoUploading, setPhotoUploading] = useState(false);
+
   // ════════════════════════
   useEffect(() => {
     if (!targetId) { navigate("/connexion"); return; }
@@ -98,6 +101,35 @@ export default function Profil() {
     return "faible";
   };
 
+  // ── Changer Photo ──
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setPhotoUploading(true);
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    try {
+      const res = await axios.post(`${API}/clients/${profil.id}/photo`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      
+      const newProfil = { ...profil, photo_profil: res.data.photo_profil, photo_url: res.data.photo_url };
+      setProfil(newProfil);
+      
+      if (isOwnProfil) {
+        localStorage.setItem("user", JSON.stringify({ ...moi, photo_profil: res.data.photo_profil, photo_url: res.data.photo_url }));
+        // Dispatch custom event so Navbar can update if needed (or just reload)
+        window.dispatchEvent(new Event("storage"));
+      }
+    } catch (err) {
+      alert("Erreur lors de l'upload de la photo. Vérifiez la taille (max 2MB).");
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
   // ════════════════════════
   const STATUT = {
     planifiee: { bg: "#dbeafe", color: "#1d4ed8", label: "Planifiée" },
@@ -144,9 +176,31 @@ export default function Profil() {
           <div className="profil-header-banner"/>
           <div className="profil-header-row">
             <div className="profil-avatar-wrap">
-              <div className="profil-avatar">
-                {profil.prenom?.charAt(0).toUpperCase()}{profil.nom?.charAt(0).toUpperCase()}
-              </div>
+              <label htmlFor="photo-upload" className={`profil-avatar ${isOwnProfil ? 'editable' : ''}`}>
+                {profil.photo_profil || profil.photo_url ? (
+                  <img 
+                    src={profil.photo_url || `http://127.0.0.1:8000/storage/${profil.photo_profil}`} 
+                    alt="Profil" 
+                    className="profil-avatar-img" 
+                  />
+                ) : (
+                  <>{profil.prenom?.charAt(0).toUpperCase()}{profil.nom?.charAt(0).toUpperCase()}</>
+                )}
+                {isOwnProfil && (
+                  <div className="profil-avatar-overlay">
+                    {photoUploading ? <span className="profil-spinner-small"/> : "📷"}
+                  </div>
+                )}
+              </label>
+              {isOwnProfil && (
+                <input 
+                  type="file" 
+                  id="photo-upload" 
+                  accept="image/*" 
+                  style={{ display: "none" }} 
+                  onChange={handlePhotoChange} 
+                />
+              )}
               <span className={`profil-role-dot ${profil.role}`}/>
             </div>
             <div className="profil-header-info">
