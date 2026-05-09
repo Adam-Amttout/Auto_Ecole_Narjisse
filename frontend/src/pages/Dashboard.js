@@ -225,6 +225,8 @@ export default function Dashboard() {
   const [avis,         setAvis]         = useState([]);
   const [faqs,         setFaqs]         = useState([]);
   const [messages,     setMessages]     = useState([]);
+  const [questions,    setQuestions]    = useState([]);
+  const [qcmCat,       setQcmCat]       = useState("danger");
 
   /* ── messages : conversation ouverte + filtres ── */
   const [convMsg,      setConvMsg]      = useState(null);   // message ouvert dans ConversationView
@@ -786,35 +788,123 @@ export default function Dashboard() {
               <h4 className="db-title">Séances ({seances.length})</h4>
               <button className="db-btn primary" onClick={() => openModal("seance","➕ Planifier une séance",{client_id:"",moniteur_id:"",vehicule_id:"",date:"",heure_debut:"",heure_fin:"",notes:""})}>+ Planifier</button>
             </div>
-            <div className="db-card"><div className="db-table-wrap">
-              <table className="db-table">
-                <thead><tr><th>#</th><th>Élève</th><th>Moniteur</th><th>Véhicule</th><th>Date</th><th>Horaire</th><th>Statut</th><th>Actions</th></tr></thead>
-                <tbody>
-                  {seances.length===0 && <tr><td colSpan={8} className="db-empty">Aucune séance</td></tr>}
-                  {seances.map(s=>{
-                    const st = STATUT_SEANCE[s.statut]||{label:s.statut,bg:"#f1f5f9",color:"#64748b"};
-                    return (
-                      <tr key={s.id}>
-                        <td className="db-id">{s.id}</td>
-                        <td><b>{s.client?.nom} {s.client?.prenom}</b></td>
-                        <td>{s.moniteur?.prenom} {s.moniteur?.nom}</td>
-                        <td style={{fontSize:12}}>{s.vehicule?.marque} {s.vehicule?.modele}</td>
-                        <td style={{fontSize:12}}>{new Date(s.date).toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})}</td>
-                        <td style={{fontSize:12,whiteSpace:"nowrap"}}>{s.heure_debut} – {s.heure_fin}</td>
-                        <td><Badge text={st.label} bg={st.bg} color={st.color}/></td>
-                        <td><ActionBtns
-                          onAnnuler={s.statut==="planifiee" ? annulerSeance : null}
-                          onDelete ={() => handleDelete("seance",s.id)}
-                          confirmId={confirmId} setConfirmId={setConfirmId} id={s.id}
-                        /></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div></div>
+            <div className="db-card">
+              <div className="db-table-wrap">
+                <table className="db-table">
+                  <thead><tr><th>#</th><th>Élève</th><th>Moniteur</th><th>Véhicule</th><th>Date</th><th>Horaire</th><th>Statut</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {seances.length===0 && <tr><td colSpan={8} className="db-empty">Aucune séance</td></tr>}
+                    {seances.map(s=>{
+                      const st = STATUT_SEANCE[s.statut]||{label:s.statut,bg:"#f1f5f9",color:"#64748b"};
+                      return (
+                        <tr key={s.id}>
+                          <td className="db-id">{s.id}</td>
+                          <td><b>{s.client?.nom} {s.client?.prenom}</b></td>
+                          <td>{s.moniteur?.prenom} {s.moniteur?.nom}</td>
+                          <td style={{fontSize:12}}>{s.vehicule?.marque} {s.vehicule?.modele}</td>
+                          <td style={{fontSize:12}}>{new Date(s.date).toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})}</td>
+                          <td style={{fontSize:12,whiteSpace:"nowrap"}}>{s.heure_debut} – {s.heure_fin}</td>
+                          <td><Badge text={st.label} bg={st.bg} color={st.color}/></td>
+                          <td>
+                            <ActionBtns
+                              onAnnuler={s.statut==="planifiee" ? annulerSeance : null}
+                              onDelete ={() => handleDelete("seance",s.id)}
+                              confirmId={confirmId} setConfirmId={setConfirmId} id={s.id}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
+
+        {/* ══════════ QCM QUESTIONS ══════════ */}
+        {tab === "qcm" && (() => {
+          const QCM_CATS = [
+            { key:"danger",       label:"⚠️ Danger",        color:"#e63946", bg:"#fee2e2" },
+            { key:"indication",   label:"ℹ️ Indication",    color:"#2563eb", bg:"#dbeafe" },
+            { key:"interdiction", label:"🚫 Interdiction",  color:"#c2410c", bg:"#fff7ed" },
+            { key:"code_route",   label:"📋 Code Route",    color:"#7c3aed", bg:"#f5f3ff" },
+            { key:"conduite",     label:"🚗 Conduite",      color:"#059669", bg:"#ecfdf5" },
+            { key:"autre",        label:"📌 Autre",         color:"#64748b", bg:"#f8fafc" },
+          ];
+          const catQuestions = questions.filter(q => q.categorie === qcmCat);
+          const activeCat    = QCM_CATS.find(c => c.key === qcmCat) || QCM_CATS[0];
+          return (
+            <div className="db-section">
+              <div className="db-section-head">
+                <h4 className="db-title">📝 Quiz QCM — Gestion par Catégorie</h4>
+              </div>
+
+              {/* Sub-tabs */}
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+                {QCM_CATS.map(c => {
+                  const cnt = questions.filter(q => q.categorie === c.key).length;
+                  const active = qcmCat === c.key;
+                  return (
+                    <button key={c.key} onClick={() => setQcmCat(c.key)}
+                      style={{padding:"7px 16px",borderRadius:20,border:"2px solid",
+                        borderColor:active ? c.color:"#e2e8f0",
+                        background:active ? c.bg:"white",
+                        color:active ? c.color:"#64748b",
+                        fontWeight:700,fontSize:13,cursor:"pointer",transition:"all .2s",
+                        display:"flex",alignItems:"center",gap:6}}>
+                      {c.label}
+                      <span style={{background:active?c.color:"#e2e8f0",color:active?"white":"#64748b",
+                        borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800}}>{cnt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Table */}
+              <div className="db-card">
+                <div className="db-card-head" style={{justifyContent:"space-between"}}>
+                  <span style={{fontWeight:700,color:activeCat.color}}>
+                    {activeCat.label} — {catQuestions.length} question(s)
+                  </span>
+                  <button className="db-btn primary"
+                    onClick={() => openModal("question","➕ Ajouter une question",{correct_answer:"a",categorie:qcmCat})}>
+                    + Ajouter
+                  </button>
+                </div>
+                <div className="db-table-wrap">
+                  <table className="db-table">
+                    <thead><tr><th>#</th><th>Question</th><th>A</th><th>B</th><th>C</th><th>D</th><th>✓</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {catQuestions.length===0 && <tr><td colSpan={8} className="db-empty">Aucune question — cliquez « + Ajouter »</td></tr>}
+                      {catQuestions.map(q=>(
+                        <tr key={q.id}>
+                          <td className="db-id">{q.id}</td>
+                          <td style={{maxWidth:260,fontSize:13}}><b>{q.question}</b>
+                            {q.explication && <div style={{fontSize:11,color:"#94a3b8",marginTop:2,fontStyle:"italic"}}>{q.explication.slice(0,70)}...</div>}
+                          </td>
+                          <td style={{fontSize:12,color:"#475569",maxWidth:110}}>{q.option_a}</td>
+                          <td style={{fontSize:12,color:"#475569",maxWidth:110}}>{q.option_b}</td>
+                          <td style={{fontSize:12,color:"#475569",maxWidth:110}}>{q.option_c}</td>
+                          <td style={{fontSize:12,color:"#475569",maxWidth:110}}>{q.option_d}</td>
+                          <td><Badge text={q.correct_answer?.toUpperCase()} bg="#dcfce7" color="#15803d"/></td>
+                          <td>
+                            <ActionBtns
+                              onEdit  ={() => openModal("question","✏️ Modifier",{question:q.question,option_a:q.option_a,option_b:q.option_b,option_c:q.option_c,option_d:q.option_d,correct_answer:q.correct_answer,explication:q.explication||"",categorie:q.categorie},q.id)}
+                              onDelete={() => handleDelete("question",q.id)}
+                              confirmId={confirmId} setConfirmId={setConfirmId} id={q.id}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+>>>>>>> 116c943 (feat(dashboard): organize QCM tab by category with sub-tabs per category)
 
         {/* ══ AVIS ══ */}
         {tab === "avis" && (
