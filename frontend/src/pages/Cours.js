@@ -249,7 +249,7 @@ export default function Cours() {
           </div>
 
           {/* ── PROGRESS SECTION ── */}
-          {!admin && (
+          {(
             <div className="cp-progress-row">
               <div className="cp-progress-widget">
                 <div className="cp-progress-top">
@@ -298,7 +298,7 @@ export default function Cours() {
                   </div>
                   <h3>{cat.label}</h3>
                   <p>{cat.desc}</p>
-                  {!admin && cp && count > 0 && (
+                  {cp && count > 0 && (
                     <div className="cp-cat-mini-prog">
                       <div className="cp-cat-mini-track">
                         <div className="cp-cat-mini-fill" style={{width: `${catPct}%`, background: catDone ? '#059669' : cat.color}} />
@@ -407,7 +407,7 @@ export default function Cours() {
           </div>
 
           {/* ── CATEGORY PROGRESS BANNER ── */}
-          {!admin && selectedCat !== "tous" && catProgression[selectedCat] && (() => {
+          {selectedCat !== "tous" && catProgression[selectedCat] && (() => {
             const cp = catProgression[selectedCat];
             const catTotal = cours.filter(c => c.categorie === selectedCat).length;
             return (
@@ -551,7 +551,7 @@ export default function Cours() {
                           Voir le cours
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                         </button>
-                        {user && !admin && (
+                        {user && (
                           <button
                             className={`cp-btn-done ${completedIds.includes(c.id) ? 'completed' : ''}`}
                             onClick={() => toggleProgression(c.id)}
@@ -569,7 +569,7 @@ export default function Cours() {
           )}
 
           {/* ── QCM QUIZ (all categories) ── */}
-          {!admin && selectedCat !== "tous" && (
+          {selectedCat !== "tous" && (
             <div className="cp-qcm-section">
               <div className="cp-cat-header" style={{marginBottom:8}}>
                 <span className="cp-cat-tag" style={{background:"rgba(124,58,237,.1)",color:"#7c3aed"}}>Quiz interactif</span>

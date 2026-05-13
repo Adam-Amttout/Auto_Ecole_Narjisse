@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Question;
+use App\Models\Notification;
 use Illuminate\Http\Request;
+
 
 class QcmController extends Controller
 {
@@ -38,7 +40,18 @@ class QcmController extends Controller
             'categorie'      => 'sometimes|string',
         ]);
         $q = Question::create($v);
+
+        // Notification automatique
+        Notification::create([
+            'type'    => 'qcm',
+            'titre'   => '📝 Nouvelle question QCM ajoutée !',
+            'message' => 'Une nouvelle question a été ajoutée dans la catégorie ' . ucfirst($v['categorie'] ?? 'général') . '. Testez vos connaissances !',
+            'icon'    => '📝',
+            'color'   => '#7c3aed',
+        ]);
+
         return response()->json(['message' => 'Question créée', 'data' => $q], 201);
+
     }
 
     /** PUT /api/qcm/{id} — update question */

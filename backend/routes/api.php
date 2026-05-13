@@ -13,6 +13,8 @@ use App\Http\Controllers\ProgressionController;
 use App\Http\Controllers\QcmController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\NotificationController;
+
 
 // ── TEST
 Route::get('/test', fn() => ['message' => 'API Narjiss OK']);
@@ -100,3 +102,8 @@ Route::patch('/contact-messages/{id}/lire',     [ContactMessageController::class
 Route::post('/contact-messages/{id}/repondre',  [ContactMessageController::class, 'repondre']);
 Route::patch('/contact-messages/{id}/archiver', [ContactMessageController::class, 'archiver']);
 Route::delete('/contact-messages/{id}',         [ContactMessageController::class, 'destroy']);
+
+// ── NOTIFICATIONS
+Route::get('/notifications',        [NotificationController::class, 'index']);
+Route::post('/notifications',       [NotificationController::class, 'store']);
+Route::delete('/notifications/{id}',[NotificationController::class, 'destroy']);

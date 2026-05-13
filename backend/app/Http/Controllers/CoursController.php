@@ -4,7 +4,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cours;
+use App\Models\Notification;
 use Illuminate\Http\Request;
+
 
 class CoursController extends Controller
 {
@@ -50,10 +52,20 @@ class CoursController extends Controller
 
         $cours = Cours::create($v);
 
+        // Créer une notification automatique
+        Notification::create([
+            'type'    => 'cours',
+            'titre'   => '📚 Nouveau cours disponible !',
+            'message' => '"' . $cours->titre . '" vient d\'être ajouté dans la catégorie ' . ucfirst($cours->categorie) . '.',
+            'icon'    => '📚',
+            'color'   => '#2563eb',
+        ]);
+
         return response()->json([
             'message' => 'Cours créé avec succès',
             'data'    => $cours
         ], 201);
+
     }
 
     /** PUT /api/cours/{id} */

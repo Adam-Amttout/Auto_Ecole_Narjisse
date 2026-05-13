@@ -1,6 +1,9 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./Navbar.css";
 import { useState, useEffect, useRef } from "react";
+import axios from "axios";
+
+const API = "http://127.0.0.1:8000/api";
 
 export default function Navbar({ theme, toggleTheme }) {
   const navigate = useNavigate();
@@ -9,11 +12,57 @@ export default function Navbar({ theme, toggleTheme }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled,     setScrolled]     = useState(false);
   const [activeSec,    setActiveSec]    = useState("home");
-  const ddRef = useRef(null);
+  const ddRef  = useRef(null);
+  const bellRef = useRef(null);
 
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
   const role     = localStorage.getItem("role");
-  
+
+  /* ── NOTIFICATIONS ── */
+  const [notifs,       setNotifs]       = useState([]);
+  const [bellOpen,     setBellOpen]     = useState(false);
+  const [unreadCount,  setUnreadCount]  = useState(0);
+
+  const getLastSeen = () => parseInt(localStorage.getItem("notif_last_seen") || "0");
+
+  const fetchNotifs = async () => {
+    try {
+      const r = await axios.get(`${API}/notifications`);
+      const data = r.data || [];
+      setNotifs(data);
+      const lastSeen = getLastSeen();
+      const unseen = data.filter(n => new Date(n.created_at).getTime() > lastSeen).length;
+      setUnreadCount(unseen);
+    } catch { /* silent */ }
+  };
+
+  // Poll toutes les 60 secondes
+  useEffect(() => {
+    if (user) {
+      fetchNotifs();
+      const interval = setInterval(fetchNotifs, 60000);
+      return () => clearInterval(interval);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  const openBell = () => {
+    setBellOpen(!bellOpen);
+    if (!bellOpen) {
+      // Mark all as read when opening
+      localStorage.setItem("notif_last_seen", Date.now().toString());
+      setUnreadCount(0);
+    }
+  };
+
+  const timeAgo = (dateStr) => {
+    const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+    if (diff < 60)  return "À l'instant";
+    if (diff < 3600) return `${Math.floor(diff/60)}min`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h`;
+    return `${Math.floor(diff/86400)}j`;
+  };
+
   // Custom storage event listener to update user when profile picture changes
   useEffect(() => {
     const handleStorage = () => {
@@ -59,7 +108,10 @@ export default function Navbar({ theme, toggleTheme }) {
   }, []);
 
   useEffect(() => {
-    const fn = (e) => { if (ddRef.current && !ddRef.current.contains(e.target)) setDropdownOpen(false); };
+    const fn = (e) => {
+      if (ddRef.current && !ddRef.current.contains(e.target)) setDropdownOpen(false);
+      if (bellRef.current && !bellRef.current.contains(e.target)) setBellOpen(false);
+    };
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
@@ -122,6 +174,65 @@ export default function Navbar({ theme, toggleTheme }) {
               </svg>
             )}
           </button>
+
+          {/* 🔔 Notification Bell */}
+          {user && (
+            <div className="nb-bell-wrap" ref={bellRef}>
+              <button className="nb-bell-btn" onClick={openBell} title="Notifications">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="19" height="19">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="nb-bell-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
+                )}
+              </button>
+
+              {bellOpen && (
+                <div className="nb-notif-dropdown">
+                  <div className="nb-notif-head">
+                    <span>🔔 Notifications</span>
+                    {notifs.length > 0 && (
+                      <span className="nb-notif-count">{notifs.length}</span>
+                    )}
+                  </div>
+
+                  {notifs.length === 0 ? (
+                    <div className="nb-notif-empty">
+                      <span>🎉</span>
+                      <p>Aucune notification pour l'instant</p>
+                    </div>
+                  ) : (
+                    <div className="nb-notif-list">
+                      {notifs.map(n => {
+                        const isNew = new Date(n.created_at).getTime() > getLastSeen();
+                        return (
+                          <div key={n.id} className={`nb-notif-item ${isNew ? "nb-notif-new" : ""}`}>
+                            <span className="nb-notif-icon" style={{ background: n.color + "22", color: n.color }}>
+                              {n.icon}
+                            </span>
+                            <div className="nb-notif-body">
+                              <div className="nb-notif-titre">{n.titre}</div>
+                              <div className="nb-notif-msg">{n.message}</div>
+                            </div>
+                            <span className="nb-notif-time">{timeAgo(n.created_at)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {notifs.length > 0 && (
+                    <div className="nb-notif-foot">
+                      <button onClick={() => { setBellOpen(false); goTo("/cours"); }}>
+                        Voir les cours →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <Link to="/reservation" className="nb-btn-reg" onClick={()=>setMobileOpen(false)}>Inscription</Link>
 
