@@ -780,3 +780,135 @@
     justify-content: space-between;
   }
 }
+
+/* ── PROGRESSION STATS BANNER (Cours tab) ── */
+.db-prog-banner {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  gap: 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  flex-wrap: wrap;
+}
+.db-prog-stat {
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+  padding: 8px 16px;
+}
+.db-prog-stat-val {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  color: #1d3557;
+  line-height: 1.1;
+}
+.db-prog-stat-lbl {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+.db-prog-divider {
+  width: 1px;
+  height: 44px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* ── COURS TAB LAYOUT (table + side panel) ── */
+.db-cours-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.db-cours-main {
+  flex: 1;
+  min-width: 0;
+}
+.db-cours-side {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+/* ── PROGRESSION ROWS (top élèves) ── */
+.db-prog-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.db-prog-row:last-child {
+  border-bottom: none;
+}
+.db-prog-rank {
+  font-size: 16px;
+  font-weight: 800;
+  width: 28px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.db-prog-info {
+  flex: 1;
+  min-width: 0;
+}
+.db-prog-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1d3557;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  margin-bottom: 4px;
+}
+.db-prog-bar-wrap {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.db-prog-bar {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+.db-prog-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Responsive cours layout */
+@media (max-width: 1100px) {
+  .db-cours-layout {
+    flex-direction: column;
+  }
+  .db-cours-side {
+    width: 100%;
+  }
+}
+@media (max-width: 640px) {
+  .db-prog-banner {
+    gap: 8px;
+    padding: 12px;
+  }
+  .db-prog-divider {
+    display: none;
+  }
+  .db-prog-stat {
+    flex: 1 1 40%;
+    padding: 6px 8px;
+  }
+}

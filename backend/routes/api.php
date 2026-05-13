@@ -74,6 +74,7 @@ Route::patch('/avis/{id}/statut', [AvisController::class, 'updateStatut']);
 Route::delete('/avis/{id}',       [AvisController::class, 'destroy']);
 
 // ── PROGRESSION
+Route::get('/progression/admin-stats', [ProgressionController::class, 'adminStats']);
 Route::get('/progression',             [ProgressionController::class, 'index']);
 Route::get('/progression/by-category', [ProgressionController::class, 'byCategory']);
 Route::post('/progression/toggle',     [ProgressionController::class, 'toggle']);

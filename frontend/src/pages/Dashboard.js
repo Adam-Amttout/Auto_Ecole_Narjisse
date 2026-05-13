@@ -5,9 +5,9 @@ import "./Dashboard.css";
 
 const API = "http://127.0.0.1:8000/api";
 
-/* ─────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    HELPERS
-───────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const TABS = [
   { key:"accueil",      icon:"📊", label:"Tableau de bord" },
   { key:"clients",      icon:"👤", label:"Clients"          },
@@ -16,6 +16,7 @@ const TABS = [
   { key:"moniteurs",    icon:"🧑‍🏫", label:"Moniteurs"     },
   { key:"vehicules",    icon:"🚗", label:"Véhicules"        },
   { key:"seances",      icon:"📅", label:"Séances"          },
+  { key:"qcm",          icon:"📝", label:"QCM"              },
   { key:"avis",         icon:"⭐", label:"Avis"             },
   { key:"faq",          icon:"❓", label:"FAQ"              },
   { key:"messages",     icon:"✉️", label:"Messages"         },
@@ -44,16 +45,16 @@ const Badge = ({ text, bg, color }) => (
 function ActionBtns({ onView, onEdit, onDelete, onAnnuler, confirmId, setConfirmId, id }) {
   return (
     <div className="db-actions">
-      {onView    && <button className="db-btn view"    onClick={() => onView(id)}    title="Voir">👁</button>}
-      {onEdit    && <button className="db-btn edit"    onClick={() => onEdit(id)}    title="Modifier">✏️</button>}
-      {onAnnuler && <button className="db-btn warn"    onClick={() => onAnnuler(id)} title="Annuler">✕</button>}
+      {onView    && <button className="db-btn view"    onClick={() => onView(id)}    title="Voir">ðŸ‘</button>}
+      {onEdit    && <button className="db-btn edit"    onClick={() => onEdit(id)}    title="Modifier">âœï¸</button>}
+      {onAnnuler && <button className="db-btn warn"    onClick={() => onAnnuler(id)} title="Annuler">âœ•</button>}
       {confirmId === id ? (
         <>
           <button className="db-btn danger"  onClick={() => { onDelete(id); setConfirmId(null); }}>Oui</button>
           <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button>
         </>
       ) : (
-        onDelete && <button className="db-btn danger" onClick={() => setConfirmId(id)} title="Supprimer">🗑️</button>
+        onDelete && <button className="db-btn danger" onClick={() => setConfirmId(id)} title="Supprimer">ðŸ—‘ï¸</button>
       )}
     </div>
   );
@@ -66,10 +67,10 @@ function Modal({ show, onClose, title, children, onSave, saveLabel="Enregistrer"
       <div className="db-modal" onClick={e => e.stopPropagation()}>
         <div className="db-modal-head">
           <h5>{title}</h5>
-          <button className="db-modal-x" onClick={onClose}>×</button>
+          <button className="db-modal-x" onClick={onClose}>Ã—</button>
         </div>
         <div className="db-modal-body">
-          {error && <div className="db-alert err">⚠ {error}</div>}
+          {error && <div className="db-alert err">âš  {error}</div>}
           {children}
         </div>
         {!hideFoot && (
@@ -83,9 +84,9 @@ function Modal({ show, onClose, title, children, onSave, saveLabel="Enregistrer"
   );
 }
 
-/* ═══════════════════════════════════════════
-   VUE CONVERSATION — panneau droit messages
-═══════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   VUE CONVERSATION â€” panneau droit messages
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function ConversationView({ msg, onReply, onArchive, onClose }) {
   const [reponse, setReponse] = useState("");
   const [sending, setSending] = useState(false);
@@ -98,13 +99,13 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
     setSending(true); setErreur(""); setSucces("");
     try {
       await onReply(msg.id, reponse);
-      setSucces("✅ Email envoyé avec succès à " + msg.email);
+      setSucces("âœ… Email envoyé avec succès à " + msg.email);
       setReponse("");
     } catch (e) {
       const errMsg = e.response?.data?.message || "Erreur lors de l'envoi.";
       // Code 207 = réponse enregistrée mais email non envoyé
       if (e.response?.status === 207) {
-        setSucces("⚠️ Réponse enregistrée, mais email non envoyé. Vérifiez la config SMTP dans .env");
+        setSucces("âš ï¸ Réponse enregistrée, mais email non envoyé. Vérifiez la config SMTP dans .env");
       } else {
         setErreur(errMsg);
       }
@@ -117,21 +118,21 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
 
   return (
     <div className="conv-panel">
-      {/* En-tête conversation */}
+      {/* En-tÃªte conversation */}
       <div className="conv-header">
         <div className="conv-header-left">
-          <button className="conv-back" onClick={onClose}>←</button>
+          <button className="conv-back" onClick={onClose}>â†</button>
           <div className="conv-avatar">{initiales}</div>
           <div>
             <div className="conv-name">{msg.prenom} {msg.nom}</div>
-            <div className="conv-email">{msg.email}{msg.telephone ? ` · ${msg.telephone}` : ""}</div>
+            <div className="conv-email">{msg.email}{msg.telephone ? ` Â· ${msg.telephone}` : ""}</div>
           </div>
         </div>
         <div className="conv-header-right">
           <Badge text={sc.label} bg={sc.bg} color={sc.color}/>
           {msg.statut !== "archive" && (
             <button className="db-btn neutral" style={{fontSize:12}} onClick={() => onArchive(msg.id)} title="Archiver">
-              🗃️ Archiver
+              ðŸ—ƒï¸ Archiver
             </button>
           )}
         </div>
@@ -154,11 +155,11 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
         {msg.reponse_admin && (
           <div className="conv-bubble admin">
             <div className="conv-bubble-head">
-              <span className="conv-bubble-author">🏫 Auto École Narjiss (Admin)</span>
+              <span className="conv-bubble-author">ðŸ« Auto Ã‰cole Narjiss (Admin)</span>
               <span className="conv-bubble-date">{fmtDate(msg.repondu_le)}</span>
             </div>
             <div className="conv-bubble-text">{msg.reponse_admin}</div>
-            <div className="conv-email-sent">📧 Email envoyé à {msg.email}</div>
+            <div className="conv-email-sent">ðŸ“§ Email envoyé à {msg.email}</div>
           </div>
         )}
       </div>
@@ -166,12 +167,12 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
       {/* Zone de réponse */}
       <div className="conv-reply-area">
         {succes && <div className="conv-alert ok">{succes}</div>}
-        {erreur && <div className="conv-alert err">⚠ {erreur}</div>}
+        {erreur && <div className="conv-alert err">âš  {erreur}</div>}
 
         <div className="conv-reply-box">
           <div className="conv-reply-header">
-            <span>✍️ Répondre à {msg.prenom} {msg.nom}</span>
-            <span className="conv-reply-to">→ {msg.email}</span>
+            <span>âœï¸ Répondre à {msg.prenom} {msg.nom}</span>
+            <span className="conv-reply-to">â†’ {msg.email}</span>
           </div>
           <textarea
             ref={textRef}
@@ -179,17 +180,17 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
             rows={5}
             value={reponse}
             onChange={e => setReponse(e.target.value)}
-            placeholder={`Bonjour ${msg.prenom},\n\nMerci pour votre message…`}
+            placeholder={`Bonjour ${msg.prenom},\n\nMerci pour votre messageâ€¦`}
           />
           <div className="conv-reply-footer">
-            <span className="conv-reply-hint">💡 Un email sera envoyé directement au client</span>
+            <span className="conv-reply-hint">ðŸ’¡ Un email sera envoyé directement au client</span>
             <button
               className="conv-send-btn"
               onClick={handleSend}
               disabled={sending || !reponse.trim()}
             >
               {sending ? (
-                <><span className="conv-spinner"/>Envoi…</>
+                <><span className="conv-spinner"/>Envoiâ€¦</>
               ) : (
                 <>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
@@ -207,15 +208,15 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
   );
 }
 
-/* ─────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    COMPOSANT PRINCIPAL
-───────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function Dashboard() {
   const navigate = useNavigate();
   const [tab, setTab]             = useState("accueil");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  /* ── données ── */
+  /* â”€â”€ données â”€â”€ */
   const [clients,      setClients]      = useState([]);
   const [inscriptions, setInscriptions] = useState([]);
   const [cours,        setCours]        = useState([]);
@@ -227,13 +228,13 @@ export default function Dashboard() {
   const [messages,     setMessages]     = useState([]);
   const [questions,    setQuestions]    = useState([]);
   const [qcmCat,       setQcmCat]       = useState("danger");
+  const [progStats,    setProgStats]    = useState(null); // admin progression stats
 
-
-  /* ── messages : conversation ouverte + filtres ── */
+  /* â”€â”€ messages : conversation ouverte + filtres â”€â”€ */
   const [convMsg,      setConvMsg]      = useState(null);   // message ouvert dans ConversationView
   const [msgFiltre,    setMsgFiltre]    = useState("tous"); // tous | nouveau | lu | repondu | archive
 
-  /* ── FAQ ── */
+  /* â”€â”€ FAQ â”€â”€ */
   const [faqModal,        setFaqModal]        = useState(false);
   const [faqEditItem,     setFaqEditItem]      = useState(null);
   const [faqForm,         setFaqForm]         = useState({ question:"", reponse:"", ordre:0, actif:true });
@@ -242,7 +243,7 @@ export default function Dashboard() {
   const [faqSaving,       setFaqSaving]        = useState(false);
   const [faqError,        setFaqError]         = useState("");
 
-  /* ── Séance : creneaux disponibles ── */
+  /* â”€â”€ Séance : creneaux disponibles â”€â”€ */
   const HEURES = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
   const [creneaux,       setCreneaux]       = useState([]);
   const [creneauxLoading,setCreneauxLoading]= useState(false);
@@ -250,7 +251,7 @@ export default function Dashboard() {
 
   const loadedTabs = useRef(new Set());
 
-  /* ── modal générique ── */
+  /* â”€â”€ modal générique â”€â”€ */
   const [modal,     setModal]     = useState({ show:false, title:"", entity:"" });
   const [formData,  setFormData]  = useState({});
   const [editId,    setEditId]    = useState(null);
@@ -263,7 +264,7 @@ export default function Dashboard() {
     setTimeout(() => setToast(t => ({ ...t, show:false })), 3500);
   };
 
-  /* ── Chargement par onglet ── */
+  /* â”€â”€ Chargement par onglet â”€â”€ */
   const loadTab = useCallback(async (activeTab) => {
     if (loadedTabs.current.has(activeTab)) return;
     loadedTabs.current.add(activeTab);
@@ -280,7 +281,12 @@ export default function Dashboard() {
       } else if (activeTab === "inscriptions") {
         const res = await axios.get(`${API}/inscriptions`); setInscriptions(res.data);
       } else if (activeTab === "cours") {
-        const res = await axios.get(`${API}/cours/all`); setCours(res.data);
+        const [coursRes, progRes] = await Promise.allSettled([
+          axios.get(`${API}/cours/all`),
+          axios.get(`${API}/progression/admin-stats`),
+        ]);
+        if (coursRes.status === "fulfilled") setCours(coursRes.value.data);
+        if (progRes.status  === "fulfilled") setProgStats(progRes.value.data);
       } else if (activeTab === "moniteurs") {
         const res = await axios.get(`${API}/moniteurs`); setMoniteurs(res.data);
       } else if (activeTab === "vehicules") {
@@ -300,6 +306,8 @@ export default function Dashboard() {
         const res = await axios.get(`${API}/faq/all`); setFaqs(res.data);
       } else if (activeTab === "messages") {
         const res = await axios.get(`${API}/contact-messages`); setMessages(res.data);
+      } else if (activeTab === "qcm") {
+        const res = await axios.get(`${API}/qcm`); setQuestions(res.data);
       }
     } catch {}
   }, []);
@@ -311,7 +319,7 @@ export default function Dashboard() {
 
   useEffect(() => { loadTab(tab); }, [tab, loadTab]);
 
-  /* ── Modal générique ── */
+  /* â”€â”€ Modal générique â”€â”€ */
   const openModal = (entity, title, data={}, id=null) => {
     setModal({ show:true, title, entity });
     setFormData(data);
@@ -331,6 +339,7 @@ export default function Dashboard() {
       moniteur:    { post:`${API}/moniteurs`,      put:`${API}/moniteurs/${editId}`    },
       vehicule:    { post:`${API}/vehicules`,      put:`${API}/vehicules/${editId}`    },
       seance:      { post:`${API}/seances`,        put:`${API}/seances/${editId}`      },
+      question:    { post:`${API}/questions`,      put:`${API}/questions/${editId}`    },
     };
     try {
       if (editId) await axios.put(urls[entity].put, formData);
@@ -351,6 +360,7 @@ export default function Dashboard() {
       moniteur:    `${API}/moniteurs/${id}`,
       vehicule:    `${API}/vehicules/${id}`,
       seance:      `${API}/seances/${id}`,
+      question:    `${API}/questions/${id}`,
     };
     try {
       await axios.delete(urls[entity]);
@@ -415,7 +425,7 @@ export default function Dashboard() {
     </div>
   );
 
-  /* ── FAQ CRUD ── */
+  /* â”€â”€ FAQ CRUD â”€â”€ */
   const openFaqCreate = () => {
     setFaqEditItem(null);
     setFaqForm({ question:"", reponse:"", ordre:faqs.length+1, actif:true });
@@ -469,7 +479,7 @@ export default function Dashboard() {
     } catch (e) { showToast(e.response?.data?.message||"Erreur.", false); }
   };
 
-  /* ── MESSAGES : actions ── */
+  /* â”€â”€ MESSAGES : actions â”€â”€ */
   const reloadMessages = async () => {
     loadedTabs.current.delete("messages");
     await loadTab("messages");
@@ -478,7 +488,7 @@ export default function Dashboard() {
   const marquerLu = async (id) => {
     await axios.patch(`${API}/contact-messages/${id}/lire`);
     await reloadMessages();
-    // Mettre à jour la conversation ouverte si c'est le même message
+    // Mettre à jour la conversation ouverte si c'est le mÃªme message
     if (convMsg?.id === id) setConvMsg(m => ({ ...m, lu:true, statut:"lu" }));
   };
 
@@ -529,11 +539,11 @@ export default function Dashboard() {
     { icon:"📅", label:"Séances",      val:seances.length,      color:"#d97706" },
   ];
 
-  /* ─────────── RENDER ─────────── */
+  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ RENDER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   return (
     <div className="db-layout">
 
-      {/* ── SIDEBAR ── */}
+      {/* â”€â”€ SIDEBAR â”€â”€ */}
       <aside className={`db-sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="db-sidebar-brand">
           <span className="db-sidebar-logo">N</span>
@@ -566,20 +576,20 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* ── MAIN ── */}
+      {/* â”€â”€ MAIN â”€â”€ */}
       <main className="db-main">
         <div className="db-topbar">
-          <button className="db-burger" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
+          <button className="db-burger" onClick={() => setSidebarOpen(!sidebarOpen)}>â˜°</button>
           <span className="db-topbar-title">{TABS.find(t=>t.key===tab)?.label || "Dashboard"}</span>
         </div>
 
         {toast.show && (
           <div className={`db-toast ${toast.ok?"ok":"err"}`}>
-            {toast.ok ? "✅" : "❌"} {toast.msg}
+            {toast.ok ? "âœ…" : "âŒ"} {toast.msg}
           </div>
         )}
 
-        {/* ══ ACCUEIL ══ */}
+        {/* â•â• ACCUEIL â•â• */}
         {tab === "accueil" && (
           <div className="db-section">
             <h4 className="db-title">Tableau de bord</h4>
@@ -621,12 +631,12 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ CLIENTS ══ */}
+        {/* â•â• CLIENTS â•â• */}
         {tab === "clients" && (
           <div className="db-section">
             <div className="db-section-head">
               <h4 className="db-title">Clients ({clients.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("client","➕ Ajouter un client",{role:"user"})}>+ Ajouter</button>
+              <button className="db-btn primary" onClick={() => openModal("client","âž• Ajouter un client",{role:"user"})}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
@@ -642,7 +652,7 @@ export default function Dashboard() {
                       <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(c.created_at).toLocaleDateString("fr-FR")}</td>
                       <td><ActionBtns
                         onView  ={() => window.open(`/profil/${c.id}`,"_blank")}
-                        onEdit  ={() => openModal("client",`✏️ Modifier ${c.prenom}`,{nom:c.nom,prenom:c.prenom,email:c.email,password:"",role:c.role},c.id)}
+                        onEdit  ={() => openModal("client",`âœï¸ Modifier ${c.prenom}`,{nom:c.nom,prenom:c.prenom,email:c.email,password:"",role:c.role},c.id)}
                         onDelete={() => handleDelete("client",c.id)}
                         confirmId={confirmId} setConfirmId={setConfirmId} id={c.id}
                       /></td>
@@ -654,12 +664,12 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ INSCRIPTIONS ══ */}
+        {/* â•â• INSCRIPTIONS â•â• */}
         {tab === "inscriptions" && (
           <div className="db-section">
             <div className="db-section-head">
               <h4 className="db-title">Inscriptions ({inscriptions.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("inscription","➕ Ajouter",{})}>+ Ajouter</button>
+              <button className="db-btn primary" onClick={() => openModal("inscription","âž• Ajouter",{})}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
@@ -671,11 +681,11 @@ export default function Dashboard() {
                       <td className="db-id">{i.id}</td>
                       <td><b>{i.nom} {i.prenom}</b></td>
                       <td style={{color:"#64748b"}}>{i.email}</td>
-                      <td style={{fontSize:13}}>{i.telephone||"—"}</td>
-                      <td><Badge text={i.sujet||"—"} bg="#f0f9ff" color="#0369a1"/></td>
+                      <td style={{fontSize:13}}>{i.telephone||"â€”"}</td>
+                      <td><Badge text={i.sujet||"â€”"} bg="#f0f9ff" color="#0369a1"/></td>
                       <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(i.created_at).toLocaleDateString("fr-FR")}</td>
                       <td><ActionBtns
-                        onEdit  ={() => openModal("inscription","✏️ Modifier",{nom:i.nom,prenom:i.prenom,email:i.email,telephone:i.telephone,sujet:i.sujet,message:i.message},i.id)}
+                        onEdit  ={() => openModal("inscription","âœï¸ Modifier",{nom:i.nom,prenom:i.prenom,email:i.email,telephone:i.telephone,sujet:i.sujet,message:i.message},i.id)}
                         onDelete={() => handleDelete("inscription",i.id)}
                         confirmId={confirmId} setConfirmId={setConfirmId} id={i.id}
                       /></td>
@@ -687,44 +697,110 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ COURS ══ */}
+                {/* ╔╔ COURS ╔╔ */}
         {tab === "cours" && (
           <div className="db-section">
-            <div className="db-section-head">
-              <h4 className="db-title">Cours ({cours.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("cours","➕ Ajouter un cours",{categorie:"danger",niveau:"debutant"})}>+ Ajouter</button>
+
+            {/* -- PROGRESSION STATS BANNER -- */}
+            {progStats && (
+              <div className="db-prog-banner">
+                <div className="db-prog-stat">
+                  <span className="db-prog-stat-val">{progStats.eleves_actifs}</span>
+                  <span className="db-prog-stat-lbl">Élèves actifs</span>
+                </div>
+                <div className="db-prog-divider"/>
+                <div className="db-prog-stat">
+                  <span className="db-prog-stat-val">{progStats.total_completions}</span>
+                  <span className="db-prog-stat-lbl">Cours complétés</span>
+                </div>
+                <div className="db-prog-divider"/>
+                <div className="db-prog-stat">
+                  <span className="db-prog-stat-val" style={{color: progStats.taux_global >= 60 ? "#15803d" : progStats.taux_global >= 30 ? "#a16207" : "#b91c1c"}}>
+                    {progStats.taux_global}%
+                  </span>
+                  <span className="db-prog-stat-lbl">Taux global</span>
+                </div>
+                <div className="db-prog-divider"/>
+                <div className="db-prog-stat">
+                  <span className="db-prog-stat-val">{progStats.total_clients}</span>
+                  <span className="db-prog-stat-lbl">Total clients</span>
+                </div>
+              </div>
+            )}
+
+            <div className="db-cours-layout">
+              {/* -- Tableau des cours -- */}
+              <div className="db-cours-main">
+                <div className="db-section-head">
+                  <h4 className="db-title">Cours ({cours.length})</h4>
+                  <button className="db-btn primary" onClick={() => openModal("cours","➕ Ajouter un cours",{categorie:"danger",niveau:"debutant"})}>+ Ajouter</button>
+                </div>
+                <div className="db-card"><div className="db-table-wrap">
+                  <table className="db-table">
+                    <thead><tr><th>#</th><th>Titre</th><th>Catégorie</th><th>Niveau</th><th>Statut</th><th>✅ Élèves</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {cours.length===0 && <tr><td colSpan={7} className="db-empty">Aucun cours</td></tr>}
+                      {cours.map(c=>{
+                        const nbEleves = progStats?.per_cours?.[c.id] || 0;
+                        return (
+                          <tr key={c.id}>
+                            <td className="db-id">{c.id}</td>
+                            <td><b>{c.titre}</b><div style={{fontSize:11.5,color:"#94a3b8",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.description}</div></td>
+                            <td><Badge text={c.categorie} bg={{danger:"#fee2e2",indication:"#dbeafe",interdiction:"#fff7ed",autre:"#f0fdf4"}[c.categorie]||"#f1f5f9"} color={{danger:"#b91c1c",indication:"#1d4ed8",interdiction:"#c2410c",autre:"#15803d"}[c.categorie]||"#64748b"}/></td>
+                            <td><Badge text={c.niveau} bg={{debutant:"#dcfce7",intermediaire:"#fef9c3",avance:"#fee2e2"}[c.niveau]||"#f1f5f9"} color={{debutant:"#15803d",intermediaire:"#a16207",avance:"#b91c1c"}[c.niveau]||"#64748b"}/></td>
+                            <td><Badge text={c.actif?"Actif":"Inactif"} bg={c.actif?"#dcfce7":"#f1f5f9"} color={c.actif?"#15803d":"#64748b"}/></td>
+                            <td>
+                              <span style={{display:"inline-flex",alignItems:"center",gap:5,fontWeight:700,color: nbEleves>0?"#15803d":"#94a3b8",fontSize:13}}>
+                                {nbEleves > 0 ? "✅" : "—"} {nbEleves > 0 ? `${nbEleves} élève${nbEleves>1?"s":""}` : "0"}
+                              </span>
+                            </td>
+                            <td><ActionBtns
+                              onEdit  ={() => openModal("cours","✏️ Modifier le cours",{titre:c.titre,description:c.description||"",categorie:c.categorie,image:c.image||"",niveau:c.niveau},c.id)}
+                              onDelete={() => handleDelete("cours",c.id)}
+                              confirmId={confirmId} setConfirmId={setConfirmId} id={c.id}
+                            /></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div></div>
+              </div>
+
+              {/* -- Top eleves (panneau lateral) -- */}
+              {progStats?.per_client?.length > 0 && (
+                <div className="db-cours-side">
+                  <div className="db-card">
+                    <div className="db-card-head"><span>🏆 Top Élèves — Progression</span></div>
+                    <div style={{padding:"4px 0"}}>
+                      {progStats.per_client.map((cl, idx) => (
+                        <div key={cl.client_id} className="db-prog-row">
+                          <span className="db-prog-rank" style={{color: idx===0?"#d97706":idx===1?"#64748b":idx===2?"#c2410c":"#94a3b8"}}>
+                            {idx===0?"🥇":idx===1?"🥈":idx===2?"🥉":`#${idx+1}`}
+                          </span>
+                          <div className="db-prog-info">
+                            <span className="db-prog-name">{cl.prenom} {cl.nom}</span>
+                            <div className="db-prog-bar-wrap">
+                              <div className="db-prog-bar" style={{width:`${cl.pourcentage}%`, background: cl.pourcentage>=80?"#15803d":cl.pourcentage>=50?"#2563eb":"#e63946"}}/>
+                            </div>
+                          </div>
+                          <span className="db-prog-pct">{cl.pourcentage}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="db-card"><div className="db-table-wrap">
-              <table className="db-table">
-                <thead><tr><th>#</th><th>Titre</th><th>Catégorie</th><th>Niveau</th><th>Statut</th><th>Actions</th></tr></thead>
-                <tbody>
-                  {cours.length===0 && <tr><td colSpan={6} className="db-empty">Aucun cours</td></tr>}
-                  {cours.map(c=>(
-                    <tr key={c.id}>
-                      <td className="db-id">{c.id}</td>
-                      <td><b>{c.titre}</b><div style={{fontSize:11.5,color:"#94a3b8",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.description}</div></td>
-                      <td><Badge text={c.categorie} bg={{danger:"#fee2e2",indication:"#dbeafe",interdiction:"#fff7ed",autre:"#f0fdf4"}[c.categorie]||"#f1f5f9"} color={{danger:"#b91c1c",indication:"#1d4ed8",interdiction:"#c2410c",autre:"#15803d"}[c.categorie]||"#64748b"}/></td>
-                      <td><Badge text={c.niveau} bg={{debutant:"#dcfce7",intermediaire:"#fef9c3",avance:"#fee2e2"}[c.niveau]||"#f1f5f9"} color={{debutant:"#15803d",intermediaire:"#a16207",avance:"#b91c1c"}[c.niveau]||"#64748b"}/></td>
-                      <td><Badge text={c.actif?"Actif":"Inactif"} bg={c.actif?"#dcfce7":"#f1f5f9"} color={c.actif?"#15803d":"#64748b"}/></td>
-                      <td><ActionBtns
-                        onEdit  ={() => openModal("cours","✏️ Modifier le cours",{titre:c.titre,description:c.description||"",categorie:c.categorie,image:c.image||"",niveau:c.niveau},c.id)}
-                        onDelete={() => handleDelete("cours",c.id)}
-                        confirmId={confirmId} setConfirmId={setConfirmId} id={c.id}
-                      /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div></div>
           </div>
         )}
 
-        {/* ══ MONITEURS ══ */}
+        {/* â•â• MONITEURS â•â• */}
         {tab === "moniteurs" && (
           <div className="db-section">
             <div className="db-section-head">
               <h4 className="db-title">Moniteurs ({moniteurs.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("moniteur","➕ Ajouter un moniteur",{actif:true})}>+ Ajouter</button>
+              <button className="db-btn primary" onClick={() => openModal("moniteur","âž• Ajouter un moniteur",{actif:true})}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
@@ -739,7 +815,7 @@ export default function Dashboard() {
                       <td style={{color:"#64748b"}}>{m.email}</td>
                       <td><Badge text={m.actif?"Actif":"Inactif"} bg={m.actif?"#dcfce7":"#f1f5f9"} color={m.actif?"#15803d":"#64748b"}/></td>
                       <td><ActionBtns
-                        onEdit  ={() => openModal("moniteur","✏️ Modifier",{nom:m.nom,prenom:m.prenom,telephone:m.telephone,email:m.email,actif:m.actif},m.id)}
+                        onEdit  ={() => openModal("moniteur","âœï¸ Modifier",{nom:m.nom,prenom:m.prenom,telephone:m.telephone,email:m.email,actif:m.actif},m.id)}
                         onDelete={() => handleDelete("moniteur",m.id)}
                         confirmId={confirmId} setConfirmId={setConfirmId} id={m.id}
                       /></td>
@@ -751,12 +827,12 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ VÉHICULES ══ */}
+        {/* â•â• VÃ‰HICULES â•â• */}
         {tab === "vehicules" && (
           <div className="db-section">
             <div className="db-section-head">
               <h4 className="db-title">Véhicules ({vehicules.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("vehicule","➕ Ajouter un véhicule",{disponibilite:"disponible"})}>+ Ajouter</button>
+              <button className="db-btn primary" onClick={() => openModal("vehicule","âž• Ajouter un véhicule",{disponibilite:"disponible"})}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
@@ -770,7 +846,7 @@ export default function Dashboard() {
                       <td><code style={{background:"#f1f5f9",padding:"2px 7px",borderRadius:5,fontSize:12}}>{v.immatriculation}</code></td>
                       <td><Badge text={{disponible:"Disponible",en_maintenance:"Maintenance",hors_service:"Hors service"}[v.disponibilite]||v.disponibilite} bg={{disponible:"#dcfce7",en_maintenance:"#fef9c3",hors_service:"#fee2e2"}[v.disponibilite]||"#f1f5f9"} color={{disponible:"#15803d",en_maintenance:"#a16207",hors_service:"#b91c1c"}[v.disponibilite]||"#64748b"}/></td>
                       <td><ActionBtns
-                        onEdit  ={() => openModal("vehicule","✏️ Modifier",{marque:v.marque,modele:v.modele,immatriculation:v.immatriculation,disponibilite:v.disponibilite},v.id)}
+                        onEdit  ={() => openModal("vehicule","âœï¸ Modifier",{marque:v.marque,modele:v.modele,immatriculation:v.immatriculation,disponibilite:v.disponibilite},v.id)}
                         onDelete={() => handleDelete("vehicule",v.id)}
                         confirmId={confirmId} setConfirmId={setConfirmId} id={v.id}
                       /></td>
@@ -782,16 +858,16 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ SÉANCES ══ */}
+        {/* â•â• SÃ‰ANCES â•â• */}
         {tab === "seances" && (
           <div className="db-section">
             <div className="db-section-head">
               <h4 className="db-title">Séances ({seances.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("seance","➕ Planifier une séance",{client_id:"",moniteur_id:"",vehicule_id:"",date:"",heure_debut:"",heure_fin:"",notes:""})}>+ Planifier</button>
+              <button className="db-btn primary" onClick={() => openModal("seance","âž• Planifier une séance",{client_id:"",moniteur_id:"",vehicule_id:"",date:"",heure_debut:"",heure_fin:"",notes:""})}>+ Planifier</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
-                <thead><tr><th>#</th><th>Élève</th><th>Moniteur</th><th>Véhicule</th><th>Date</th><th>Horaire</th><th>Statut</th><th>Actions</th></tr></thead>
+                <thead><tr><th>#</th><th>Ã‰lève</th><th>Moniteur</th><th>Véhicule</th><th>Date</th><th>Horaire</th><th>Statut</th><th>Actions</th></tr></thead>
                 <tbody>
                   {seances.length===0 && <tr><td colSpan={8} className="db-empty">Aucune séance</td></tr>}
                   {seances.map(s=>{
@@ -803,7 +879,7 @@ export default function Dashboard() {
                         <td>{s.moniteur?.prenom} {s.moniteur?.nom}</td>
                         <td style={{fontSize:12}}>{s.vehicule?.marque} {s.vehicule?.modele}</td>
                         <td style={{fontSize:12}}>{new Date(s.date).toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})}</td>
-                        <td style={{fontSize:12,whiteSpace:"nowrap"}}>{s.heure_debut} – {s.heure_fin}</td>
+                        <td style={{fontSize:12,whiteSpace:"nowrap"}}>{s.heure_debut} â€“ {s.heure_fin}</td>
                         <td><Badge text={st.label} bg={st.bg} color={st.color}/></td>
                         <td><ActionBtns
                           onAnnuler={s.statut==="planifiee" ? annulerSeance : null}
@@ -819,22 +895,22 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══════════ QCM QUESTIONS ══════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â• QCM QUESTIONS â•â•â•â•â•â•â•â•â•â• */}
         {tab === "qcm" && (() => {
           const QCM_CATS = [
-            { key:"danger",       label:"⚠️ Danger",        color:"#e63946", bg:"#fee2e2" },
-            { key:"indication",   label:"ℹ️ Indication",    color:"#2563eb", bg:"#dbeafe" },
-            { key:"interdiction", label:"🚫 Interdiction",  color:"#c2410c", bg:"#fff7ed" },
+            { key:"danger",       label:"âš ï¸ Danger",        color:"#e63946", bg:"#fee2e2" },
+            { key:"indication",   label:"â„¹ï¸ Indication",    color:"#2563eb", bg:"#dbeafe" },
+            { key:"interdiction", label:"ðŸš« Interdiction",  color:"#c2410c", bg:"#fff7ed" },
             { key:"code_route",   label:"📋 Code Route",    color:"#7c3aed", bg:"#f5f3ff" },
             { key:"conduite",     label:"🚗 Conduite",      color:"#059669", bg:"#ecfdf5" },
-            { key:"autre",        label:"📌 Autre",         color:"#64748b", bg:"#f8fafc" },
+            { key:"autre",        label:"ðŸ“Œ Autre",         color:"#64748b", bg:"#f8fafc" },
           ];
           const catQuestions = questions.filter(q => q.categorie === qcmCat);
           const activeCat    = QCM_CATS.find(c => c.key === qcmCat) || QCM_CATS[0];
           return (
             <div className="db-section">
               <div className="db-section-head">
-                <h4 className="db-title">📝 Quiz QCM — Gestion par Catégorie</h4>
+                <h4 className="db-title">📝 Quiz QCM â€” Gestion par Catégorie</h4>
               </div>
 
               {/* Sub-tabs */}
@@ -862,18 +938,18 @@ export default function Dashboard() {
               <div className="db-card">
                 <div className="db-card-head" style={{justifyContent:"space-between"}}>
                   <span style={{fontWeight:700,color:activeCat.color}}>
-                    {activeCat.label} — {catQuestions.length} question(s)
+                    {activeCat.label} â€” {catQuestions.length} question(s)
                   </span>
                   <button className="db-btn primary"
-                    onClick={() => openModal("question","➕ Ajouter une question",{correct_answer:"a",categorie:qcmCat})}>
+                    onClick={() => openModal("question","âž• Ajouter une question",{correct_answer:"a",categorie:qcmCat})}>
                     + Ajouter
                   </button>
                 </div>
                 <div className="db-table-wrap">
                   <table className="db-table">
-                    <thead><tr><th>#</th><th>Question</th><th>A</th><th>B</th><th>C</th><th>D</th><th>✓</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>#</th><th>Question</th><th>A</th><th>B</th><th>C</th><th>D</th><th>âœ“</th><th>Actions</th></tr></thead>
                     <tbody>
-                      {catQuestions.length===0 && <tr><td colSpan={8} className="db-empty">Aucune question — cliquez « + Ajouter »</td></tr>}
+                      {catQuestions.length===0 && <tr><td colSpan={8} className="db-empty">Aucune question â€” cliquez Â«Â + AjouterÂ Â»</td></tr>}
                       {catQuestions.map(q=>(
                         <tr key={q.id}>
                           <td className="db-id">{q.id}</td>
@@ -887,7 +963,7 @@ export default function Dashboard() {
                           <td><Badge text={q.correct_answer?.toUpperCase()} bg="#dcfce7" color="#15803d"/></td>
                           <td>
                             <ActionBtns
-                              onEdit  ={() => openModal("question","✏️ Modifier",{question:q.question,option_a:q.option_a,option_b:q.option_b,option_c:q.option_c,option_d:q.option_d,correct_answer:q.correct_answer,explication:q.explication||"",categorie:q.categorie},q.id)}
+                              onEdit  ={() => openModal("question","âœï¸ Modifier",{question:q.question,option_a:q.option_a,option_b:q.option_b,option_c:q.option_c,option_d:q.option_d,correct_answer:q.correct_answer,explication:q.explication||"",categorie:q.categorie},q.id)}
                               onDelete={() => handleDelete("question",q.id)}
                               confirmId={confirmId} setConfirmId={setConfirmId} id={q.id}
                             />
@@ -901,17 +977,16 @@ export default function Dashboard() {
             </div>
           );
         })()}
->>>>>>> 116c943 (feat(dashboard): organize QCM tab by category with sub-tabs per category)
 
-        {/* ══ AVIS ══ */}
+        {/* â•â• AVIS â•â• */}
         {tab === "avis" && (
           <div className="db-section">
-            <div className="db-section-head"><h4 className="db-title">Avis Élèves ({avis.length})</h4></div>
+            <div className="db-section-head"><h4 className="db-title">Avis Ã‰lèves ({avis.length})</h4></div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
                 <thead><tr><th>#</th><th>Auteur</th><th>Témoignage</th><th>Note</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>
-                  {avis.length === 0 && <tr><td colSpan={7} className="db-empty">Aucun avis reçu</td></tr>}
+                  {avis.length === 0 && <tr><td colSpan={7} className="db-empty">Aucun avis reÃ§u</td></tr>}
                   {avis.map(a => {
                     const sc = {pending:{label:"En attente",bg:"#fef9c3",color:"#a16207"},approved:{label:"Approuvé",bg:"#dcfce7",color:"#15803d"},rejected:{label:"Rejeté",bg:"#fee2e2",color:"#b91c1c"}}[a.statut]||{label:a.statut,bg:"#f1f5f9",color:"#64748b"};
                     return (
@@ -919,17 +994,17 @@ export default function Dashboard() {
                         <td className="db-id">{a.id}</td>
                         <td><b>{a.nom}{a.prenom?' '+a.prenom:''}</b><div style={{fontSize:11.5,color:"#94a3b8"}}>{a.role_label}</div></td>
                         <td style={{maxWidth:280,fontSize:12.5,color:"#475569",fontStyle:"italic"}}>"{a.texte?.slice(0,100)}{a.texte?.length>100?'...':''}"</td>
-                        <td style={{color:"#fbbf24",fontWeight:700}}>{'★'.repeat(a.note)}</td>
+                        <td style={{color:"#fbbf24",fontWeight:700}}>{'â˜…'.repeat(a.note)}</td>
                         <td><Badge text={sc.label} bg={sc.bg} color={sc.color}/></td>
                         <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
                         <td>
                           <div className="db-actions">
-                            {a.statut !== 'approved' && <button className="db-btn view" title="Approuver" onClick={async () => { await axios.patch(`${API}/avis/${a.id}/statut`,{statut:'approved'}); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis approuvé !'); }}>✅</button>}
-                            {a.statut !== 'rejected' && <button className="db-btn warn"  title="Rejeter"   onClick={async () => { await axios.patch(`${API}/avis/${a.id}/statut`,{statut:'rejected'}); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis rejeté.'); }}>❌</button>}
+                            {a.statut !== 'approved' && <button className="db-btn view" title="Approuver" onClick={async () => { await axios.patch(`${API}/avis/${a.id}/statut`,{statut:'approved'}); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis approuvé !'); }}>âœ…</button>}
+                            {a.statut !== 'rejected' && <button className="db-btn warn"  title="Rejeter"   onClick={async () => { await axios.patch(`${API}/avis/${a.id}/statut`,{statut:'rejected'}); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis rejeté.'); }}>âŒ</button>}
                             {confirmId === a.id ? (
                               <><button className="db-btn danger" onClick={async () => { await axios.delete(`${API}/avis/${a.id}`); setConfirmId(null); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Supprimé.'); }}>Oui</button>
                               <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button></>
-                            ) : <button className="db-btn danger" onClick={() => setConfirmId(a.id)} title="Supprimer">🗑️</button>}
+                            ) : <button className="db-btn danger" onClick={() => setConfirmId(a.id)} title="Supprimer">ðŸ—‘ï¸</button>}
                           </div>
                         </td>
                       </tr>
@@ -941,11 +1016,11 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ FAQ ══ */}
+        {/* â•â• FAQ â•â• */}
         {tab === "faq" && (
           <div className="db-section">
             <div className="db-section-head">
-              <h4 className="db-title">FAQ — Questions fréquentes ({faqs.length})</h4>
+              <h4 className="db-title">FAQ â€” Questions fréquentes ({faqs.length})</h4>
               <button className="db-btn primary" onClick={openFaqCreate}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
@@ -956,18 +1031,18 @@ export default function Dashboard() {
                   {faqs.map(f => (
                     <tr key={f.id}>
                       <td className="db-id">{f.id}</td>
-                      <td>{f.image ? <img src={f.image} alt="faq" style={{width:52,height:40,objectFit:"cover",borderRadius:8,border:"1.5px solid #e2e8f0"}} onError={e=>{e.target.style.display="none";}} /> : <span style={{color:"#cbd5e1",fontSize:12}}>—</span>}</td>
+                      <td>{f.image ? <img src={f.image} alt="faq" style={{width:52,height:40,objectFit:"cover",borderRadius:8,border:"1.5px solid #e2e8f0"}} onError={e=>{e.target.style.display="none";}} /> : <span style={{color:"#cbd5e1",fontSize:12}}>â€”</span>}</td>
                       <td style={{maxWidth:200}}><b style={{fontSize:13}}>{f.question}</b></td>
-                      <td style={{maxWidth:260,fontSize:12.5,color:"#475569"}}>{f.reponse?.slice(0,80)}{f.reponse?.length>80?"…":""}</td>
+                      <td style={{maxWidth:260,fontSize:12.5,color:"#475569"}}>{f.reponse?.slice(0,80)}{f.reponse?.length>80?"â€¦":""}</td>
                       <td style={{textAlign:"center",fontWeight:700,color:"#64748b"}}>{f.ordre}</td>
                       <td><Badge text={f.actif?"Actif":"Inactif"} bg={f.actif?"#dcfce7":"#f1f5f9"} color={f.actif?"#15803d":"#64748b"}/></td>
                       <td>
                         <div className="db-actions">
-                          <button className="db-btn edit" onClick={() => openFaqEdit(f)} title="Modifier">✏️</button>
+                          <button className="db-btn edit" onClick={() => openFaqEdit(f)} title="Modifier">âœï¸</button>
                           {faqConfirmDel === f.id ? (
                             <><button className="db-btn danger" onClick={() => handleFaqDelete(f.id)}>Oui</button>
                             <button className="db-btn neutral" onClick={() => setFaqConfirmDel(null)}>Non</button></>
-                          ) : <button className="db-btn danger" onClick={() => setFaqConfirmDel(f.id)} title="Supprimer">🗑️</button>}
+                          ) : <button className="db-btn danger" onClick={() => setFaqConfirmDel(f.id)} title="Supprimer">ðŸ—‘ï¸</button>}
                         </div>
                       </td>
                     </tr>
@@ -978,10 +1053,10 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ MESSAGES ══ */}
+        {/* â•â• MESSAGES â•â• */}
         {tab === "messages" && (
           <div className="db-section db-section-messages">
-            {/* Si une conversation est ouverte → afficher ConversationView */}
+            {/* Si une conversation est ouverte â†’ afficher ConversationView */}
             {convMsg ? (
               <ConversationView
                 msg={convMsg}
@@ -1006,7 +1081,7 @@ export default function Dashboard() {
                     <button key={f}
                       className={`msg-filtre-btn ${msgFiltre===f?"active":""}`}
                       onClick={() => setMsgFiltre(f)}>
-                      { {tous:"Tous",nouveau:"🔴 Nouveaux",lu:"👁 Lus",repondu:"✅ Répondus",archive:"🗃️ Archivés"}[f] }
+                      { {tous:"Tous",nouveau:"ðŸ”´ Nouveaux",lu:"ðŸ‘ Lus",repondu:"âœ… Répondus",archive:"ðŸ—ƒï¸ Archivés"}[f] }
                       <span className="msg-filtre-count">
                         {f==="tous" ? messages.length : messages.filter(m=>m.statut===f).length}
                       </span>
@@ -1036,12 +1111,12 @@ export default function Dashboard() {
                               {new Date(m.created_at).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}
                             </span>
                           </div>
-                          <div className="msg-item-email">{m.email}{m.telephone ? ` · ${m.telephone}` : ""}</div>
+                          <div className="msg-item-email">{m.email}{m.telephone ? ` Â· ${m.telephone}` : ""}</div>
                           {m.sujet && <div className="msg-item-sujet">{m.sujet}</div>}
-                          <div className="msg-item-preview">{m.message?.slice(0,90)}{m.message?.length>90?"…":""}</div>
+                          <div className="msg-item-preview">{m.message?.slice(0,90)}{m.message?.length>90?"â€¦":""}</div>
                           {m.reponse_admin && (
                             <div className="msg-item-replied">
-                              ↩️ Répondu · {new Date(m.repondu_le).toLocaleDateString("fr-FR")}
+                              â†©ï¸ Répondu Â· {new Date(m.repondu_le).toLocaleDateString("fr-FR")}
                             </div>
                           )}
                         </div>
@@ -1052,7 +1127,7 @@ export default function Dashboard() {
                               <><button className="db-btn danger" onClick={() => handleDeleteMsg(m.id)}>Oui</button>
                               <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button></>
                             ) : (
-                              <button className="db-btn danger" onClick={() => setConfirmId(`del-${m.id}`)} title="Supprimer">🗑️</button>
+                              <button className="db-btn danger" onClick={() => setConfirmId(`del-${m.id}`)} title="Supprimer">ðŸ—‘ï¸</button>
                             )}
                           </div>
                         </div>
@@ -1067,16 +1142,16 @@ export default function Dashboard() {
 
       </main>
 
-      {/* ══ MODAL FAQ ══ */}
+      {/* â•â• MODAL FAQ â•â• */}
       {faqModal && (
         <div className="db-modal-overlay" onClick={() => setFaqModal(false)}>
           <div className="db-modal db-modal-lg" onClick={e => e.stopPropagation()}>
             <div className="db-modal-head">
-              <h5>{faqEditItem ? "✏️ Modifier la FAQ" : "➕ Nouvelle question FAQ"}</h5>
-              <button className="db-modal-x" onClick={() => setFaqModal(false)}>×</button>
+              <h5>{faqEditItem ? "âœï¸ Modifier la FAQ" : "âž• Nouvelle question FAQ"}</h5>
+              <button className="db-modal-x" onClick={() => setFaqModal(false)}>Ã—</button>
             </div>
             <div className="db-modal-body">
-              {faqError && <div className="db-alert err">⚠ {faqError}</div>}
+              {faqError && <div className="db-alert err">âš  {faqError}</div>}
               <div className="db-field">
                 <label>Question *</label>
                 <input className="db-input" type="text" value={faqForm.question}
@@ -1087,23 +1162,23 @@ export default function Dashboard() {
                 <label>Réponse *</label>
                 <textarea className="db-input" rows={4} value={faqForm.reponse}
                   onChange={e => setFaqForm({...faqForm,reponse:e.target.value})}
-                  placeholder="Réponse détaillée…" />
+                  placeholder="Réponse détailléeâ€¦" />
               </div>
               <div className="db-field">
-                <label>📷 Image (fichier local — optionnel)</label>
+                <label>ðŸ“· Image (fichier local â€” optionnel)</label>
                 <input type="file" className="db-input"
                   accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                   onChange={handleFaqImageChange} />
                 {faqImagePreview && (
                   <div style={{marginTop:10,borderRadius:10,overflow:"hidden",border:"2px solid #e2e8f0",maxHeight:160}}>
-                    <img src={faqImagePreview} alt="Aperçu"
+                    <img src={faqImagePreview} alt="AperÃ§u"
                       style={{width:"100%",height:155,objectFit:"cover",display:"block"}}
                       onError={e=>{e.target.style.display="none";}} />
                   </div>
                 )}
                 {faqEditItem && !faqImageFile && faqEditItem.image && (
                   <p style={{fontSize:11.5,color:"#94a3b8",marginTop:5}}>
-                    💡 Une image existe déjà. Choisissez un nouveau fichier pour la remplacer.
+                    ðŸ’¡ Une image existe déjà. Choisissez un nouveau fichier pour la remplacer.
                   </p>
                 )}
               </div>
@@ -1126,14 +1201,14 @@ export default function Dashboard() {
             <div className="db-modal-foot">
               <button className="db-btn neutral lg" onClick={() => setFaqModal(false)}>Annuler</button>
               <button className="db-btn primary lg" onClick={handleFaqSave} disabled={faqSaving}>
-                {faqSaving ? "Enregistrement…" : "💾 Enregistrer"}
+                {faqSaving ? "Enregistrementâ€¦" : "ðŸ’¾ Enregistrer"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ══ MODAL GÉNÉRIQUE ══ */}
+      {/* â•â• MODAL GÃ‰NÃ‰RIQUE â•â• */}
       <Modal show={modal.show} onClose={()=>setModal(m=>({...m,show:false}))}
         title={modal.title} onSave={handleSave} error={modalErr}>
         {modal.entity === "client" && <>
@@ -1156,17 +1231,17 @@ export default function Dashboard() {
             {F("niveau","Niveau","text",[{v:"debutant",l:"Débutant"},{v:"intermediaire",l:"Intermédiaire"},{v:"avance",l:"Avancé"}])}
           </div>
           <div className="db-field">
-            <label>🖼️ Image du cours (URL)</label>
+            <label>ðŸ–¼ï¸ Image du cours (URL)</label>
             <input className="db-input" type="text" placeholder="https://..." value={formData.image||""} onChange={e=>setFormData({...formData,image:e.target.value})}/>
             {formData.image && (
               <div style={{marginTop:10,borderRadius:10,overflow:"hidden",border:"2px solid #e2e8f0",maxHeight:160}}>
-                <img src={formData.image} alt="Aperçu" onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="block";}} style={{width:"100%",height:160,objectFit:"cover",display:"block"}}/>
-                <div style={{display:"none",padding:"8px 12px",background:"#fee2e2",color:"#b91c1c",fontSize:12}}>⚠️ Lien invalide</div>
+                <img src={formData.image} alt="AperÃ§u" onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="block";}} style={{width:"100%",height:160,objectFit:"cover",display:"block"}}/>
+                <div style={{display:"none",padding:"8px 12px",background:"#fee2e2",color:"#b91c1c",fontSize:12}}>âš ï¸ Lien invalide</div>
               </div>
             )}
           </div>
-          {F("video_url","🎬 Lien Vidéo YouTube")}
-          {F("pdf_url","📄 Lien PDF")}
+          {F("video_url","ðŸŽ¬ Lien Vidéo YouTube")}
+          {F("pdf_url","ðŸ“„ Lien PDF")}
         </>}
         {modal.entity === "moniteur" && <>
           <div className="db-form-row">{F("nom","Nom")}{F("prenom","Prénom")}</div>
@@ -1179,14 +1254,14 @@ export default function Dashboard() {
           {F("disponibilite","Disponibilité","text",[{v:"disponible",l:"Disponible"},{v:"en_maintenance",l:"En maintenance"},{v:"hors_service",l:"Hors service"}])}
         </>}
         {modal.entity === "seance" && <>
-          {F("client_id","Élève","text",clients.map(c=>({v:c.id,l:`${c.prenom} ${c.nom}`})))}
+          {F("client_id","Ã‰lève","text",clients.map(c=>({v:c.id,l:`${c.prenom} ${c.nom}`})))}
           {F("moniteur_id","Moniteur","text",moniteurs.map(m=>({v:m.id,l:`${m.prenom} ${m.nom}`})))}
           {F("vehicule_id","Véhicule","text",vehicules.map(v=>({v:v.id,l:`${v.marque} ${v.modele} (${v.immatriculation})`})))}
           {F("date","Date","date")}
 
-          {/* Sélecteur d'heure de début — uniquement heures rondes */}
+          {/* Sélecteur d'heure de début â€” uniquement heures rondes */}
           <div className="db-field">
-            <label>🕐 Heure de début <span style={{fontSize:11,color:"#94a3b8",fontWeight:400}}>(heures rondes uniquement)</span></label>
+            <label>ðŸ• Heure de début <span style={{fontSize:11,color:"#94a3b8",fontWeight:400}}>(heures rondes uniquement)</span></label>
             <select
               className="db-input"
               value={formData.heure_debut||""}
@@ -1211,8 +1286,8 @@ export default function Dashboard() {
                 const places = cr ? Math.min(cr.places_moniteur, cr.places_vehicule) : "?";
                 return (
                   <option key={h} value={h} disabled={cr && !cr.disponible}>
-                    {h} → {String(parseInt(h)+1).padStart(2,"0")}:00
-                    {cr ? (cr.disponible ? `  ✓ ${places} place${places>1?"s":""} restante${places>1?"s":""}` : "  ✗ Complet") : ""}
+                    {h} â†’ {String(parseInt(h)+1).padStart(2,"0")}:00
+                    {cr ? (cr.disponible ? `  âœ“ ${places} place${places>1?"s":""} restante${places>1?"s":""}` : "  âœ— Complet") : ""}
                   </option>
                 );
               })}
@@ -1225,18 +1300,18 @@ export default function Dashboard() {
               const places = Math.min(cr.places_moniteur, cr.places_vehicule);
               if (!cr.disponible) return (
                 <div style={{marginTop:8,padding:"8px 12px",background:"#fee2e2",borderRadius:8,fontSize:12.5,color:"#b91c1c",display:"flex",gap:6,alignItems:"center"}}>
-                  ⚠️ Ce créneau est complet (3/3 élèves). Choisissez une autre heure.
+                  âš ï¸ Ce créneau est complet (3/3 élèves). Choisissez une autre heure.
                 </div>
               );
               return (
                 <div style={{marginTop:8,padding:"8px 12px",background:"#dcfce7",borderRadius:8,fontSize:12.5,color:"#15803d",display:"flex",gap:6,alignItems:"center"}}>
-                  ✅ {places} place{places>1?"s":""} restante{places>1?"s":""} sur ce créneau (max 3 élèves)
+                  âœ… {places} place{places>1?"s":""} restante{places>1?"s":""} sur ce créneau (max 3 élèves)
                 </div>
               );
             })()}
 
             {creneauxLoading && (
-              <div style={{marginTop:8,fontSize:12,color:"#94a3b8"}}>⏳ Vérification des disponibilités…</div>
+              <div style={{marginTop:8,fontSize:12,color:"#94a3b8"}}>â³ Vérification des disponibilitésâ€¦</div>
             )}
 
             {/* Bouton pour charger les disponibilités manuellement */}
@@ -1252,15 +1327,15 @@ export default function Dashboard() {
                   } finally { setCreneauxLoading(false); }
                 }}
               >
-                🔍 Vérifier les disponibilités
+                ðŸ” Vérifier les disponibilités
               </button>
             )}
           </div>
 
-          {/* Heure de fin — calculée automatiquement */}
+          {/* Heure de fin â€” calculée automatiquement */}
           {formData.heure_debut && (
             <div className="db-field">
-              <label>🕐 Heure de fin <span style={{fontSize:11,color:"#94a3b8"}}>(automatique : +1 heure)</span></label>
+              <label>ðŸ• Heure de fin <span style={{fontSize:11,color:"#94a3b8"}}>(automatique : +1 heure)</span></label>
               <input className="db-input" type="text" value={formData.heure_fin||""} readOnly
                 style={{background:"#f8fafc",color:"#64748b",cursor:"not-allowed"}}/>
             </div>
@@ -1268,6 +1343,17 @@ export default function Dashboard() {
 
           {F("notes","Notes (optionnel)","textarea")}
         </>}
+        {modal.entity === "question" && <>
+          {F("question","Question *","textarea")}
+          <div className="db-form-row">{F("option_a","Option A")}{F("option_b","Option B")}</div>
+          <div className="db-form-row">{F("option_c","Option C")}{F("option_d","Option D")}</div>
+          <div className="db-form-row">
+            {F("correct_answer","Bonne r\u00e9ponse","text",[{v:"a",l:"A"},{v:"b",l:"B"},{v:"c",l:"C"},{v:"d",l:"D"}])}
+            {F("categorie","Cat\u00e9gorie","text",[{v:"danger",l:"\u26a0\ufe0f Danger"},{v:"indication",l:"\u2139\ufe0f Indication"},{v:"interdiction",l:"\ud83d\udeab Interdiction"},{v:"code_route",l:"\ud83d� Code Route"},{v:"conduite",l:"\ud83d\ude97 Conduite"},{v:"autre",l:"\ud83d\udccc Autre"}])}
+          </div>
+          {F("explication","Explication (optionnel)","textarea")}
+        </>
+        }
       </Modal>
 
       {sidebarOpen && <div className="db-overlay" onClick={() => setSidebarOpen(false)}/>}
