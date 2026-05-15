@@ -24,20 +24,138 @@ const Indication    = lazy(() => import("./pages/indication"));
 const Interdiction  = lazy(() => import("./pages/interdiction"));
 const ClientDashboard = lazy(() => import("./pages/ClientDashboard"));
 
-/* ─── Minimal loading fallback ─── */
+/* ─── Branded Page Loader ─── */
 const PageLoader = () => (
   <div style={{
-    display: "flex", alignItems: "center", justifyContent: "center",
-    minHeight: "60vh", flexDirection: "column", gap: 12
+    position: "fixed", inset: 0, zIndex: 9999,
+    display: "flex", flexDirection: "column",
+    alignItems: "center", justifyContent: "center",
+    background: "linear-gradient(135deg, #1d3557 0%, #0f2744 100%)",
+    animation: "fadeInLoader 0.2s ease",
   }}>
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&display=swap');
+
+      @keyframes fadeInLoader {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes pulse-ring {
+        0%   { transform: scale(0.85); opacity: 0.8; }
+        50%  { transform: scale(1.08); opacity: 0.4; }
+        100% { transform: scale(0.85); opacity: 0.8; }
+      }
+      @keyframes logo-bounce {
+        0%, 100% { transform: translateY(0px); }
+        40%       { transform: translateY(-10px); }
+        70%       { transform: translateY(-5px); }
+      }
+      @keyframes progress-fill {
+        0%   { width: 0%; }
+        20%  { width: 25%; }
+        50%  { width: 55%; }
+        80%  { width: 80%; }
+        100% { width: 95%; }
+      }
+      @keyframes dots-fade {
+        0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+        40%            { opacity: 1;   transform: scale(1.2); }
+      }
+      @keyframes text-shimmer {
+        0%   { background-position: -200% center; }
+        100% { background-position:  200% center; }
+      }
+      .loader-dot:nth-child(1) { animation: dots-fade 1.2s ease-in-out 0.0s infinite; }
+      .loader-dot:nth-child(2) { animation: dots-fade 1.2s ease-in-out 0.2s infinite; }
+      .loader-dot:nth-child(3) { animation: dots-fade 1.2s ease-in-out 0.4s infinite; }
+    `}</style>
+
+    {/* ── Pulse ring behind logo ── */}
+    <div style={{ position: "relative", marginBottom: 28 }}>
+      <div style={{
+        position: "absolute", inset: -18,
+        borderRadius: "50%",
+        background: "rgba(230,57,70,0.18)",
+        animation: "pulse-ring 1.8s ease-in-out infinite",
+      }}/>
+      <div style={{
+        position: "absolute", inset: -8,
+        borderRadius: "50%",
+        background: "rgba(230,57,70,0.1)",
+        animation: "pulse-ring 1.8s ease-in-out 0.3s infinite",
+      }}/>
+
+      {/* ── Logo circle ── */}
+      <div style={{
+        width: 80, height: 80,
+        borderRadius: 22,
+        background: "linear-gradient(135deg, #e63946, #c1121f)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 40,
+        boxShadow: "0 12px 40px rgba(230,57,70,0.5)",
+        animation: "logo-bounce 1.8s ease-in-out infinite",
+        position: "relative", zIndex: 2,
+      }}>
+        🚗
+      </div>
+    </div>
+
+    {/* ── Brand name ── */}
     <div style={{
-      width: 36, height: 36, borderRadius: "50%",
-      border: "3px solid #e63946", borderTopColor: "transparent",
-      animation: "spin 0.7s linear infinite"
-    }}/>
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      fontFamily: "'Outfit', sans-serif",
+      fontSize: 22, fontWeight: 800,
+      background: "linear-gradient(90deg, #ffffff 0%, #fca5a5 40%, #ffffff 80%)",
+      backgroundSize: "200% auto",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      animation: "text-shimmer 2s linear infinite",
+      marginBottom: 4,
+    }}>
+      Auto École Narjiss
+    </div>
+
+    <div style={{
+      fontFamily: "'Outfit', sans-serif",
+      fontSize: 11, fontWeight: 500,
+      color: "rgba(255,255,255,0.4)",
+      letterSpacing: "2px",
+      textTransform: "uppercase",
+      marginBottom: 32,
+    }}>
+      Marrakech
+    </div>
+
+    {/* ── Progress bar ── */}
+    <div style={{
+      width: 180, height: 3,
+      background: "rgba(255,255,255,0.1)",
+      borderRadius: 10,
+      overflow: "hidden",
+      marginBottom: 20,
+    }}>
+      <div style={{
+        height: "100%",
+        background: "linear-gradient(90deg, #e63946, #ff6b6b)",
+        borderRadius: 10,
+        animation: "progress-fill 1.8s ease-in-out infinite",
+      }}/>
+    </div>
+
+    {/* ── Dots ── */}
+    <div style={{ display: "flex", gap: 6 }}>
+      {[0,1,2].map(i => (
+        <div key={i} className="loader-dot" style={{
+          width: 7, height: 7,
+          borderRadius: "50%",
+          background: "#e63946",
+        }}/>
+      ))}
+    </div>
+
   </div>
 );
+
 
 /* ─── Guards ─── */
 function PrivateRoute({ children }) {
