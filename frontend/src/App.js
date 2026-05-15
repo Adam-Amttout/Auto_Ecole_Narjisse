@@ -158,18 +158,20 @@ const PageLoader = () => (
 /* ─── Global route transition overlay ─── */
 function RouteTransitionOverlay() {
   const location = useLocation();
-  const [visible, setVisible] = useState(false);
-  const [fading,  setFading]  = useState(false);
-  const prevPath = useRef(location.pathname);
+  const [visible,  setVisible]  = useState(false);
+  const [fading,   setFading]   = useState(false);
+  const isFirst = useRef(true);     // skip animation on first page load
 
   useEffect(() => {
-    if (prevPath.current === location.pathname) return;
-    prevPath.current = location.pathname;
+    // Skip the very first mount (don't animate the initial page)
+    if (isFirst.current) { isFirst.current = false; return; }
 
+    // New route → show overlay
     setFading(false);
     setVisible(true);
-    const t1 = setTimeout(() => setFading(true),  550);
-    const t2 = setTimeout(() => setVisible(false), 950);
+
+    const t1 = setTimeout(() => setFading(true),   600);  // start fade-out
+    const t2 = setTimeout(() => setVisible(false),  1050); // remove overlay
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [location.pathname]);
 
