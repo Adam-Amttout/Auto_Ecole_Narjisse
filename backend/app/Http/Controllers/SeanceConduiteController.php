@@ -4,28 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\Moniteur;
+use App\Models\Notification;
 use App\Models\SeanceConduite;
 use App\Models\Vehicule;
 use Illuminate\Http\Request;
 
 class SeanceConduiteController extends Controller
 {
-    /**
-     * Créneaux horaires autorisés : uniquement les heures rondes de 8h à 19h
-     * La séance dure 1h : heure_fin = heure_debut + 1h
-     */
     private const HEURES_AUTORISEES = [
         '08:00', '09:00', '10:00', '11:00', '12:00',
         '13:00', '14:00', '15:00', '16:00', '17:00',
         '18:00', '19:00',
     ];
 
-    /** Vérifie que l'heure est une heure ronde autorisée */
     private function heureValide(string $heure): bool
     {
-        // Normaliser : "8:00" → "08:00"
         $normalized = date('H:i', strtotime($heure));
         return in_array($normalized, self::HEURES_AUTORISEES);
+    }
+
+    /** Helper : crée une notification privée pour un client */
+    private function notifClient(int $clientId, string $type, string $titre, string $message, string $icon, string $color): void
+    {
+        Notification::create([
+            'client_id' => $clientId,
+            'type'      => $type,
+            'titre'     => $titre,
+            'message'   => $message,
+            'icon'      => $icon,
+            'color'     => $color,
+            'lu'        => false,
+        ]);
     }
 
     /** GET /api/seances */
@@ -36,23 +45,18 @@ class SeanceConduiteController extends Controller
         if ($request->has('client_id')) {
             $query->where('client_id', $request->client_id);
         }
-
         if ($request->has('mois') && $request->has('annee')) {
-            $query->whereYear('date', $request->annee)
-                  ->whereMonth('date', $request->mois);
+            $query->whereYear('date', $request->annee)->whereMonth('date', $request->mois);
         }
-
         if ($request->has('statut')) {
             $query->where('statut', $request->statut);
         }
 
-        $seances = $query->orderBy('date')->orderBy('heure_debut')->get();
-
-        return response()->json($seances)
+        return response()->json($query->orderBy('date')->orderBy('heure_debut')->get())
             ->header('Cache-Control', 'public, max-age=30');
     }
 
-    /** GET /api/seances/creneaux — retourne les créneaux disponibles pour une date/moniteur/vehicule */
+    /** GET /api/seances/creneaux */
     public function creneaux(Request $request)
     {
         $request->validate([
@@ -61,16 +65,16 @@ class SeanceConduiteController extends Controller
             'vehicule_id' => 'nullable|exists:vehicules,id',
         ]);
 
-        $date        = $request->date;
-        $moniteurId  = $request->moniteur_id;
-        $vehiculeId  = $request->vehicule_id;
+        $date       = $request->date;
+        $moniteurId = $request->moniteur_id;
+        $vehiculeId = $request->vehicule_id;
+        $creneaux   = [];
 
-        $creneaux = [];
         foreach (self::HEURES_AUTORISEES as $heure) {
-            $heureFin   = date('H:i', strtotime($heure . ' +1 hour'));
-            $disponible = true;
+            $heureFin       = date('H:i', strtotime($heure . ' +1 hour'));
+            $disponible     = true;
             $placesMoniteur = Moniteur::MAX_ELEVES_PAR_CRENEAU;
-            $placesVehicule  = Vehicule::MAX_ELEVES_PAR_CRENEAU;
+            $placesVehicule = Vehicule::MAX_ELEVES_PAR_CRENEAU;
 
             if ($moniteurId) {
                 $moniteur = Moniteur::find($moniteurId);
@@ -79,7 +83,6 @@ class SeanceConduiteController extends Controller
                     if ($placesMoniteur === 0) $disponible = false;
                 }
             }
-
             if ($vehiculeId) {
                 $vehicule = Vehicule::find($vehiculeId);
                 if ($vehicule) {
@@ -113,54 +116,37 @@ class SeanceConduiteController extends Controller
             'notes'       => 'nullable|string|max:500',
         ]);
 
-        // ── Règle 1 : heure_debut doit être une heure ronde ──────────────────
         if (!$this->heureValide($validated['heure_debut'])) {
-            $autorisees = implode(', ', self::HEURES_AUTORISEES);
             return response()->json([
-                'message' => "L'heure de début doit être une heure ronde (ex: 8:00, 9:00…). Créneaux autorisés : {$autorisees}.",
+                'message' => "L'heure de début doit être une heure ronde (8:00, 9:00…).",
             ], 422);
         }
 
-        // ── Règle 2 : heure_fin = heure_debut + 1h exactement ────────────────
         $heureFin_attendue = date('H:i', strtotime($validated['heure_debut'] . ' +1 hour'));
         if ($validated['heure_fin'] !== $heureFin_attendue) {
             return response()->json([
-                'message' => "La séance dure exactement 1 heure. Heure de fin attendue : {$heureFin_attendue}.",
+                'message' => "La séance dure exactement 1 heure. Fin attendue : {$heureFin_attendue}.",
             ], 422);
         }
 
         $moniteur = Moniteur::findOrFail($validated['moniteur_id']);
         $vehicule  = Vehicule::findOrFail($validated['vehicule_id']);
 
-        // ── Règle 3 : Moniteur actif ──────────────────────────────────────────
         if (!$moniteur->actif) {
-            return response()->json([
-                'message' => 'Ce moniteur n\'est plus actif.',
-            ], 422);
+            return response()->json(['message' => "Ce moniteur n'est plus actif."], 422);
         }
-
-        // ── Règle 4 : Moniteur a encore de la place (< 3 élèves) ─────────────
         if (!$moniteur->estDisponible($validated['date'], $validated['heure_debut'], $validated['heure_fin'])) {
             $max = Moniteur::MAX_ELEVES_PAR_CRENEAU;
-            return response()->json([
-                'message' => "Ce moniteur a déjà atteint le maximum de {$max} élèves sur ce créneau. Choisissez un autre horaire ou moniteur.",
-            ], 422);
+            return response()->json(['message' => "Ce moniteur a déjà {$max} élèves sur ce créneau."], 422);
         }
-
-        // ── Règle 5 : Véhicule a encore de la place (< 3 élèves) ────────────
         if (!$vehicule->estDisponible($validated['date'], $validated['heure_debut'], $validated['heure_fin'])) {
             if ($vehicule->disponibilite !== 'disponible') {
-                return response()->json([
-                    'message' => 'Ce véhicule est en maintenance ou hors service.',
-                ], 422);
+                return response()->json(['message' => 'Ce véhicule est en maintenance ou hors service.'], 422);
             }
             $max = Vehicule::MAX_ELEVES_PAR_CRENEAU;
-            return response()->json([
-                'message' => "Ce véhicule a déjà atteint le maximum de {$max} élèves sur ce créneau. Choisissez un autre horaire ou véhicule.",
-            ], 422);
+            return response()->json(['message' => "Ce véhicule a déjà {$max} élèves sur ce créneau."], 422);
         }
 
-        // ── Règle 6 : L'élève n'a pas déjà une séance sur ce créneau ─────────
         $conflitEleve = SeanceConduite::where('client_id', $validated['client_id'])
             ->where('date', $validated['date'])
             ->where('statut', '!=', 'annulee')
@@ -169,33 +155,38 @@ class SeanceConduiteController extends Controller
             ->exists();
 
         if ($conflitEleve) {
-            return response()->json([
-                'message' => 'Cet élève a déjà une séance planifiée sur ce créneau.',
-            ], 422);
+            return response()->json(['message' => 'Cet élève a déjà une séance sur ce créneau.'], 422);
         }
 
         $seance = SeanceConduite::create($validated);
         $seance->load(['client', 'moniteur', 'vehicule']);
 
-        // Calculer les places restantes après création
+        // ── 🔔 Notification privée : séance planifiée ──
+        $dateF    = \Carbon\Carbon::parse($validated['date'])->locale('fr')->isoFormat('dddd D MMMM YYYY');
+        $monitNom = $moniteur->prenom . ' ' . $moniteur->nom;
+        $this->notifClient(
+            $validated['client_id'],
+            'seance',
+            '📅 Séance planifiée !',
+            "Votre séance de conduite du {$dateF} à {$validated['heure_debut']} avec {$monitNom} a été confirmée.",
+            '📅',
+            '#2563eb'
+        );
+
         $placesMoniteur = $moniteur->placesRestantes($validated['date'], $validated['heure_debut'], $validated['heure_fin']);
-        $placesVehicule  = $vehicule->placesRestantes($validated['date'], $validated['heure_debut'], $validated['heure_fin']);
+        $placesVehicule = $vehicule->placesRestantes($validated['date'], $validated['heure_debut'], $validated['heure_fin']);
 
         return response()->json([
-            'message'         => 'Séance planifiée avec succès !',
-            'data'            => $seance,
-            'places_restantes' => [
-                'moniteur' => $placesMoniteur,
-                'vehicule' => $placesVehicule,
-            ],
+            'message'          => 'Séance planifiée avec succès !',
+            'data'             => $seance,
+            'places_restantes' => ['moniteur' => $placesMoniteur, 'vehicule' => $placesVehicule],
         ], 201);
     }
 
     /** GET /api/seances/{id} */
     public function show($id)
     {
-        $seance = SeanceConduite::with(['client', 'moniteur', 'vehicule'])->findOrFail($id);
-        return response()->json($seance);
+        return response()->json(SeanceConduite::with(['client', 'moniteur', 'vehicule'])->findOrFail($id));
     }
 
     /** PUT /api/seances/{id} */
@@ -204,9 +195,7 @@ class SeanceConduiteController extends Controller
         $seance = SeanceConduite::findOrFail($id);
 
         if (!in_array($seance->statut, ['planifiee'])) {
-            return response()->json([
-                'message' => 'Seules les séances planifiées peuvent être modifiées.',
-            ], 422);
+            return response()->json(['message' => 'Seules les séances planifiées peuvent être modifiées.'], 422);
         }
 
         $validated = $request->validate([
@@ -225,19 +214,13 @@ class SeanceConduiteController extends Controller
         $moniteurId = $validated['moniteur_id'] ?? $seance->moniteur_id;
         $vehiculeId = $validated['vehicule_id'] ?? $seance->vehicule_id;
 
-        // ── Vérification heure ronde si modifiée ──────────────────────────────
         if (isset($validated['heure_debut']) && !$this->heureValide($heureDebut)) {
-            return response()->json([
-                'message' => "L'heure de début doit être une heure ronde (8:00, 9:00, 10:00…).",
-            ], 422);
+            return response()->json(['message' => "L'heure de début doit être une heure ronde."], 422);
         }
 
         $moniteur = Moniteur::findOrFail($moniteurId);
         if (!$moniteur->estDisponible($date, $heureDebut, $heureFin, $seance->id)) {
-            $max = Moniteur::MAX_ELEVES_PAR_CRENEAU;
-            return response()->json([
-                'message' => "Ce moniteur a déjà {$max} élèves sur ce créneau.",
-            ], 422);
+            return response()->json(['message' => "Ce moniteur a déjà " . Moniteur::MAX_ELEVES_PAR_CRENEAU . " élèves sur ce créneau."], 422);
         }
 
         $vehicule = Vehicule::findOrFail($vehiculeId);
@@ -245,32 +228,35 @@ class SeanceConduiteController extends Controller
             if ($vehicule->disponibilite !== 'disponible') {
                 return response()->json(['message' => 'Véhicule indisponible.'], 422);
             }
-            $max = Vehicule::MAX_ELEVES_PAR_CRENEAU;
-            return response()->json([
-                'message' => "Ce véhicule a déjà {$max} élèves sur ce créneau.",
-            ], 422);
+            return response()->json(['message' => "Ce véhicule a déjà " . Vehicule::MAX_ELEVES_PAR_CRENEAU . " élèves sur ce créneau."], 422);
         }
 
+        $oldStatut = $seance->statut;
         $seance->update($validated);
         $seance->load(['client', 'moniteur', 'vehicule']);
 
-        return response()->json([
-            'message' => 'Séance mise à jour.',
-            'data'    => $seance,
-        ]);
+        // ── 🔔 Notification si passage à "terminee" ──
+        if (isset($validated['statut']) && $validated['statut'] === 'terminee' && $oldStatut !== 'terminee') {
+            $this->notifClient(
+                $seance->client_id,
+                'seance',
+                '✅ Séance terminée !',
+                "Bravo ! Vous avez complété votre séance de conduite du " . \Carbon\Carbon::parse($date)->locale('fr')->isoFormat('D MMMM') . ". Continuez comme ça !",
+                '✅',
+                '#15803d'
+            );
+        }
+
+        return response()->json(['message' => 'Séance mise à jour.', 'data' => $seance]);
     }
 
     /** DELETE /api/seances/{id} */
     public function destroy($id)
     {
         $seance = SeanceConduite::findOrFail($id);
-
         if (in_array($seance->statut, ['en_cours', 'terminee'])) {
-            return response()->json([
-                'message' => 'Impossible de supprimer une séance en cours ou terminée.',
-            ], 422);
+            return response()->json(['message' => 'Impossible de supprimer une séance en cours ou terminée.'], 422);
         }
-
         $seance->delete();
         return response()->json(['message' => 'Séance supprimée.']);
     }
@@ -278,13 +264,25 @@ class SeanceConduiteController extends Controller
     /** PATCH /api/seances/{id}/annuler */
     public function annuler($id)
     {
-        $seance = SeanceConduite::findOrFail($id);
+        $seance = SeanceConduite::with(['moniteur'])->findOrFail($id);
 
         if ($seance->statut === 'terminee') {
             return response()->json(['message' => 'Séance déjà terminée.'], 422);
         }
 
         $seance->update(['statut' => 'annulee']);
+
+        // ── 🔔 Notification privée : séance annulée ──
+        $dateF = \Carbon\Carbon::parse($seance->date)->locale('fr')->isoFormat('dddd D MMMM YYYY');
+        $this->notifClient(
+            $seance->client_id,
+            'seance',
+            '❌ Séance annulée',
+            "Votre séance de conduite prévue le {$dateF} à {$seance->heure_debut} a été annulée. Contactez-nous pour reprogrammer.",
+            '❌',
+            '#dc2626'
+        );
+
         return response()->json(['message' => 'Séance annulée.', 'data' => $seance]);
     }
 }

@@ -22,6 +22,7 @@ const Profil        = lazy(() => import("./pages/Profil"));
 const SeancesPage   = lazy(() => import("./pages/SeancesPage"));
 const Indication    = lazy(() => import("./pages/indication"));
 const Interdiction  = lazy(() => import("./pages/interdiction"));
+const ClientDashboard = lazy(() => import("./pages/ClientDashboard"));
 
 /* ─── Minimal loading fallback ─── */
 const PageLoader = () => (
@@ -89,6 +90,9 @@ function App() {
 
           {/* ── ADMIN UNIQUEMENT ── */}
           <Route path="/dashboard"     element={<AdminRoute><Dashboard /></AdminRoute>} />
+
+          {/* ── CLIENT ESPACE PRIVÉ ── */}
+          <Route path="/mon-espace"    element={<PrivateRoute><ClientDashboard /></PrivateRoute>} />
 
           {/* ── 404 → accueil ── */}
           <Route path="*"              element={<Navigate to="/" replace />} />

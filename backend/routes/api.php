@@ -104,6 +104,8 @@ Route::patch('/contact-messages/{id}/archiver', [ContactMessageController::class
 Route::delete('/contact-messages/{id}',         [ContactMessageController::class, 'destroy']);
 
 // ── NOTIFICATIONS
-Route::get('/notifications',        [NotificationController::class, 'index']);
-Route::post('/notifications',       [NotificationController::class, 'store']);
-Route::delete('/notifications/{id}',[NotificationController::class, 'destroy']);
+Route::get('/notifications',                    [NotificationController::class, 'index']);
+Route::post('/notifications',                   [NotificationController::class, 'store']);
+Route::patch('/notifications/{id}/lire',        [NotificationController::class, 'marquerLu']);
+Route::patch('/notifications/lire-tout',        [NotificationController::class, 'marquerToutLu']);
+Route::delete('/notifications/{id}',            [NotificationController::class, 'destroy']);

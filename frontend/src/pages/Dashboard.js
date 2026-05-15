@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import "./Dashboard.css";
 
 const API = "http://127.0.0.1:8000/api";
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+/* ─────────────────────────────────────────
    HELPERS
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+───────────────────────────────────────── */
 const TABS = [
   { key:"accueil",      icon:"📊", label:"Tableau de bord" },
   { key:"clients",      icon:"👤", label:"Clients"          },
@@ -45,16 +46,16 @@ const Badge = ({ text, bg, color }) => (
 function ActionBtns({ onView, onEdit, onDelete, onAnnuler, confirmId, setConfirmId, id }) {
   return (
     <div className="db-actions">
-      {onView    && <button className="db-btn view"    onClick={() => onView(id)}    title="Voir">ðŸ‘</button>}
-      {onEdit    && <button className="db-btn edit"    onClick={() => onEdit(id)}    title="Modifier">âœï¸</button>}
-      {onAnnuler && <button className="db-btn warn"    onClick={() => onAnnuler(id)} title="Annuler">âœ•</button>}
+      {onView    && <button className="db-btn view"    onClick={() => onView(id)}    title="Voir">👁️</button>}
+      {onEdit    && <button className="db-btn edit"    onClick={() => onEdit(id)}    title="Modifier">✏️</button>}
+      {onAnnuler && <button className="db-btn warn"    onClick={() => onAnnuler(id)} title="Annuler">✖</button>}
       {confirmId === id ? (
         <>
           <button className="db-btn danger"  onClick={() => { onDelete(id); setConfirmId(null); }}>Oui</button>
           <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button>
         </>
       ) : (
-        onDelete && <button className="db-btn danger" onClick={() => setConfirmId(id)} title="Supprimer">ðŸ—‘ï¸</button>
+        onDelete && <button className="db-btn danger" onClick={() => setConfirmId(id)} title="Supprimer">🗑️</button>
       )}
     </div>
   );
@@ -67,10 +68,10 @@ function Modal({ show, onClose, title, children, onSave, saveLabel="Enregistrer"
       <div className="db-modal" onClick={e => e.stopPropagation()}>
         <div className="db-modal-head">
           <h5>{title}</h5>
-          <button className="db-modal-x" onClick={onClose}>Ã—</button>
+          <button className="db-modal-x" onClick={onClose}>×</button>
         </div>
         <div className="db-modal-body">
-          {error && <div className="db-alert err">âš  {error}</div>}
+          {error && <div className="db-alert err">⚠️ {error}</div>}
           {children}
         </div>
         {!hideFoot && (
@@ -85,7 +86,7 @@ function Modal({ show, onClose, title, children, onSave, saveLabel="Enregistrer"
 }
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   VUE CONVERSATION â€” panneau droit messages
+   VUE CONVERSATION — panneau droit messages
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function ConversationView({ msg, onReply, onArchive, onClose }) {
   const [reponse, setReponse] = useState("");
@@ -99,13 +100,13 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
     setSending(true); setErreur(""); setSucces("");
     try {
       await onReply(msg.id, reponse);
-      setSucces("âœ… Email envoyé avec succès à " + msg.email);
+      setSucces("✅ Email envoyé avec succès à " + msg.email);
       setReponse("");
     } catch (e) {
       const errMsg = e.response?.data?.message || "Erreur lors de l'envoi.";
       // Code 207 = réponse enregistrée mais email non envoyé
       if (e.response?.status === 207) {
-        setSucces("âš ï¸ Réponse enregistrée, mais email non envoyé. Vérifiez la config SMTP dans .env");
+        setSucces("⚠️ Réponse enregistrée, mais email non envoyé. Vérifiez la config SMTP dans .env");
       } else {
         setErreur(errMsg);
       }
@@ -118,21 +119,21 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
 
   return (
     <div className="conv-panel">
-      {/* En-tÃªte conversation */}
+      {/* En-tête conversation */}
       <div className="conv-header">
         <div className="conv-header-left">
           <button className="conv-back" onClick={onClose}>â†</button>
           <div className="conv-avatar">{initiales}</div>
           <div>
             <div className="conv-name">{msg.prenom} {msg.nom}</div>
-            <div className="conv-email">{msg.email}{msg.telephone ? ` Â· ${msg.telephone}` : ""}</div>
+            <div className="conv-email">{msg.email}{msg.telephone ? ` · ${msg.telephone}` : ""}</div>
           </div>
         </div>
         <div className="conv-header-right">
           <Badge text={sc.label} bg={sc.bg} color={sc.color}/>
           {msg.statut !== "archive" && (
             <button className="db-btn neutral" style={{fontSize:12}} onClick={() => onArchive(msg.id)} title="Archiver">
-              ðŸ—ƒï¸ Archiver
+              🗃️ Archiver
             </button>
           )}
         </div>
@@ -155,11 +156,11 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
         {msg.reponse_admin && (
           <div className="conv-bubble admin">
             <div className="conv-bubble-head">
-              <span className="conv-bubble-author">ðŸ« Auto Ã‰cole Narjiss (Admin)</span>
+              <span className="conv-bubble-author">🏫 Auto École Narjiss (Admin)</span>
               <span className="conv-bubble-date">{fmtDate(msg.repondu_le)}</span>
             </div>
             <div className="conv-bubble-text">{msg.reponse_admin}</div>
-            <div className="conv-email-sent">ðŸ“§ Email envoyé à {msg.email}</div>
+            <div className="conv-email-sent">📧 Email envoyé à {msg.email}</div>
           </div>
         )}
       </div>
@@ -167,12 +168,12 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
       {/* Zone de réponse */}
       <div className="conv-reply-area">
         {succes && <div className="conv-alert ok">{succes}</div>}
-        {erreur && <div className="conv-alert err">âš  {erreur}</div>}
+        {erreur && <div className="conv-alert err">⚠️ {erreur}</div>}
 
         <div className="conv-reply-box">
           <div className="conv-reply-header">
-            <span>âœï¸ Répondre à {msg.prenom} {msg.nom}</span>
-            <span className="conv-reply-to">â†’ {msg.email}</span>
+            <span>✍ Répondre à {msg.prenom} {msg.nom}</span>
+            <span className="conv-reply-to">→ {msg.email}</span>
           </div>
           <textarea
             ref={textRef}
@@ -180,17 +181,17 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
             rows={5}
             value={reponse}
             onChange={e => setReponse(e.target.value)}
-            placeholder={`Bonjour ${msg.prenom},\n\nMerci pour votre messageâ€¦`}
+            placeholder={`Bonjour ${msg.prenom},\n\nMerci pour votre message…`}
           />
           <div className="conv-reply-footer">
-            <span className="conv-reply-hint">ðŸ’¡ Un email sera envoyé directement au client</span>
+            <span className="conv-reply-hint">💡 Un email sera envoyé directement au client</span>
             <button
               className="conv-send-btn"
               onClick={handleSend}
               disabled={sending || !reponse.trim()}
             >
               {sending ? (
-                <><span className="conv-spinner"/>Envoiâ€¦</>
+                <><span className="conv-spinner"/>Envoi…</>
               ) : (
                 <>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
@@ -208,15 +209,19 @@ function ConversationView({ msg, onReply, onArchive, onClose }) {
   );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+/* ─────────────────────────────────────────
    COMPOSANT PRINCIPAL
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+───────────────────────────────────────── */
 export default function Dashboard() {
   const navigate = useNavigate();
   const [tab, setTab]             = useState("accueil");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [showClientDetails, setShowClientDetails] = useState(null);
+  const [clientFullData, setClientFullData] = useState(null);
+  const [clientDetailsLoading, setClientDetailsLoading] = useState(false);
 
-  /* â”€â”€ données â”€â”€ */
+  /* ── données ── */
   const [clients,      setClients]      = useState([]);
   const [inscriptions, setInscriptions] = useState([]);
   const [cours,        setCours]        = useState([]);
@@ -230,11 +235,11 @@ export default function Dashboard() {
   const [qcmCat,       setQcmCat]       = useState("danger");
   const [progStats,    setProgStats]    = useState(null); // admin progression stats
 
-  /* â”€â”€ messages : conversation ouverte + filtres â”€â”€ */
+  /* ── messages : conversation ouverte + filtres ── */
   const [convMsg,      setConvMsg]      = useState(null);   // message ouvert dans ConversationView
   const [msgFiltre,    setMsgFiltre]    = useState("tous"); // tous | nouveau | lu | repondu | archive
 
-  /* â”€â”€ FAQ â”€â”€ */
+  /* ── FAQ ── */
   const [faqModal,        setFaqModal]        = useState(false);
   const [faqEditItem,     setFaqEditItem]      = useState(null);
   const [faqForm,         setFaqForm]         = useState({ question:"", reponse:"", ordre:0, actif:true });
@@ -243,7 +248,7 @@ export default function Dashboard() {
   const [faqSaving,       setFaqSaving]        = useState(false);
   const [faqError,        setFaqError]         = useState("");
 
-  /* â”€â”€ Séance : creneaux disponibles â”€â”€ */
+  /* ── Séance : creneaux disponibles ── */
   const HEURES = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
   const [creneaux,       setCreneaux]       = useState([]);
   const [creneauxLoading,setCreneauxLoading]= useState(false);
@@ -251,7 +256,7 @@ export default function Dashboard() {
 
   const loadedTabs = useRef(new Set());
 
-  /* â”€â”€ modal générique â”€â”€ */
+  /* ── modal générique ── */
   const [modal,     setModal]     = useState({ show:false, title:"", entity:"" });
   const [formData,  setFormData]  = useState({});
   const [editId,    setEditId]    = useState(null);
@@ -264,7 +269,7 @@ export default function Dashboard() {
     setTimeout(() => setToast(t => ({ ...t, show:false })), 3500);
   };
 
-  /* â”€â”€ Chargement par onglet â”€â”€ */
+  /* ── Chargement par onglet ── */
   const loadTab = useCallback(async (activeTab) => {
     if (loadedTabs.current.has(activeTab)) return;
     loadedTabs.current.add(activeTab);
@@ -319,7 +324,7 @@ export default function Dashboard() {
 
   useEffect(() => { loadTab(tab); }, [tab, loadTab]);
 
-  /* â”€â”€ Modal générique â”€â”€ */
+  /* ── Modal générique ── */
   const openModal = (entity, title, data={}, id=null) => {
     setModal({ show:true, title, entity });
     setFormData(data);
@@ -425,7 +430,7 @@ export default function Dashboard() {
     </div>
   );
 
-  /* â”€â”€ FAQ CRUD â”€â”€ */
+  /* ── FAQ CRUD ── */
   const openFaqCreate = () => {
     setFaqEditItem(null);
     setFaqForm({ question:"", reponse:"", ordre:faqs.length+1, actif:true });
@@ -479,7 +484,7 @@ export default function Dashboard() {
     } catch (e) { showToast(e.response?.data?.message||"Erreur.", false); }
   };
 
-  /* â”€â”€ MESSAGES : actions â”€â”€ */
+  /* ── MESSAGES : actions ── */
   const reloadMessages = async () => {
     loadedTabs.current.delete("messages");
     await loadTab("messages");
@@ -488,7 +493,7 @@ export default function Dashboard() {
   const marquerLu = async (id) => {
     await axios.patch(`${API}/contact-messages/${id}/lire`);
     await reloadMessages();
-    // Mettre à jour la conversation ouverte si c'est le mÃªme message
+    // Mettre à jour la conversation ouverte si c'est le même message
     if (convMsg?.id === id) setConvMsg(m => ({ ...m, lu:true, statut:"lu" }));
   };
 
@@ -525,9 +530,7 @@ export default function Dashboard() {
     }
   };
 
-  const msgFiltres = messages.filter(m =>
-    msgFiltre === "tous" ? true : m.statut === msgFiltre
-  );
+  // msgFiltres is defined below, after filteredMessages
   const nbNouveaux = messages.filter(m => m.statut === "nouveau").length;
 
   const stats = [
@@ -539,11 +542,80 @@ export default function Dashboard() {
     { icon:"📅", label:"Séances",      val:seances.length,      color:"#d97706" },
   ];
 
-  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ RENDER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  const openClientDetails = async (client) => {
+    setShowClientDetails(client);
+    setClientFullData(null);
+    setClientDetailsLoading(true);
+    try {
+      const [progRes, seancesRes, msgRes] = await Promise.allSettled([
+        axios.get(`${API}/progression/by-category?client_id=${client.id}`),
+        axios.get(`${API}/seances`),
+        axios.get(`${API}/contact-messages`)
+      ]);
+      const clientSeances = seancesRes.status === "fulfilled" 
+        ? seancesRes.value.data.filter(s => s.client?.id === client.id) 
+        : [];
+      const clientMessages = msgRes.status === "fulfilled"
+        ? msgRes.value.data.filter(m => m.email === client.email || m.telephone === client.telephone)
+        : [];
+      setClientFullData({
+        progressionCategories: progRes.status === "fulfilled" ? progRes.value.data : null,
+        seances: clientSeances,
+        messages: clientMessages
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setClientDetailsLoading(false);
+    }
+  };
+
+  const q = globalSearch.toLowerCase().trim();
+
+  const filteredClients = clients.filter(c =>
+    !q || [c.nom, c.prenom, c.email, c.telephone].some(f => f?.toLowerCase().includes(q))
+  );
+  const filteredInscriptions = inscriptions.filter(i =>
+    !q || [i.nom, i.prenom, i.email, i.telephone, i.sujet].some(f => f?.toLowerCase().includes(q))
+  );
+  const filteredMoniteurs = moniteurs.filter(m =>
+    !q || [m.nom, m.prenom, m.email, m.telephone].some(f => f?.toLowerCase().includes(q))
+  );
+  const filteredVehicules = vehicules.filter(v =>
+    !q || [v.marque, v.modele, v.immatriculation].some(f => f?.toLowerCase().includes(q))
+  );
+  const filteredSeances = seances.filter(s =>
+    !q || [
+      s.client?.nom, s.client?.prenom,
+      s.moniteur?.nom, s.moniteur?.prenom,
+      s.vehicule?.marque, s.vehicule?.modele,
+      s.statut
+    ].some(f => f?.toLowerCase().includes(q))
+  );
+  const filteredCours = cours.filter(c =>
+    !q || [c.titre, c.description, c.categorie, c.niveau].some(f => f?.toLowerCase().includes(q))
+  );
+  const filteredAvis = avis.filter(a =>
+    !q || [a.nom, a.prenom, a.texte, a.statut].some(f => f?.toLowerCase().includes(q))
+  );
+  const filteredFaqs = faqs.filter(f =>
+    !q || [f.question, f.reponse].some(x => x?.toLowerCase().includes(q))
+  );
+  const filteredMessages = messages.filter(m =>
+    !q || [m.nom, m.prenom, m.email, m.sujet, m.message].some(f => f?.toLowerCase().includes(q))
+  );
+  const filteredQuestions = questions.filter(qn =>
+    !q || [qn.question, qn.option_a, qn.option_b, qn.option_c, qn.option_d, qn.categorie].some(f => f?.toLowerCase().includes(q))
+  );
+  const msgFiltres = filteredMessages.filter(m =>
+    msgFiltre === "tous" ? true : m.statut === msgFiltre
+  );
+
+  /* ─────────── RENDER ─────────── */
   return (
     <div className="db-layout">
 
-      {/* â”€â”€ SIDEBAR â”€â”€ */}
+      {/* ── SIDEBAR ── */}
       <aside className={`db-sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="db-sidebar-brand">
           <span className="db-sidebar-logo">N</span>
@@ -576,16 +648,34 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* â”€â”€ MAIN â”€â”€ */}
+      {/* ── MAIN ── */}
       <main className="db-main">
-        <div className="db-topbar">
-          <button className="db-burger" onClick={() => setSidebarOpen(!sidebarOpen)}>â˜°</button>
-          <span className="db-topbar-title">{TABS.find(t=>t.key===tab)?.label || "Dashboard"}</span>
+        <div className="db-topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
+            <button className="db-burger" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
+            <span className="db-topbar-title">{TABS.find(t=>t.key===tab)?.label || "Dashboard"}</span>
+          </div>
+          <div className="db-topbar-search" style={{ position: "relative", width: "100%", maxWidth: 340 }}>
+            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, pointerEvents: "none" }}>🔍</span>
+            <input
+              type="text"
+              placeholder={`Rechercher dans ${TABS.find(t=>t.key===tab)?.label||"tous"}…`}
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              style={{ width: "100%", padding: "9px 36px 9px 36px", borderRadius: 24, border: "1.5px solid #e2e8f0", outline: "none", fontSize: 13, background: "#f8fafc", transition: "border-color .2s" }}
+              onFocus={e => e.target.style.borderColor="#e63946"}
+              onBlur={e => e.target.style.borderColor="#e2e8f0"}
+            />
+            {globalSearch && (
+              <button onClick={() => setGlobalSearch("")}
+                style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 15, color: "#94a3b8" }}>✕</button>
+            )}
+          </div>
         </div>
 
         {toast.show && (
           <div className={`db-toast ${toast.ok?"ok":"err"}`}>
-            {toast.ok ? "âœ…" : "âŒ"} {toast.msg}
+            {toast.ok ? "✅" : "âŒ"} {toast.msg}
           </div>
         )}
 
@@ -602,6 +692,74 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
+            
+            {/* NEW CHARTS ROW */}
+            <div className="db-charts-grid" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 20, marginBottom: 20 }}>
+              <div className="db-card">
+                <div className="db-card-head"><span>📈 Évolution des Inscriptions</span></div>
+                <div style={{ height: 260, padding: "20px 20px 0 0" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={(() => {
+                      const counts = clients.reduce((acc, c) => {
+                        const date = new Date(c.created_at).toLocaleDateString("fr-FR", { day: '2-digit', month: 'short' });
+                        acc[date] = (acc[date] || 0) + 1;
+                        return acc;
+                      }, {});
+                      return Object.keys(counts).map(date => ({ date, Inscriptions: counts[date] })).slice(-15);
+                    })()}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                      <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                      <RechartsTooltip contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
+                      <Line type="monotone" dataKey="Inscriptions" stroke="#2563eb" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: "#fff" }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="db-card">
+                <div className="db-card-head"><span>🍩 Séances par Statut</span></div>
+                <div style={{ height: 260, position: "relative" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={(() => {
+                        const counts = seances.reduce((acc, s) => {
+                          acc[s.statut] = (acc[s.statut] || 0) + 1;
+                          return acc;
+                        }, {});
+                        const COLORS = { planifiee: "#3b82f6", en_cours: "#eab308", terminee: "#22c55e", annulee: "#94a3b8" };
+                        return Object.keys(counts).map(key => ({
+                          name: STATUT_SEANCE[key]?.label || key,
+                          value: counts[key],
+                          color: COLORS[key] || "#cbd5e1"
+                        }));
+                      })()} cx="50%" cy="45%" innerRadius={55} outerRadius={80} paddingAngle={5} dataKey="value">
+                        {(() => {
+                          const counts = seances.reduce((acc, s) => { acc[s.statut] = (acc[s.statut] || 0) + 1; return acc; }, {});
+                          const COLORS = { planifiee: "#3b82f6", en_cours: "#eab308", terminee: "#22c55e", annulee: "#94a3b8" };
+                          return Object.keys(counts).map(key => ({ name: STATUT_SEANCE[key]?.label || key, value: counts[key], color: COLORS[key] || "#cbd5e1" }));
+                        })().map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{ position: "absolute", bottom: 10, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 15, flexWrap: "wrap", padding: "0 10px" }}>
+                    {(() => {
+                        const counts = seances.reduce((acc, s) => { acc[s.statut] = (acc[s.statut] || 0) + 1; return acc; }, {});
+                        const COLORS = { planifiee: "#3b82f6", en_cours: "#eab308", terminee: "#22c55e", annulee: "#94a3b8" };
+                        return Object.keys(counts).map(key => ({ name: STATUT_SEANCE[key]?.label || key, value: counts[key], color: COLORS[key] || "#cbd5e1" }));
+                    })().map(entry => (
+                      <div key={entry.name} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#475569", fontWeight: 600 }}>
+                        <span style={{ display: "block", width: 8, height: 8, borderRadius: "50%", background: entry.color }}/>
+                        {entry.name} ({entry.value})
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="db-recent-grid">
               <div className="db-card">
                 <div className="db-card-head"><span>👤 Derniers clients</span></div>
@@ -635,15 +793,16 @@ export default function Dashboard() {
         {tab === "clients" && (
           <div className="db-section">
             <div className="db-section-head">
-              <h4 className="db-title">Clients ({clients.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("client","âž• Ajouter un client",{role:"user"})}>+ Ajouter</button>
+              <h4 className="db-title">Clients ({filteredClients.length}{q && filteredClients.length !== clients.length ? ` / ${clients.length}` : ""})</h4>
+              <button className="db-btn primary" onClick={() => openModal("client","➕ Ajouter un client",{role:"user"})}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
                 <thead><tr><th>#</th><th>Nom complet</th><th>Email</th><th>Rôle</th><th>Inscrit le</th><th>Actions</th></tr></thead>
                 <tbody>
                   {clients.length===0 && <tr><td colSpan={6} className="db-empty">Aucun client</td></tr>}
-                  {clients.map(c=>(
+                  {q && filteredClients.length===0 && clients.length>0 && <tr><td colSpan={6} className="db-empty">🔍 Aucun résultat pour « {globalSearch} »</td></tr>}
+                  {filteredClients.map(c=>(
                     <tr key={c.id}>
                       <td className="db-id">{c.id}</td>
                       <td><b>{c.nom} {c.prenom}</b></td>
@@ -651,8 +810,8 @@ export default function Dashboard() {
                       <td><Badge text={c.role} bg={c.role==="admin"?"#fee2e2":"#dbeafe"} color={c.role==="admin"?"#b91c1c":"#1d4ed8"}/></td>
                       <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(c.created_at).toLocaleDateString("fr-FR")}</td>
                       <td><ActionBtns
-                        onView  ={() => window.open(`/profil/${c.id}`,"_blank")}
-                        onEdit  ={() => openModal("client",`âœï¸ Modifier ${c.prenom}`,{nom:c.nom,prenom:c.prenom,email:c.email,password:"",role:c.role},c.id)}
+                        onView  ={() => openClientDetails(c)}
+                        onEdit  ={() => openModal("client",`✏️ Modifier ${c.prenom}`,{nom:c.nom,prenom:c.prenom,email:c.email,password:"",role:c.role},c.id)}
                         onDelete={() => handleDelete("client",c.id)}
                         confirmId={confirmId} setConfirmId={setConfirmId} id={c.id}
                       /></td>
@@ -668,24 +827,25 @@ export default function Dashboard() {
         {tab === "inscriptions" && (
           <div className="db-section">
             <div className="db-section-head">
-              <h4 className="db-title">Inscriptions ({inscriptions.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("inscription","âž• Ajouter",{})}>+ Ajouter</button>
+              <h4 className="db-title">Inscriptions ({filteredInscriptions.length}{q && filteredInscriptions.length !== inscriptions.length ? ` / ${inscriptions.length}` : ""})</h4>
+              <button className="db-btn primary" onClick={() => openModal("inscription","➕ Ajouter",{})}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
                 <thead><tr><th>#</th><th>Nom</th><th>Email</th><th>Téléphone</th><th>Sujet</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>
                   {inscriptions.length===0 && <tr><td colSpan={7} className="db-empty">Aucune inscription</td></tr>}
-                  {inscriptions.map(i=>(
+                  {q && filteredInscriptions.length===0 && inscriptions.length>0 && <tr><td colSpan={7} className="db-empty">🔍 Aucun résultat pour « {globalSearch} »</td></tr>}
+                  {filteredInscriptions.map(i=>(
                     <tr key={i.id}>
                       <td className="db-id">{i.id}</td>
                       <td><b>{i.nom} {i.prenom}</b></td>
                       <td style={{color:"#64748b"}}>{i.email}</td>
-                      <td style={{fontSize:13}}>{i.telephone||"â€”"}</td>
-                      <td><Badge text={i.sujet||"â€”"} bg="#f0f9ff" color="#0369a1"/></td>
+                      <td style={{fontSize:13}}>{i.telephone||"—"}</td>
+                      <td><Badge text={i.sujet||"—"} bg="#f0f9ff" color="#0369a1"/></td>
                       <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(i.created_at).toLocaleDateString("fr-FR")}</td>
                       <td><ActionBtns
-                        onEdit  ={() => openModal("inscription","âœï¸ Modifier",{nom:i.nom,prenom:i.prenom,email:i.email,telephone:i.telephone,sujet:i.sujet,message:i.message},i.id)}
+                        onEdit  ={() => openModal("inscription","✏️ Modifier",{nom:i.nom,prenom:i.prenom,email:i.email,telephone:i.telephone,sujet:i.sujet,message:i.message},i.id)}
                         onDelete={() => handleDelete("inscription",i.id)}
                         confirmId={confirmId} setConfirmId={setConfirmId} id={i.id}
                       /></td>
@@ -732,7 +892,7 @@ export default function Dashboard() {
               {/* -- Tableau des cours -- */}
               <div className="db-cours-main">
                 <div className="db-section-head">
-                  <h4 className="db-title">Cours ({cours.length})</h4>
+                  <h4 className="db-title">Cours ({filteredCours.length}{q && filteredCours.length !== cours.length ? ` / ${cours.length}` : ""})</h4>
                   <button className="db-btn primary" onClick={() => openModal("cours","➕ Ajouter un cours",{categorie:"danger",niveau:"debutant"})}>+ Ajouter</button>
                 </div>
                 <div className="db-card"><div className="db-table-wrap">
@@ -740,7 +900,8 @@ export default function Dashboard() {
                     <thead><tr><th>#</th><th>Titre</th><th>Catégorie</th><th>Niveau</th><th>Statut</th><th>✅ Élèves</th><th>Actions</th></tr></thead>
                     <tbody>
                       {cours.length===0 && <tr><td colSpan={7} className="db-empty">Aucun cours</td></tr>}
-                      {cours.map(c=>{
+                      {q && filteredCours.length===0 && cours.length>0 && <tr><td colSpan={7} className="db-empty">🔍 Aucun résultat pour « {globalSearch} »</td></tr>}
+                      {filteredCours.map(c=>{
                         const nbEleves = progStats?.per_cours?.[c.id] || 0;
                         return (
                           <tr key={c.id}>
@@ -799,15 +960,16 @@ export default function Dashboard() {
         {tab === "moniteurs" && (
           <div className="db-section">
             <div className="db-section-head">
-              <h4 className="db-title">Moniteurs ({moniteurs.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("moniteur","âž• Ajouter un moniteur",{actif:true})}>+ Ajouter</button>
+              <h4 className="db-title">Moniteurs ({filteredMoniteurs.length}{q && filteredMoniteurs.length !== moniteurs.length ? ` / ${moniteurs.length}` : ""})</h4>
+              <button className="db-btn primary" onClick={() => openModal("moniteur","➕ Ajouter un moniteur",{actif:true})}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
                 <thead><tr><th>#</th><th>Nom complet</th><th>Téléphone</th><th>Email</th><th>Statut</th><th>Actions</th></tr></thead>
                 <tbody>
                   {moniteurs.length===0 && <tr><td colSpan={6} className="db-empty">Aucun moniteur</td></tr>}
-                  {moniteurs.map(m=>(
+                  {q && filteredMoniteurs.length===0 && moniteurs.length>0 && <tr><td colSpan={6} className="db-empty">🔍 Aucun résultat pour « {globalSearch} »</td></tr>}
+                  {filteredMoniteurs.map(m=>(
                     <tr key={m.id}>
                       <td className="db-id">{m.id}</td>
                       <td><b>{m.prenom} {m.nom}</b></td>
@@ -815,7 +977,7 @@ export default function Dashboard() {
                       <td style={{color:"#64748b"}}>{m.email}</td>
                       <td><Badge text={m.actif?"Actif":"Inactif"} bg={m.actif?"#dcfce7":"#f1f5f9"} color={m.actif?"#15803d":"#64748b"}/></td>
                       <td><ActionBtns
-                        onEdit  ={() => openModal("moniteur","âœï¸ Modifier",{nom:m.nom,prenom:m.prenom,telephone:m.telephone,email:m.email,actif:m.actif},m.id)}
+                        onEdit  ={() => openModal("moniteur","✏️ Modifier",{nom:m.nom,prenom:m.prenom,telephone:m.telephone,email:m.email,actif:m.actif},m.id)}
                         onDelete={() => handleDelete("moniteur",m.id)}
                         confirmId={confirmId} setConfirmId={setConfirmId} id={m.id}
                       /></td>
@@ -827,26 +989,27 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* â•â• VÃ‰HICULES â•â• */}
+        {/* â•â• VÉHICULES â•â• */}
         {tab === "vehicules" && (
           <div className="db-section">
             <div className="db-section-head">
-              <h4 className="db-title">Véhicules ({vehicules.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("vehicule","âž• Ajouter un véhicule",{disponibilite:"disponible"})}>+ Ajouter</button>
+              <h4 className="db-title">Véhicules ({filteredVehicules.length}{q && filteredVehicules.length !== vehicules.length ? ` / ${vehicules.length}` : ""})</h4>
+              <button className="db-btn primary" onClick={() => openModal("vehicule","➕ Ajouter un véhicule",{disponibilite:"disponible"})}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
                 <thead><tr><th>#</th><th>Véhicule</th><th>Immatriculation</th><th>Disponibilité</th><th>Actions</th></tr></thead>
                 <tbody>
                   {vehicules.length===0 && <tr><td colSpan={5} className="db-empty">Aucun véhicule</td></tr>}
-                  {vehicules.map(v=>(
+                  {q && filteredVehicules.length===0 && vehicules.length>0 && <tr><td colSpan={5} className="db-empty">🔍 Aucun résultat pour « {globalSearch} »</td></tr>}
+                  {filteredVehicules.map(v=>(
                     <tr key={v.id}>
                       <td className="db-id">{v.id}</td>
                       <td><b>{v.marque} {v.modele}</b></td>
                       <td><code style={{background:"#f1f5f9",padding:"2px 7px",borderRadius:5,fontSize:12}}>{v.immatriculation}</code></td>
                       <td><Badge text={{disponible:"Disponible",en_maintenance:"Maintenance",hors_service:"Hors service"}[v.disponibilite]||v.disponibilite} bg={{disponible:"#dcfce7",en_maintenance:"#fef9c3",hors_service:"#fee2e2"}[v.disponibilite]||"#f1f5f9"} color={{disponible:"#15803d",en_maintenance:"#a16207",hors_service:"#b91c1c"}[v.disponibilite]||"#64748b"}/></td>
                       <td><ActionBtns
-                        onEdit  ={() => openModal("vehicule","âœï¸ Modifier",{marque:v.marque,modele:v.modele,immatriculation:v.immatriculation,disponibilite:v.disponibilite},v.id)}
+                        onEdit  ={() => openModal("vehicule","✏️ Modifier",{marque:v.marque,modele:v.modele,immatriculation:v.immatriculation,disponibilite:v.disponibilite},v.id)}
                         onDelete={() => handleDelete("vehicule",v.id)}
                         confirmId={confirmId} setConfirmId={setConfirmId} id={v.id}
                       /></td>
@@ -858,19 +1021,20 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* â•â• SÃ‰ANCES â•â• */}
+        {/* â•â• SÉANCES â•â• */}
         {tab === "seances" && (
           <div className="db-section">
             <div className="db-section-head">
-              <h4 className="db-title">Séances ({seances.length})</h4>
-              <button className="db-btn primary" onClick={() => openModal("seance","âž• Planifier une séance",{client_id:"",moniteur_id:"",vehicule_id:"",date:"",heure_debut:"",heure_fin:"",notes:""})}>+ Planifier</button>
+              <h4 className="db-title">Séances ({filteredSeances.length}{q && filteredSeances.length !== seances.length ? ` / ${seances.length}` : ""})</h4>
+              <button className="db-btn primary" onClick={() => openModal("seance","➕ Planifier une séance",{client_id:"",moniteur_id:"",vehicule_id:"",date:"",heure_debut:"",heure_fin:"",notes:""})}>+ Planifier</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
-                <thead><tr><th>#</th><th>Ã‰lève</th><th>Moniteur</th><th>Véhicule</th><th>Date</th><th>Horaire</th><th>Statut</th><th>Actions</th></tr></thead>
+                <thead><tr><th>#</th><th>Élève</th><th>Moniteur</th><th>Véhicule</th><th>Date</th><th>Horaire</th><th>Statut</th><th>Actions</th></tr></thead>
                 <tbody>
                   {seances.length===0 && <tr><td colSpan={8} className="db-empty">Aucune séance</td></tr>}
-                  {seances.map(s=>{
+                  {q && filteredSeances.length===0 && seances.length>0 && <tr><td colSpan={8} className="db-empty">🔍 Aucun résultat pour « {globalSearch} »</td></tr>}
+                  {filteredSeances.map(s=>{
                     const st = STATUT_SEANCE[s.statut]||{label:s.statut,bg:"#f1f5f9",color:"#64748b"};
                     return (
                       <tr key={s.id}>
@@ -879,7 +1043,7 @@ export default function Dashboard() {
                         <td>{s.moniteur?.prenom} {s.moniteur?.nom}</td>
                         <td style={{fontSize:12}}>{s.vehicule?.marque} {s.vehicule?.modele}</td>
                         <td style={{fontSize:12}}>{new Date(s.date).toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})}</td>
-                        <td style={{fontSize:12,whiteSpace:"nowrap"}}>{s.heure_debut} â€“ {s.heure_fin}</td>
+                        <td style={{fontSize:12,whiteSpace:"nowrap"}}>{s.heure_debut} – {s.heure_fin}</td>
                         <td><Badge text={st.label} bg={st.bg} color={st.color}/></td>
                         <td><ActionBtns
                           onAnnuler={s.statut==="planifiee" ? annulerSeance : null}
@@ -898,19 +1062,19 @@ export default function Dashboard() {
         {/* â•â•â•â•â•â•â•â•â•â• QCM QUESTIONS â•â•â•â•â•â•â•â•â•â• */}
         {tab === "qcm" && (() => {
           const QCM_CATS = [
-            { key:"danger",       label:"âš ï¸ Danger",        color:"#e63946", bg:"#fee2e2" },
-            { key:"indication",   label:"â„¹ï¸ Indication",    color:"#2563eb", bg:"#dbeafe" },
-            { key:"interdiction", label:"ðŸš« Interdiction",  color:"#c2410c", bg:"#fff7ed" },
+            { key:"danger",       label:"⚠️ Danger",        color:"#e63946", bg:"#fee2e2" },
+            { key:"indication",   label:"ℹ️ Indication",    color:"#2563eb", bg:"#dbeafe" },
+            { key:"interdiction", label:"🚫 Interdiction",  color:"#c2410c", bg:"#fff7ed" },
             { key:"code_route",   label:"📋 Code Route",    color:"#7c3aed", bg:"#f5f3ff" },
             { key:"conduite",     label:"🚗 Conduite",      color:"#059669", bg:"#ecfdf5" },
-            { key:"autre",        label:"ðŸ“Œ Autre",         color:"#64748b", bg:"#f8fafc" },
+            { key:"autre",        label:"📌 Autre",         color:"#64748b", bg:"#f8fafc" },
           ];
           const catQuestions = questions.filter(q => q.categorie === qcmCat);
           const activeCat    = QCM_CATS.find(c => c.key === qcmCat) || QCM_CATS[0];
           return (
             <div className="db-section">
               <div className="db-section-head">
-                <h4 className="db-title">📝 Quiz QCM â€” Gestion par Catégorie</h4>
+                <h4 className="db-title">📝 Quiz QCM — Gestion par Catégorie</h4>
               </div>
 
               {/* Sub-tabs */}
@@ -938,18 +1102,18 @@ export default function Dashboard() {
               <div className="db-card">
                 <div className="db-card-head" style={{justifyContent:"space-between"}}>
                   <span style={{fontWeight:700,color:activeCat.color}}>
-                    {activeCat.label} â€” {catQuestions.length} question(s)
+                    {activeCat.label} — {catQuestions.length} question(s)
                   </span>
                   <button className="db-btn primary"
-                    onClick={() => openModal("question","âž• Ajouter une question",{correct_answer:"a",categorie:qcmCat})}>
+                    onClick={() => openModal("question","➕ Ajouter une question",{correct_answer:"a",categorie:qcmCat})}>
                     + Ajouter
                   </button>
                 </div>
                 <div className="db-table-wrap">
                   <table className="db-table">
-                    <thead><tr><th>#</th><th>Question</th><th>A</th><th>B</th><th>C</th><th>D</th><th>âœ“</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>#</th><th>Question</th><th>A</th><th>B</th><th>C</th><th>D</th><th>✓</th><th>Actions</th></tr></thead>
                     <tbody>
-                      {catQuestions.length===0 && <tr><td colSpan={8} className="db-empty">Aucune question â€” cliquez Â«Â + AjouterÂ Â»</td></tr>}
+                      {catQuestions.length===0 && <tr><td colSpan={8} className="db-empty">Aucune question — cliquez « + Ajouter »</td></tr>}
                       {catQuestions.map(q=>(
                         <tr key={q.id}>
                           <td className="db-id">{q.id}</td>
@@ -963,7 +1127,7 @@ export default function Dashboard() {
                           <td><Badge text={q.correct_answer?.toUpperCase()} bg="#dcfce7" color="#15803d"/></td>
                           <td>
                             <ActionBtns
-                              onEdit  ={() => openModal("question","âœï¸ Modifier",{question:q.question,option_a:q.option_a,option_b:q.option_b,option_c:q.option_c,option_d:q.option_d,correct_answer:q.correct_answer,explication:q.explication||"",categorie:q.categorie},q.id)}
+                              onEdit  ={() => openModal("question","✏️ Modifier",{question:q.question,option_a:q.option_a,option_b:q.option_b,option_c:q.option_c,option_d:q.option_d,correct_answer:q.correct_answer,explication:q.explication||"",categorie:q.categorie},q.id)}
                               onDelete={() => handleDelete("question",q.id)}
                               confirmId={confirmId} setConfirmId={setConfirmId} id={q.id}
                             />
@@ -981,30 +1145,31 @@ export default function Dashboard() {
         {/* â•â• AVIS â•â• */}
         {tab === "avis" && (
           <div className="db-section">
-            <div className="db-section-head"><h4 className="db-title">Avis Ã‰lèves ({avis.length})</h4></div>
+            <div className="db-section-head"><h4 className="db-title">Avis Élèves ({avis.length})</h4></div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
                 <thead><tr><th>#</th><th>Auteur</th><th>Témoignage</th><th>Note</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>
-                  {avis.length === 0 && <tr><td colSpan={7} className="db-empty">Aucun avis reÃ§u</td></tr>}
-                  {avis.map(a => {
+                  {avis.length === 0 && <tr><td colSpan={7} className="db-empty">Aucun avis reçu</td></tr>}
+                  {q && filteredAvis.length===0 && avis.length>0 && <tr><td colSpan={7} className="db-empty">🔍 Aucun résultat pour « {globalSearch} »</td></tr>}
+                  {filteredAvis.map(a => {
                     const sc = {pending:{label:"En attente",bg:"#fef9c3",color:"#a16207"},approved:{label:"Approuvé",bg:"#dcfce7",color:"#15803d"},rejected:{label:"Rejeté",bg:"#fee2e2",color:"#b91c1c"}}[a.statut]||{label:a.statut,bg:"#f1f5f9",color:"#64748b"};
                     return (
                       <tr key={a.id}>
                         <td className="db-id">{a.id}</td>
                         <td><b>{a.nom}{a.prenom?' '+a.prenom:''}</b><div style={{fontSize:11.5,color:"#94a3b8"}}>{a.role_label}</div></td>
                         <td style={{maxWidth:280,fontSize:12.5,color:"#475569",fontStyle:"italic"}}>"{a.texte?.slice(0,100)}{a.texte?.length>100?'...':''}"</td>
-                        <td style={{color:"#fbbf24",fontWeight:700}}>{'â˜…'.repeat(a.note)}</td>
+                        <td style={{color:"#fbbf24",fontWeight:700}}>{'★'.repeat(a.note)}</td>
                         <td><Badge text={sc.label} bg={sc.bg} color={sc.color}/></td>
                         <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
                         <td>
                           <div className="db-actions">
-                            {a.statut !== 'approved' && <button className="db-btn view" title="Approuver" onClick={async () => { await axios.patch(`${API}/avis/${a.id}/statut`,{statut:'approved'}); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis approuvé !'); }}>âœ…</button>}
+                            {a.statut !== 'approved' && <button className="db-btn view" title="Approuver" onClick={async () => { await axios.patch(`${API}/avis/${a.id}/statut`,{statut:'approved'}); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis approuvé !'); }}>✅</button>}
                             {a.statut !== 'rejected' && <button className="db-btn warn"  title="Rejeter"   onClick={async () => { await axios.patch(`${API}/avis/${a.id}/statut`,{statut:'rejected'}); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis rejeté.'); }}>âŒ</button>}
                             {confirmId === a.id ? (
                               <><button className="db-btn danger" onClick={async () => { await axios.delete(`${API}/avis/${a.id}`); setConfirmId(null); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Supprimé.'); }}>Oui</button>
                               <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button></>
-                            ) : <button className="db-btn danger" onClick={() => setConfirmId(a.id)} title="Supprimer">ðŸ—‘ï¸</button>}
+                            ) : <button className="db-btn danger" onClick={() => setConfirmId(a.id)} title="Supprimer">🗑️</button>}
                           </div>
                         </td>
                       </tr>
@@ -1020,7 +1185,7 @@ export default function Dashboard() {
         {tab === "faq" && (
           <div className="db-section">
             <div className="db-section-head">
-              <h4 className="db-title">FAQ â€” Questions fréquentes ({faqs.length})</h4>
+              <h4 className="db-title">FAQ — Questions fréquentes ({faqs.length})</h4>
               <button className="db-btn primary" onClick={openFaqCreate}>+ Ajouter</button>
             </div>
             <div className="db-card"><div className="db-table-wrap">
@@ -1028,21 +1193,22 @@ export default function Dashboard() {
                 <thead><tr><th>#</th><th>Image</th><th>Question</th><th>Réponse</th><th>Ordre</th><th>Statut</th><th>Actions</th></tr></thead>
                 <tbody>
                   {faqs.length === 0 && <tr><td colSpan={7} className="db-empty">Aucune FAQ</td></tr>}
-                  {faqs.map(f => (
+                  {q && filteredFaqs.length===0 && faqs.length>0 && <tr><td colSpan={7} className="db-empty">🔍 Aucun résultat pour « {globalSearch} »</td></tr>}
+                  {filteredFaqs.map(f => (
                     <tr key={f.id}>
                       <td className="db-id">{f.id}</td>
-                      <td>{f.image ? <img src={f.image} alt="faq" style={{width:52,height:40,objectFit:"cover",borderRadius:8,border:"1.5px solid #e2e8f0"}} onError={e=>{e.target.style.display="none";}} /> : <span style={{color:"#cbd5e1",fontSize:12}}>â€”</span>}</td>
+                      <td>{f.image ? <img src={f.image} alt="faq" style={{width:52,height:40,objectFit:"cover",borderRadius:8,border:"1.5px solid #e2e8f0"}} onError={e=>{e.target.style.display="none";}} /> : <span style={{color:"#cbd5e1",fontSize:12}}>—</span>}</td>
                       <td style={{maxWidth:200}}><b style={{fontSize:13}}>{f.question}</b></td>
-                      <td style={{maxWidth:260,fontSize:12.5,color:"#475569"}}>{f.reponse?.slice(0,80)}{f.reponse?.length>80?"â€¦":""}</td>
+                      <td style={{maxWidth:260,fontSize:12.5,color:"#475569"}}>{f.reponse?.slice(0,80)}{f.reponse?.length>80?"…":""}</td>
                       <td style={{textAlign:"center",fontWeight:700,color:"#64748b"}}>{f.ordre}</td>
                       <td><Badge text={f.actif?"Actif":"Inactif"} bg={f.actif?"#dcfce7":"#f1f5f9"} color={f.actif?"#15803d":"#64748b"}/></td>
                       <td>
                         <div className="db-actions">
-                          <button className="db-btn edit" onClick={() => openFaqEdit(f)} title="Modifier">âœï¸</button>
+                          <button className="db-btn edit" onClick={() => openFaqEdit(f)} title="Modifier">✏️</button>
                           {faqConfirmDel === f.id ? (
                             <><button className="db-btn danger" onClick={() => handleFaqDelete(f.id)}>Oui</button>
                             <button className="db-btn neutral" onClick={() => setFaqConfirmDel(null)}>Non</button></>
-                          ) : <button className="db-btn danger" onClick={() => setFaqConfirmDel(f.id)} title="Supprimer">ðŸ—‘ï¸</button>}
+                          ) : <button className="db-btn danger" onClick={() => setFaqConfirmDel(f.id)} title="Supprimer">🗑️</button>}
                         </div>
                       </td>
                     </tr>
@@ -1056,7 +1222,7 @@ export default function Dashboard() {
         {/* â•â• MESSAGES â•â• */}
         {tab === "messages" && (
           <div className="db-section db-section-messages">
-            {/* Si une conversation est ouverte â†’ afficher ConversationView */}
+            {/* Si une conversation est ouverte → afficher ConversationView */}
             {convMsg ? (
               <ConversationView
                 msg={convMsg}
@@ -1081,7 +1247,7 @@ export default function Dashboard() {
                     <button key={f}
                       className={`msg-filtre-btn ${msgFiltre===f?"active":""}`}
                       onClick={() => setMsgFiltre(f)}>
-                      { {tous:"Tous",nouveau:"ðŸ”´ Nouveaux",lu:"ðŸ‘ Lus",repondu:"âœ… Répondus",archive:"ðŸ—ƒï¸ Archivés"}[f] }
+                      { {tous:"Tous",nouveau:"🔴 Nouveaux",lu:"👁️ Lus",repondu:"✅ Répondus",archive:"🗃️ Archivés"}[f] }
                       <span className="msg-filtre-count">
                         {f==="tous" ? messages.length : messages.filter(m=>m.statut===f).length}
                       </span>
@@ -1094,7 +1260,7 @@ export default function Dashboard() {
                   {msgFiltres.length === 0 && (
                     <div className="msg-empty">Aucun message dans cette catégorie</div>
                   )}
-                  {msgFiltres.map(m => {
+                  {filteredMessages.filter(m => msgFiltre==="tous" ? true : m.statut===msgFiltre).map(m => {
                     const sc = STATUT_MSG[m.statut] || STATUT_MSG.nouveau;
                     const initiales = `${m.prenom?.[0]||""}${m.nom?.[0]||""}`.toUpperCase();
                     return (
@@ -1111,12 +1277,12 @@ export default function Dashboard() {
                               {new Date(m.created_at).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}
                             </span>
                           </div>
-                          <div className="msg-item-email">{m.email}{m.telephone ? ` Â· ${m.telephone}` : ""}</div>
+                          <div className="msg-item-email">{m.email}{m.telephone ? ` · ${m.telephone}` : ""}</div>
                           {m.sujet && <div className="msg-item-sujet">{m.sujet}</div>}
-                          <div className="msg-item-preview">{m.message?.slice(0,90)}{m.message?.length>90?"â€¦":""}</div>
+                          <div className="msg-item-preview">{m.message?.slice(0,90)}{m.message?.length>90?"…":""}</div>
                           {m.reponse_admin && (
                             <div className="msg-item-replied">
-                              â†©ï¸ Répondu Â· {new Date(m.repondu_le).toLocaleDateString("fr-FR")}
+                              â†© Répondu · {new Date(m.repondu_le).toLocaleDateString("fr-FR")}
                             </div>
                           )}
                         </div>
@@ -1127,7 +1293,7 @@ export default function Dashboard() {
                               <><button className="db-btn danger" onClick={() => handleDeleteMsg(m.id)}>Oui</button>
                               <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button></>
                             ) : (
-                              <button className="db-btn danger" onClick={() => setConfirmId(`del-${m.id}`)} title="Supprimer">ðŸ—‘ï¸</button>
+                              <button className="db-btn danger" onClick={() => setConfirmId(`del-${m.id}`)} title="Supprimer">🗑️</button>
                             )}
                           </div>
                         </div>
@@ -1147,11 +1313,11 @@ export default function Dashboard() {
         <div className="db-modal-overlay" onClick={() => setFaqModal(false)}>
           <div className="db-modal db-modal-lg" onClick={e => e.stopPropagation()}>
             <div className="db-modal-head">
-              <h5>{faqEditItem ? "âœï¸ Modifier la FAQ" : "âž• Nouvelle question FAQ"}</h5>
-              <button className="db-modal-x" onClick={() => setFaqModal(false)}>Ã—</button>
+              <h5>{faqEditItem ? "✏️ Modifier la FAQ" : "➕ Nouvelle question FAQ"}</h5>
+              <button className="db-modal-x" onClick={() => setFaqModal(false)}>×</button>
             </div>
             <div className="db-modal-body">
-              {faqError && <div className="db-alert err">âš  {faqError}</div>}
+              {faqError && <div className="db-alert err">⚠️ {faqError}</div>}
               <div className="db-field">
                 <label>Question *</label>
                 <input className="db-input" type="text" value={faqForm.question}
@@ -1162,23 +1328,23 @@ export default function Dashboard() {
                 <label>Réponse *</label>
                 <textarea className="db-input" rows={4} value={faqForm.reponse}
                   onChange={e => setFaqForm({...faqForm,reponse:e.target.value})}
-                  placeholder="Réponse détailléeâ€¦" />
+                  placeholder="Réponse détaillée…" />
               </div>
               <div className="db-field">
-                <label>ðŸ“· Image (fichier local â€” optionnel)</label>
+                <label>📷 Image (fichier local — optionnel)</label>
                 <input type="file" className="db-input"
                   accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                   onChange={handleFaqImageChange} />
                 {faqImagePreview && (
                   <div style={{marginTop:10,borderRadius:10,overflow:"hidden",border:"2px solid #e2e8f0",maxHeight:160}}>
-                    <img src={faqImagePreview} alt="AperÃ§u"
+                    <img src={faqImagePreview} alt="Aperçu"
                       style={{width:"100%",height:155,objectFit:"cover",display:"block"}}
                       onError={e=>{e.target.style.display="none";}} />
                   </div>
                 )}
                 {faqEditItem && !faqImageFile && faqEditItem.image && (
                   <p style={{fontSize:11.5,color:"#94a3b8",marginTop:5}}>
-                    ðŸ’¡ Une image existe déjà. Choisissez un nouveau fichier pour la remplacer.
+                    💡 Une image existe déjà. Choisissez un nouveau fichier pour la remplacer.
                   </p>
                 )}
               </div>
@@ -1201,14 +1367,14 @@ export default function Dashboard() {
             <div className="db-modal-foot">
               <button className="db-btn neutral lg" onClick={() => setFaqModal(false)}>Annuler</button>
               <button className="db-btn primary lg" onClick={handleFaqSave} disabled={faqSaving}>
-                {faqSaving ? "Enregistrementâ€¦" : "ðŸ’¾ Enregistrer"}
+                {faqSaving ? "Enregistrement…" : "💾 Enregistrer"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* â•â• MODAL GÃ‰NÃ‰RIQUE â•â• */}
+      {/* â•â• MODAL GÉNÉRIQUE â•â• */}
       <Modal show={modal.show} onClose={()=>setModal(m=>({...m,show:false}))}
         title={modal.title} onSave={handleSave} error={modalErr}>
         {modal.entity === "client" && <>
@@ -1231,17 +1397,17 @@ export default function Dashboard() {
             {F("niveau","Niveau","text",[{v:"debutant",l:"Débutant"},{v:"intermediaire",l:"Intermédiaire"},{v:"avance",l:"Avancé"}])}
           </div>
           <div className="db-field">
-            <label>ðŸ–¼ï¸ Image du cours (URL)</label>
+            <label>🖼️ Image du cours (URL)</label>
             <input className="db-input" type="text" placeholder="https://..." value={formData.image||""} onChange={e=>setFormData({...formData,image:e.target.value})}/>
             {formData.image && (
               <div style={{marginTop:10,borderRadius:10,overflow:"hidden",border:"2px solid #e2e8f0",maxHeight:160}}>
-                <img src={formData.image} alt="AperÃ§u" onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="block";}} style={{width:"100%",height:160,objectFit:"cover",display:"block"}}/>
-                <div style={{display:"none",padding:"8px 12px",background:"#fee2e2",color:"#b91c1c",fontSize:12}}>âš ï¸ Lien invalide</div>
+                <img src={formData.image} alt="Aperçu" onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="block";}} style={{width:"100%",height:160,objectFit:"cover",display:"block"}}/>
+                <div style={{display:"none",padding:"8px 12px",background:"#fee2e2",color:"#b91c1c",fontSize:12}}>⚠️ Lien invalide</div>
               </div>
             )}
           </div>
-          {F("video_url","ðŸŽ¬ Lien Vidéo YouTube")}
-          {F("pdf_url","ðŸ“„ Lien PDF")}
+          {F("video_url","🎬 Lien Vidéo YouTube")}
+          {F("pdf_url","📄 Lien PDF")}
         </>}
         {modal.entity === "moniteur" && <>
           <div className="db-form-row">{F("nom","Nom")}{F("prenom","Prénom")}</div>
@@ -1254,14 +1420,14 @@ export default function Dashboard() {
           {F("disponibilite","Disponibilité","text",[{v:"disponible",l:"Disponible"},{v:"en_maintenance",l:"En maintenance"},{v:"hors_service",l:"Hors service"}])}
         </>}
         {modal.entity === "seance" && <>
-          {F("client_id","Ã‰lève","text",clients.map(c=>({v:c.id,l:`${c.prenom} ${c.nom}`})))}
+          {F("client_id","Élève","text",clients.map(c=>({v:c.id,l:`${c.prenom} ${c.nom}`})))}
           {F("moniteur_id","Moniteur","text",moniteurs.map(m=>({v:m.id,l:`${m.prenom} ${m.nom}`})))}
           {F("vehicule_id","Véhicule","text",vehicules.map(v=>({v:v.id,l:`${v.marque} ${v.modele} (${v.immatriculation})`})))}
           {F("date","Date","date")}
 
-          {/* Sélecteur d'heure de début â€” uniquement heures rondes */}
+          {/* Sélecteur d'heure de début — uniquement heures rondes */}
           <div className="db-field">
-            <label>ðŸ• Heure de début <span style={{fontSize:11,color:"#94a3b8",fontWeight:400}}>(heures rondes uniquement)</span></label>
+            <label>🕐 Heure de début <span style={{fontSize:11,color:"#94a3b8",fontWeight:400}}>(heures rondes uniquement)</span></label>
             <select
               className="db-input"
               value={formData.heure_debut||""}
@@ -1286,8 +1452,8 @@ export default function Dashboard() {
                 const places = cr ? Math.min(cr.places_moniteur, cr.places_vehicule) : "?";
                 return (
                   <option key={h} value={h} disabled={cr && !cr.disponible}>
-                    {h} â†’ {String(parseInt(h)+1).padStart(2,"0")}:00
-                    {cr ? (cr.disponible ? `  âœ“ ${places} place${places>1?"s":""} restante${places>1?"s":""}` : "  âœ— Complet") : ""}
+                    {h} → {String(parseInt(h)+1).padStart(2,"0")}:00
+                    {cr ? (cr.disponible ? `  ✓ ${places} place${places>1?"s":""} restante${places>1?"s":""}` : "  ✗ Complet") : ""}
                   </option>
                 );
               })}
@@ -1300,18 +1466,18 @@ export default function Dashboard() {
               const places = Math.min(cr.places_moniteur, cr.places_vehicule);
               if (!cr.disponible) return (
                 <div style={{marginTop:8,padding:"8px 12px",background:"#fee2e2",borderRadius:8,fontSize:12.5,color:"#b91c1c",display:"flex",gap:6,alignItems:"center"}}>
-                  âš ï¸ Ce créneau est complet (3/3 élèves). Choisissez une autre heure.
+                  ⚠️ Ce créneau est complet (3/3 élèves). Choisissez une autre heure.
                 </div>
               );
               return (
                 <div style={{marginTop:8,padding:"8px 12px",background:"#dcfce7",borderRadius:8,fontSize:12.5,color:"#15803d",display:"flex",gap:6,alignItems:"center"}}>
-                  âœ… {places} place{places>1?"s":""} restante{places>1?"s":""} sur ce créneau (max 3 élèves)
+                  ✅ {places} place{places>1?"s":""} restante{places>1?"s":""} sur ce créneau (max 3 élèves)
                 </div>
               );
             })()}
 
             {creneauxLoading && (
-              <div style={{marginTop:8,fontSize:12,color:"#94a3b8"}}>â³ Vérification des disponibilitésâ€¦</div>
+              <div style={{marginTop:8,fontSize:12,color:"#94a3b8"}}>⏳ Vérification des disponibilités…</div>
             )}
 
             {/* Bouton pour charger les disponibilités manuellement */}
@@ -1327,15 +1493,15 @@ export default function Dashboard() {
                   } finally { setCreneauxLoading(false); }
                 }}
               >
-                ðŸ” Vérifier les disponibilités
+                🔍 Vérifier les disponibilités
               </button>
             )}
           </div>
 
-          {/* Heure de fin â€” calculée automatiquement */}
+          {/* Heure de fin — calculée automatiquement */}
           {formData.heure_debut && (
             <div className="db-field">
-              <label>ðŸ• Heure de fin <span style={{fontSize:11,color:"#94a3b8"}}>(automatique : +1 heure)</span></label>
+              <label>🕐 Heure de fin <span style={{fontSize:11,color:"#94a3b8"}}>(automatique : +1 heure)</span></label>
               <input className="db-input" type="text" value={formData.heure_fin||""} readOnly
                 style={{background:"#f8fafc",color:"#64748b",cursor:"not-allowed"}}/>
             </div>
@@ -1349,7 +1515,7 @@ export default function Dashboard() {
           <div className="db-form-row">{F("option_c","Option C")}{F("option_d","Option D")}</div>
           <div className="db-form-row">
             {F("correct_answer","Bonne r\u00e9ponse","text",[{v:"a",l:"A"},{v:"b",l:"B"},{v:"c",l:"C"},{v:"d",l:"D"}])}
-            {F("categorie","Cat\u00e9gorie","text",[{v:"danger",l:"\u26a0\ufe0f Danger"},{v:"indication",l:"\u2139\ufe0f Indication"},{v:"interdiction",l:"\ud83d\udeab Interdiction"},{v:"code_route",l:"\ud83d� Code Route"},{v:"conduite",l:"\ud83d\ude97 Conduite"},{v:"autre",l:"\ud83d\udccc Autre"}])}
+            {F("categorie","Cat\u00e9gorie","text",[{v:"danger",l:"\u26a0\ufe0f Danger"},{v:"indication",l:"\u2139\ufe0f Indication"},{v:"interdiction",l:"\ud83d\udeab Interdiction"},{v:"code_route",l:"📋 Code Route"},{v:"conduite",l:"\ud83d\ude97 Conduite"},{v:"autre",l:"\ud83d\udccc Autre"}])}
           </div>
           {F("explication","Explication (optionnel)","textarea")}
         </>
