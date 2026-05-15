@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React, { lazy, Suspense, useState, useEffect, useRef } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 /* ─── Always-visible: load eagerly ─── */
@@ -155,9 +155,119 @@ const PageLoader = () => (
 
   </div>
 );
+/* ─── Global route transition overlay ─── */
+function RouteTransitionOverlay() {
+  const location = useLocation();
+  const [visible, setVisible] = useState(false);
+  const [fading,  setFading]  = useState(false);
+  const prevPath = useRef(location.pathname);
+
+  useEffect(() => {
+    if (prevPath.current === location.pathname) return;
+    prevPath.current = location.pathname;
+
+    setFading(false);
+    setVisible(true);
+    const t1 = setTimeout(() => setFading(true),  550);
+    const t2 = setTimeout(() => setVisible(false), 950);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [location.pathname]);
+
+  if (!visible) return null;
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9998,
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      background: "linear-gradient(135deg, #1d3557 0%, #0f2744 100%)",
+      opacity:    fading ? 0 : 1,
+      transition: fading ? "opacity 0.4s cubic-bezier(0.4,0,0.2,1)" : "none",
+      pointerEvents: "none",
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@800&display=swap');
+        @keyframes rt-pop {
+          0%   { transform: scale(0.6) translateY(16px); opacity:0; }
+          65%  { transform: scale(1.1) translateY(-3px);  opacity:1; }
+          100% { transform: scale(1)   translateY(0);     opacity:1; }
+        }
+        @keyframes rt-pulse {
+          0%,100% { transform:scale(1);    opacity:.5; }
+          50%      { transform:scale(1.18); opacity:.15; }
+        }
+        @keyframes rt-text {
+          from { opacity:0; transform:translateY(8px); }
+          to   { opacity:1; transform:translateY(0);   }
+        }
+        @keyframes rt-bar {
+          from { width:0%;  }
+          to   { width:88%; }
+        }
+        @keyframes rt-dots {
+          0%,80%,100% { opacity:.2; transform:scale(.8); }
+          40%          { opacity:1;  transform:scale(1.3); }
+        }
+        .rt-dot:nth-child(1){animation:rt-dots 1s ease-in-out 0.0s infinite;}
+        .rt-dot:nth-child(2){animation:rt-dots 1s ease-in-out 0.15s infinite;}
+        .rt-dot:nth-child(3){animation:rt-dots 1s ease-in-out 0.3s infinite;}
+      `}</style>
+
+      {/* Pulse + logo */}
+      <div style={{position:"relative",marginBottom:22}}>
+        <div style={{
+          position:"absolute",inset:-16,borderRadius:"50%",
+          background:"rgba(230,57,70,0.2)",
+          animation:"rt-pulse 1.4s ease-in-out infinite",
+        }}/>
+        <div style={{
+          position:"absolute",inset:-8,borderRadius:"50%",
+          background:"rgba(230,57,70,0.1)",
+          animation:"rt-pulse 1.4s ease-in-out .2s infinite",
+        }}/>
+        <div style={{
+          width:70,height:70,borderRadius:20,
+          background:"linear-gradient(135deg,#e63946,#c1121f)",
+          display:"flex",alignItems:"center",justifyContent:"center",
+          fontSize:34,
+          boxShadow:"0 10px 32px rgba(230,57,70,.5)",
+          animation:"rt-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards",
+          position:"relative",zIndex:2,
+        }}>🚗</div>
+      </div>
+
+      {/* Brand */}
+      <div style={{
+        fontFamily:"'Outfit',sans-serif",fontSize:19,fontWeight:800,color:"white",
+        animation:"rt-text .35s ease .18s both",marginBottom:3,
+      }}>Auto École Narjiss</div>
+      <div style={{
+        fontSize:10,fontWeight:600,color:"rgba(255,255,255,.35)",
+        letterSpacing:"2.5px",textTransform:"uppercase",
+        animation:"rt-text .35s ease .28s both",marginBottom:26,
+      }}>Marrakech</div>
+
+      {/* Progress bar */}
+      <div style={{width:150,height:2.5,background:"rgba(255,255,255,.12)",borderRadius:10,overflow:"hidden",marginBottom:18}}>
+        <div style={{
+          height:"100%",
+          background:"linear-gradient(90deg,#e63946,#ff6b6b)",
+          borderRadius:10,
+          animation:"rt-bar .6s ease-out forwards",
+        }}/>
+      </div>
+
+      {/* Dots */}
+      <div style={{display:"flex",gap:6}}>
+        {[0,1,2].map(i=>(
+          <div key={i} className="rt-dot" style={{width:6,height:6,borderRadius:"50%",background:"#e63946"}}/>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 
-/* ─── Guards ─── */
 function PrivateRoute({ children }) {
   const user = localStorage.getItem("user");
   return user ? children : <Navigate to="/connexion" replace />;
@@ -184,6 +294,7 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar theme={theme} toggleTheme={toggleTheme} />
+      <RouteTransitionOverlay />
       <Suspense fallback={<PageLoader />}>
         <Routes>
 

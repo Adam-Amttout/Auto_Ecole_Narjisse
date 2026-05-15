@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Cours.css";
 import QuizQCM from "./QuizQCM";
-import PageTransition from "../components/PageTransition";
 
 const API = "http://127.0.0.1:8000/api";
 const isAdmin = () => localStorage.getItem("role") === "admin";
@@ -198,7 +197,6 @@ export default function Cours() {
   };
 
   return (
-    <PageTransition>
     <div className="cp-page">
 
       {/* HERO */}
@@ -684,6 +682,5 @@ export default function Cours() {
         </div>
       )}
     </div>
-    </PageTransition>
   );
 }

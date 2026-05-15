@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./SeancesPage.css";
-import PageTransition from "../components/PageTransition";
 
 const API = "http://127.0.0.1:8000/api";
 
@@ -231,7 +230,6 @@ export default function SeancesPage() {
   if (!client) { navigate("/connexion"); return null; }
 
   return (
-    <PageTransition>
     <div className="sp-page">
 
       {/* HERO */}
@@ -457,6 +455,5 @@ export default function SeancesPage() {
         </div>
       )}
     </div>
-    </PageTransition>
   );
 }
