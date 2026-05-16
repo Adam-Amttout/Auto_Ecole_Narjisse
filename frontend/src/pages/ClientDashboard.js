@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ExamenBlanc from "./ExamenBlanc";
 import "./ClientDashboard.css";
 
 const API = "http://127.0.0.1:8000/api";
@@ -31,6 +32,13 @@ export default function ClientDashboard() {
 
   const [tab, setTab]         = useState("accueil");
   const [loading, setLoading] = useState(true);
+
+  // Track visits
+  useEffect(() => {
+    const key = `visits_${clientId}`;
+    const v = parseInt(localStorage.getItem(key) || "0") + 1;
+    localStorage.setItem(key, v);
+  }, [clientId]);
 
   const [seances,       setSeances]       = useState([]);
   const [cours,         setCours]         = useState([]);
@@ -87,9 +95,11 @@ export default function ClientDashboard() {
   const nbNonLus  = notifications.filter(n => !n.lu).length;
 
   const TABS = [
-    { key: "accueil", icon: "🏠", label: "Accueil" },
-    { key: "seances", icon: "🚗", label: "Mes Séances" },
-    { key: "cours",   icon: "📚", label: "Mes Cours" },
+    { key: "accueil",  icon: "🏠", label: "Accueil" },
+    { key: "seances",  icon: "🚗", label: "Mes Séances" },
+    { key: "cours",    icon: "📚", label: "Mes Cours" },
+    { key: "stats",   icon: "📊", label: "Statistiques" },
+    { key: "exam",    icon: "🚦", label: "Examen Blanc" },
     { key: "quiz",    icon: "📝", label: "Quiz QCM" },
     { key: "notifs",  icon: "🔔", label: "Notifications", badge: nbNonLus },
   ];
@@ -117,7 +127,17 @@ export default function ClientDashboard() {
         </div>
 
         <div className="cd-user-card">
-          <div className="cd-user-avatar">{initiales}</div>
+          <div className="cd-user-avatar" style={{ padding: profil?.photo_url || profil?.photo_profil ? 0 : undefined, overflow: "hidden" }}>
+            {profil?.photo_url || profil?.photo_profil ? (
+              <img 
+                src={profil.photo_url || `http://127.0.0.1:8000/storage/${profil.photo_profil}`} 
+                alt="Profil" 
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} 
+              />
+            ) : (
+              initiales
+            )}
+          </div>
           <div className="cd-user-info">
             <div className="cd-user-name">{profil?.prenom} {profil?.nom}</div>
             <div className="cd-user-role">🎓 Élève</div>
@@ -274,10 +294,12 @@ export default function ClientDashboard() {
             {/* Quick links */}
             <div className="cd-quick-links">
               {[
-                { icon:"📚", label:"Voir les cours",   action: () => navigate("/cours") },
-                { icon:"🚗", label:"Planifier séance", action: () => navigate("/seances") },
-                { icon:"📝", label:"Passer le quiz",   action: () => setTab("quiz") },
-                { icon:"👤", label:"Mon profil",       action: () => navigate("/profil") },
+                { icon:"📚", label:"Voir les cours",     action: () => navigate("/cours") },
+                { icon:"🚗", label:"Planifier séance",   action: () => navigate("/seances") },
+                { icon:"🚦", label:"Examen Blanc",        action: () => setTab("exam") },
+                { icon:"📊", label:"Mes statistiques",   action: () => setTab("stats") },
+                { icon:"📝", label:"Passer le quiz",     action: () => setTab("quiz") },
+                { icon:"👤", label:"Mon profil",         action: () => navigate("/profil") },
               ].map((l,i) => (
                 <button key={i} className="cd-quick-btn" onClick={l.action}>
                   <span>{l.icon}</span>{l.label}
@@ -388,6 +410,109 @@ export default function ClientDashboard() {
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ══ STATISTIQUES ══ */}
+        {tab === "stats" && (() => {
+          const visits = parseInt(localStorage.getItem(`visits_${clientId}`) || "0");
+          // Build category study data from progression
+          const catData = Array.isArray(progression) ? progression.map(cat => {
+            const cc = CAT_COLORS[cat.categorie] || CAT_COLORS.autre;
+            const pct = cat.total > 0 ? Math.round((cat.completed / cat.total) * 100) : 0;
+            return { label: cat.categorie, icon: cc.icon, color: cc.color, pct, done: cat.completed, total: cat.total };
+          }) : [];
+          const maxPct = Math.max(...catData.map(c => c.pct), 1);
+          const bestCat = catData.reduce((a, b) => b.pct > a.pct ? b : a, catData[0]);
+          const worstCat = catData.reduce((a, b) => b.pct < a.pct ? b : a, catData[0]);
+          return (
+            <div className="cd-section">
+              <div className="cd-section-head">
+                <h3 className="cd-title">📊 Mes Statistiques</h3>
+              </div>
+
+              {/* Visits + global */}
+              <div className="cd-stats-grid" style={{marginBottom:20}}>
+                {[
+                  { icon:"👁️", label:"Visites du site",      val: visits,         color:"#2563eb", bg:"#eff6ff" },
+                  { icon:"🎯", label:"Progression globale",  val:`${progPct}%`,   color:"#e63946", bg:"#fff1f2" },
+                  { icon:"✅", label:"Cours complétés",      val: coursCompletes,  color:"#059669", bg:"#f0fdf4" },
+                  { icon:"🚗", label:"Séances terminées",    val: seancesTerminees.length, color:"#7c3aed", bg:"#f5f3ff" },
+                ].map((s,i) => (
+                  <div key={i} className="cd-stat-card" style={{"--cc":s.color,"--cb":s.bg}}>
+                    <div className="cd-stat-top">
+                      <span className="cd-stat-icon">{s.icon}</span>
+                      <span className="cd-stat-val">{s.val}</span>
+                    </div>
+                    <div className="cd-stat-label">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bar chart: progression par catégorie */}
+              {catData.length > 0 && (
+                <div className="cd-card" style={{marginBottom:16}}>
+                  <div className="cd-card-head">📚 Cours complétés par catégorie</div>
+                  <div style={{padding:"8px 0"}}>
+                    {catData.map((c, i) => (
+                      <div key={i} style={{marginBottom:12}}>
+                        <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}>
+                          <span style={{fontWeight:700,color:"#1d3557"}}>{c.icon} {c.label}</span>
+                          <span style={{color:c.pct>=75?"#15803d":c.pct>=40?"#d97706":"#e63946",fontWeight:700}}>{c.done}/{c.total} — {c.pct}%</span>
+                        </div>
+                        <div style={{height:10,background:"#e2e8f0",borderRadius:10,overflow:"hidden"}}>
+                          <div style={{height:"100%",width:`${c.pct}%`,background:c.color,borderRadius:10,transition:"width .5s"}} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {bestCat && (
+                    <div style={{display:"flex",gap:10,marginTop:8}}>
+                      <div style={{flex:1,background:"#f0fdf4",borderRadius:10,padding:"10px",textAlign:"center"}}>
+                        <div style={{fontSize:10,color:"#64748b",marginBottom:2}}>🏆 Meilleure catégorie</div>
+                        <div style={{fontWeight:800,color:"#15803d",fontSize:13}}>{bestCat.icon} {bestCat.label} ({bestCat.pct}%)</div>
+                      </div>
+                      {worstCat && worstCat.label !== bestCat.label && (
+                        <div style={{flex:1,background:"#fff7ed",borderRadius:10,padding:"10px",textAlign:"center"}}>
+                          <div style={{fontSize:10,color:"#64748b",marginBottom:2}}>📌 À améliorer</div>
+                          <div style={{fontWeight:800,color:"#c2410c",fontSize:13}}>{worstCat.icon} {worstCat.label} ({worstCat.pct}%)</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Séances chart */}
+              {seances.length > 0 && (
+                <div className="cd-card">
+                  <div className="cd-card-head">🚗 Répartition des séances</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,padding:"8px 0"}}>
+                    {Object.entries({planifiee:"Planifiées",terminee:"Terminées",en_cours:"En cours",annulee:"Annulées"}).map(([k,lbl]) => {
+                      const cnt = seances.filter(s => s.statut === k).length;
+                      const pct2 = seances.length > 0 ? Math.round((cnt/seances.length)*100) : 0;
+                      const colors = {planifiee:"#2563eb",terminee:"#15803d",en_cours:"#d97706",annulee:"#94a3b8"};
+                      return (
+                        <div key={k} style={{background:"#f8fafc",borderRadius:10,padding:"12px",textAlign:"center"}}>
+                          <div style={{fontSize:20,fontWeight:800,color:colors[k]}}>{cnt}</div>
+                          <div style={{fontSize:11,color:"#64748b"}}>{lbl}</div>
+                          <div style={{height:4,background:"#e2e8f0",borderRadius:10,marginTop:6,overflow:"hidden"}}>
+                            <div style={{height:"100%",width:`${pct2}%`,background:colors[k],borderRadius:10}} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ══ EXAMEN BLANC ══ */}
+        {tab === "exam" && (
+          <div className="cd-section">
+            <ExamenBlanc clientId={clientId} onBack={() => setTab("accueil")} />
           </div>
         )}
 

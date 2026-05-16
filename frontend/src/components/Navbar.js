@@ -63,14 +63,44 @@ export default function Navbar({ theme, toggleTheme }) {
     return `${Math.floor(diff/86400)}j`;
   };
 
-  // Custom storage event listener to update user when profile picture changes
+  // Fetch fresh user data from API
+  const fetchFreshUser = async () => {
+    const localUser = JSON.parse(localStorage.getItem("user"));
+    if (localUser && localUser.id) {
+      try {
+        const res = await axios.get(`${API}/clients/${localUser.id}`);
+        const freshUser = res.data;
+        localStorage.setItem("user", JSON.stringify(freshUser));
+        setUser(freshUser);
+      } catch (err) {
+        setUser(localUser);
+      }
+    } else {
+      setUser(localUser);
+    }
+  };
+
+  // Update user when storage changes or custom event is fired
   useEffect(() => {
     const handleStorage = () => {
-      setUser(JSON.parse(localStorage.getItem("user")));
+      fetchFreshUser();
     };
+    
+    // Initial fetch
+    fetchFreshUser();
+
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener("userUpdated", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("userUpdated", handleStorage);
+    };
   }, []);
+
+  // Update user on every route change to ensure freshness (just from localstorage to avoid spamming API)
+  useEffect(() => {
+    setUser(JSON.parse(localStorage.getItem("user")));
+  }, [location.pathname]);
 
   const initials = user ? `${user.prenom?.[0]||""}${user.nom?.[0]||""}`.toUpperCase() : "";
   
@@ -141,6 +171,7 @@ export default function Navbar({ theme, toggleTheme }) {
     { l:"FAQ",       a:()=>scrollTo("faq"),       active: activeSec==="faq" },
     { l:"Contact",   a:()=>scrollTo("contact"),   active: activeSec==="contact" },
     ...(user && role==="admin" ? [{ l:"Dashboard", a:()=>goTo("/dashboard"), active: location.pathname==="/dashboard" }] : []),
+    ...(user && role!=="admin" ? [{ l:"Mon Espace 🏠", a:()=>goTo("/mon-espace"), active: location.pathname==="/mon-espace" }] : []),
   ];
 
   return (
@@ -264,6 +295,7 @@ export default function Navbar({ theme, toggleTheme }) {
                   </div>
                   <div className="nb-dd-sep"/>
                   <button className="nb-dd-item" onClick={()=>goTo("/profil")}>👤 Mon profil</button>
+                  {role!=="admin" && <button className="nb-dd-item" style={{fontWeight:700,color:"#e63946"}} onClick={()=>goTo("/mon-espace")}>🏠 Mon Espace</button>}
                   <button className="nb-dd-item" onClick={()=>goTo("/cours")}>📚 Mes cours</button>
                   <button className="nb-dd-item" onClick={()=>goTo("/seances")}>🚗 Mes séances</button>
                   {role==="admin" && <button className="nb-dd-item" onClick={()=>goTo("/dashboard")}>⚙️ Dashboard</button>}

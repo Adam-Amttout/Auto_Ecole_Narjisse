@@ -36,7 +36,7 @@ function Connexion() {
         if (data.user.role === "admin") {
           navigate("/dashboard");
         } else {
-          navigate("/cours");
+          navigate("/mon-espace");
         }
       }
     } catch (err) {

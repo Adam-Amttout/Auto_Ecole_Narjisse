@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect, useRef } from "react";
+import React, { lazy, Suspense, useState, useEffect, useRef, useCallback } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -156,117 +156,144 @@ const PageLoader = () => (
   </div>
 );
 /* ─── Global route transition overlay ─── */
-function RouteTransitionOverlay() {
-  const location = useLocation();
-  const [visible,  setVisible]  = useState(false);
-  const [fading,   setFading]   = useState(false);
-  const isFirst = useRef(true);     // skip animation on first page load
+/* Uses navCount as `key` → forces full remount → CSS animations restart cleanly every time */
+const RT_STYLE = `
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@800&display=swap');
+  @keyframes rt-fadein  { from { opacity:0 } to { opacity:1 } }
+  @keyframes rt-fadeout { from { opacity:1 } to { opacity:0 } }
+  @keyframes rt-pop {
+    0%   { transform: scale(0.5) translateY(20px); opacity:0; }
+    65%  { transform: scale(1.12) translateY(-4px); opacity:1; }
+    100% { transform: scale(1)    translateY(0);    opacity:1; }
+  }
+  @keyframes rt-pulse {
+    0%,100% { transform:scale(1);    opacity:.55; }
+    50%      { transform:scale(1.2);  opacity:.18; }
+  }
+  @keyframes rt-text {
+    from { opacity:0; transform:translateY(10px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes rt-bar {
+    0%   { width:0%;   opacity:1; }
+    70%  { width:88%;  opacity:1; }
+    100% { width:95%;  opacity:1; }
+  }
+  @keyframes rt-dots {
+    0%,80%,100% { opacity:.25; transform:scale(.75); }
+    40%          { opacity:1;   transform:scale(1.35); }
+  }
+  .rt-overlay {
+    animation: rt-fadein 0.18s ease forwards;
+  }
+  .rt-overlay.rt-out {
+    animation: rt-fadeout 0.55s ease forwards;
+  }
+  .rt-dot:nth-child(1){animation:rt-dots 1.1s ease-in-out 0.0s  infinite;}
+  .rt-dot:nth-child(2){animation:rt-dots 1.1s ease-in-out 0.18s infinite;}
+  .rt-dot:nth-child(3){animation:rt-dots 1.1s ease-in-out 0.36s infinite;}
+`;
+
+function TransitionScreen({ onDone }) {
+  const [out, setOut] = useState(false);
 
   useEffect(() => {
-    // Skip the very first mount (don't animate the initial page)
-    if (isFirst.current) { isFirst.current = false; return; }
-
-    // New route → show overlay
-    setFading(false);
-    setVisible(true);
-
-    const t1 = setTimeout(() => setFading(true),   600);  // start fade-out
-    const t2 = setTimeout(() => setVisible(false),  1050); // remove overlay
+    const t1 = setTimeout(() => setOut(true),  1200); // stay 1.2s then fade
+    const t2 = setTimeout(() => onDone(),       1800); // remove after fade
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [location.pathname]);
-
-  if (!visible) return null;
+  }, [onDone]);
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 9998,
-      display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg, #1d3557 0%, #0f2744 100%)",
-      opacity:    fading ? 0 : 1,
-      transition: fading ? "opacity 0.4s cubic-bezier(0.4,0,0.2,1)" : "none",
-      pointerEvents: "none",
-    }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@800&display=swap');
-        @keyframes rt-pop {
-          0%   { transform: scale(0.6) translateY(16px); opacity:0; }
-          65%  { transform: scale(1.1) translateY(-3px);  opacity:1; }
-          100% { transform: scale(1)   translateY(0);     opacity:1; }
-        }
-        @keyframes rt-pulse {
-          0%,100% { transform:scale(1);    opacity:.5; }
-          50%      { transform:scale(1.18); opacity:.15; }
-        }
-        @keyframes rt-text {
-          from { opacity:0; transform:translateY(8px); }
-          to   { opacity:1; transform:translateY(0);   }
-        }
-        @keyframes rt-bar {
-          from { width:0%;  }
-          to   { width:88%; }
-        }
-        @keyframes rt-dots {
-          0%,80%,100% { opacity:.2; transform:scale(.8); }
-          40%          { opacity:1;  transform:scale(1.3); }
-        }
-        .rt-dot:nth-child(1){animation:rt-dots 1s ease-in-out 0.0s infinite;}
-        .rt-dot:nth-child(2){animation:rt-dots 1s ease-in-out 0.15s infinite;}
-        .rt-dot:nth-child(3){animation:rt-dots 1s ease-in-out 0.3s infinite;}
-      `}</style>
+    <div
+      className={`rt-overlay${out ? " rt-out" : ""}`}
+      style={{
+        position:"fixed", inset:0, zIndex:9998,
+        display:"flex", flexDirection:"column",
+        alignItems:"center", justifyContent:"center",
+        background:"linear-gradient(135deg,#1d3557 0%,#0f2744 100%)",
+        pointerEvents:"none",
+      }}
+    >
+      <style>{RT_STYLE}</style>
 
-      {/* Pulse + logo */}
-      <div style={{position:"relative",marginBottom:22}}>
+      {/* Pulse rings + logo */}
+      <div style={{position:"relative",marginBottom:24}}>
         <div style={{
-          position:"absolute",inset:-16,borderRadius:"50%",
-          background:"rgba(230,57,70,0.2)",
-          animation:"rt-pulse 1.4s ease-in-out infinite",
+          position:"absolute",inset:-18,borderRadius:"50%",
+          background:"rgba(230,57,70,0.22)",
+          animation:"rt-pulse 1.5s ease-in-out infinite",
         }}/>
         <div style={{
-          position:"absolute",inset:-8,borderRadius:"50%",
-          background:"rgba(230,57,70,0.1)",
-          animation:"rt-pulse 1.4s ease-in-out .2s infinite",
+          position:"absolute",inset:-9,borderRadius:"50%",
+          background:"rgba(230,57,70,0.12)",
+          animation:"rt-pulse 1.5s ease-in-out .25s infinite",
         }}/>
         <div style={{
-          width:70,height:70,borderRadius:20,
+          width:72,height:72,borderRadius:20,
           background:"linear-gradient(135deg,#e63946,#c1121f)",
           display:"flex",alignItems:"center",justifyContent:"center",
-          fontSize:34,
-          boxShadow:"0 10px 32px rgba(230,57,70,.5)",
-          animation:"rt-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards",
+          fontSize:36,
+          boxShadow:"0 12px 36px rgba(230,57,70,.55)",
+          animation:"rt-pop 0.65s cubic-bezier(0.34,1.56,0.64,1) forwards",
           position:"relative",zIndex:2,
         }}>🚗</div>
       </div>
 
       {/* Brand */}
       <div style={{
-        fontFamily:"'Outfit',sans-serif",fontSize:19,fontWeight:800,color:"white",
-        animation:"rt-text .35s ease .18s both",marginBottom:3,
+        fontFamily:"'Outfit',sans-serif",fontSize:20,fontWeight:800,color:"#fff",
+        animation:"rt-text .45s ease .3s both",marginBottom:4,
       }}>Auto École Narjiss</div>
       <div style={{
-        fontSize:10,fontWeight:600,color:"rgba(255,255,255,.35)",
+        fontSize:10,fontWeight:600,
+        color:"rgba(255,255,255,.35)",
         letterSpacing:"2.5px",textTransform:"uppercase",
-        animation:"rt-text .35s ease .28s both",marginBottom:26,
+        animation:"rt-text .45s ease .42s both",marginBottom:28,
       }}>Marrakech</div>
 
       {/* Progress bar */}
-      <div style={{width:150,height:2.5,background:"rgba(255,255,255,.12)",borderRadius:10,overflow:"hidden",marginBottom:18}}>
+      <div style={{
+        width:160,height:3,
+        background:"rgba(255,255,255,.1)",
+        borderRadius:10,overflow:"hidden",marginBottom:20,
+      }}>
         <div style={{
           height:"100%",
           background:"linear-gradient(90deg,#e63946,#ff6b6b)",
           borderRadius:10,
-          animation:"rt-bar .6s ease-out forwards",
+          animation:"rt-bar 1.3s ease-out forwards",
         }}/>
       </div>
 
       {/* Dots */}
-      <div style={{display:"flex",gap:6}}>
+      <div style={{display:"flex",gap:7}}>
         {[0,1,2].map(i=>(
-          <div key={i} className="rt-dot" style={{width:6,height:6,borderRadius:"50%",background:"#e63946"}}/>
+          <div key={i} className="rt-dot" style={{
+            width:7,height:7,borderRadius:"50%",background:"#e63946",
+          }}/>
         ))}
       </div>
     </div>
   );
+}
+
+function RouteTransitionOverlay() {
+  const location  = useLocation();
+  const [navCount, setNavCount] = useState(0);
+  const [show,     setShow]     = useState(false);
+  const isFirst   = useRef(true);
+
+  useEffect(() => {
+    if (isFirst.current) { isFirst.current = false; return; }
+    setNavCount(c => c + 1);
+    setShow(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
+
+  const handleDone = useCallback(() => setShow(false), []);
+
+  if (!show) return null;
+  return <TransitionScreen key={navCount} onDone={handleDone} />;
 }
 
 

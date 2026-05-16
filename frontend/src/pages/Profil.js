@@ -120,8 +120,8 @@ export default function Profil() {
       
       if (isOwnProfil) {
         localStorage.setItem("user", JSON.stringify({ ...moi, photo_profil: res.data.photo_profil, photo_url: res.data.photo_url }));
-        // Dispatch custom event so Navbar can update if needed (or just reload)
-        window.dispatchEvent(new Event("storage"));
+        // Dispatch custom event so Navbar updates instantly
+        window.dispatchEvent(new Event("userUpdated"));
       }
     } catch (err) {
       alert("Erreur lors de l'upload de la photo. Vérifiez la taille (max 2MB).");

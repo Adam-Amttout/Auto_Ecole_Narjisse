@@ -14,6 +14,7 @@ use App\Http\Controllers\QcmController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ExamController;
 
 
 // ── TEST
@@ -109,3 +110,9 @@ Route::post('/notifications',                   [NotificationController::class, 
 Route::patch('/notifications/{id}/lire',        [NotificationController::class, 'marquerLu']);
 Route::patch('/notifications/lire-tout',        [NotificationController::class, 'marquerToutLu']);
 Route::delete('/notifications/{id}',            [NotificationController::class, 'destroy']);
+
+// ── EXAMEN BLANC
+Route::get('/exam/questions',  [ExamController::class, 'questions']);
+Route::post('/exam/results',   [ExamController::class, 'store']);
+Route::get('/exam/results',    [ExamController::class, 'history']);
+Route::get('/exam/stats',      [ExamController::class, 'stats']);
