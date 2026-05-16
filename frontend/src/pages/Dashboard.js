@@ -17,6 +17,7 @@ const TABS = [
   { key:"vehicules",    icon:"🚗", label:"Véhicules"        },
   { key:"seances",      icon:"📅", label:"Séances"          },
   { key:"avis",         icon:"⭐", label:"Avis"             },
+  { key:"qcm",          icon:"📝", label:"QCM"              },
   { key:"faq",          icon:"❓", label:"FAQ"              },
   { key:"messages",     icon:"✉️", label:"Messages"         },
 ];
@@ -296,6 +297,8 @@ export default function Dashboard() {
         if (se.status === "fulfilled") setSeances(se.value.data);
       } else if (activeTab === "avis") {
         const res = await axios.get(`${API}/avis`); setAvis(res.data);
+      } else if (activeTab === "qcm") {
+        const res = await axios.get(`${API}/qcm`); setQuestions(res.data);
       } else if (activeTab === "faq") {
         const res = await axios.get(`${API}/faq/all`); setFaqs(res.data);
       } else if (activeTab === "messages") {
@@ -331,6 +334,7 @@ export default function Dashboard() {
       moniteur:    { post:`${API}/moniteurs`,      put:`${API}/moniteurs/${editId}`    },
       vehicule:    { post:`${API}/vehicules`,      put:`${API}/vehicules/${editId}`    },
       seance:      { post:`${API}/seances`,        put:`${API}/seances/${editId}`      },
+      question:    { post:`${API}/qcm`,            put:`${API}/qcm/${editId}`          },
     };
     try {
       if (editId) await axios.put(urls[entity].put, formData);
@@ -351,6 +355,7 @@ export default function Dashboard() {
       moniteur:    `${API}/moniteurs/${id}`,
       vehicule:    `${API}/vehicules/${id}`,
       seance:      `${API}/seances/${id}`,
+      question:    `${API}/qcm/${id}`,
     };
     try {
       await axios.delete(urls[entity]);
@@ -901,8 +906,6 @@ export default function Dashboard() {
             </div>
           );
         })()}
->>>>>>> 116c943 (feat(dashboard): organize QCM tab by category with sub-tabs per category)
-
         {/* ══ AVIS ══ */}
         {tab === "avis" && (
           <div className="db-section">
@@ -1267,6 +1270,72 @@ export default function Dashboard() {
           )}
 
           {F("notes","Notes (optionnel)","textarea")}
+        </>}
+
+        {/* ══ MODAL : QUESTION QCM ══ */}
+        {modal.entity === "question" && <>
+          <div className="db-field">
+            <label>Question *</label>
+            <textarea className="db-input" rows={3}
+              value={formData.question||""}
+              onChange={e=>setFormData({...formData,question:e.target.value})}
+              placeholder="Ex: Que signifie ce panneau triangulaire rouge ?"/>
+          </div>
+          <div className="db-form-row">
+            <div className="db-field">
+              <label>🅰️ Option A *</label>
+              <input className="db-input" type="text" value={formData.option_a||""} onChange={e=>setFormData({...formData,option_a:e.target.value})} placeholder="Réponse A"/>
+            </div>
+            <div className="db-field">
+              <label>🅱️ Option B *</label>
+              <input className="db-input" type="text" value={formData.option_b||""} onChange={e=>setFormData({...formData,option_b:e.target.value})} placeholder="Réponse B"/>
+            </div>
+          </div>
+          <div className="db-form-row">
+            <div className="db-field">
+              <label>🅲 Option C *</label>
+              <input className="db-input" type="text" value={formData.option_c||""} onChange={e=>setFormData({...formData,option_c:e.target.value})} placeholder="Réponse C"/>
+            </div>
+            <div className="db-field">
+              <label>🅳 Option D *</label>
+              <input className="db-input" type="text" value={formData.option_d||""} onChange={e=>setFormData({...formData,option_d:e.target.value})} placeholder="Réponse D"/>
+            </div>
+          </div>
+          <div className="db-form-row">
+            <div className="db-field">
+              <label>✅ Bonne réponse *</label>
+              <select className="db-input" value={formData.correct_answer||"a"} onChange={e=>setFormData({...formData,correct_answer:e.target.value})}>
+                <option value="a">A — {formData.option_a||"Option A"}</option>
+                <option value="b">B — {formData.option_b||"Option B"}</option>
+                <option value="c">C — {formData.option_c||"Option C"}</option>
+                <option value="d">D — {formData.option_d||"Option D"}</option>
+              </select>
+            </div>
+            <div className="db-field">
+              <label>📂 Catégorie</label>
+              <select className="db-input" value={formData.categorie||"code_route"} onChange={e=>setFormData({...formData,categorie:e.target.value})}>
+                <option value="danger">⚠️ Danger</option>
+                <option value="indication">ℹ️ Indication</option>
+                <option value="interdiction">🚫 Interdiction</option>
+                <option value="code_route">📋 Code Route</option>
+                <option value="conduite">🚗 Conduite</option>
+                <option value="autre">📌 Autre</option>
+              </select>
+            </div>
+          </div>
+          <div className="db-field">
+            <label>💡 Explication (optionnel)</label>
+            <textarea className="db-input" rows={2}
+              value={formData.explication||""}
+              onChange={e=>setFormData({...formData,explication:e.target.value})}
+              placeholder="Explication affichée après la réponse dans le quiz…"/>
+          </div>
+          {/* Aperçu de la bonne réponse */}
+          {formData.correct_answer && formData[`option_${formData.correct_answer}`] && (
+            <div style={{padding:"10px 14px",background:"#dcfce7",borderRadius:10,fontSize:13,color:"#15803d",display:"flex",gap:8,alignItems:"center"}}>
+              ✅ Bonne réponse sélectionnée : <strong>{formData.correct_answer?.toUpperCase()} — {formData[`option_${formData.correct_answer}`]}</strong>
+            </div>
+          )}
         </>}
       </Modal>
 

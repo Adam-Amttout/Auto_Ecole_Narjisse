@@ -81,4 +81,4 @@
   .nb-actions { display:none; }
   .nb-burger { display:flex; }
 }
-@media (min-width:992px) { .nb-mob { display:none !important; } }
+@media (min-width:992px) { .nb-mob { display:none !important; } }
