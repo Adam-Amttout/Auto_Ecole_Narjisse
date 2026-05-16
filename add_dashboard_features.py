@@ -1,307 +1,385 @@
 import os
 
-path = r'c:\Users\ORIGINAL SHOP\Auto_Ecole_Narjisse\frontend\src\pages\Dashboard.js'
+dashboard_path = r"c:\Users\ORIGINAL SHOP\Auto_Ecole_Narjisse\frontend\src\pages\ClientDashboard.js"
 
-with open(path, 'r', encoding='utf-8') as f:
-    content = f.read()
+content = """import React, { useEffect, useState, useCallback } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import ExamenBlanc from "./ExamenBlanc";
+import "./ClientDashboard.css";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
-# 1. Add recharts import
-if 'import { LineChart' not in content:
-    content = content.replace(
-        'import { useNavigate } from "react-router-dom";',
-        'import { useNavigate } from "react-router-dom";\nimport { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";'
-    )
+const API = "http://127.0.0.1:8000/api";
 
-# 2. Add state variables for Search and Modal
-if 'const [globalSearch, setGlobalSearch]' not in content:
-    content = content.replace(
-        'const [sidebarOpen, setSidebarOpen] = useState(false);',
-        'const [sidebarOpen, setSidebarOpen] = useState(false);\n  const [globalSearch, setGlobalSearch] = useState("");\n  const [showClientDetails, setShowClientDetails] = useState(null);\n  const [clientFullData, setClientFullData] = useState(null);\n  const [clientDetailsLoading, setClientDetailsLoading] = useState(false);'
-    )
+const STATUT_SEANCE = {
+  planifiee: { label: "Planifiée", bg: "#dbeafe", color: "#1d4ed8", icon: "📅" },
+  en_cours:  { label: "En cours",  bg: "#fef9c3", color: "#a16207", icon: "▶️"  },
+  terminee:  { label: "Terminée",  bg: "#dcfce7", color: "#15803d", icon: "✅"  },
+  annulee:   { label: "Annulée",   bg: "#f1f5f9", color: "#64748b", icon: "❌"  },
+};
 
-# 3. Add Topbar search
-topbar_target = '''        <div className="db-topbar">
-          <button className="db-burger" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
-          <span className="db-topbar-title">{TABS.find(t=>t.key===tab)?.label || "Dashboard"}</span>
-        </div>'''
-topbar_replacement = '''        <div className="db-topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
-            <button className="db-burger" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
-            <span className="db-topbar-title">{TABS.find(t=>t.key===tab)?.label || "Dashboard"}</span>
-          </div>
-          <div className="db-topbar-search" style={{ position: "relative", width: "100%", maxWidth: 300 }}>
-             <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14 }}>🔍</span>
-             <input 
-               type="text" 
-               placeholder="Rechercher (Client, Email...)"
-               value={globalSearch}
-               onChange={(e) => setGlobalSearch(e.target.value)}
-               style={{ width: "100%", padding: "10px 10px 10px 35px", borderRadius: 20, border: "1px solid #e2e8f0", outline: "none", fontSize: 13, background: "#f8fafc" }}
-             />
-          </div>
-        </div>'''
-if topbar_target in content:
-    content = content.replace(topbar_target, topbar_replacement)
+const CAT_COLORS = {
+  danger:       { bg: "#fee2e2", color: "#b91c1c", icon: "⚠️" },
+  indication:   { bg: "#dbeafe", color: "#1d4ed8", icon: "ℹ️" },
+  interdiction: { bg: "#fff7ed", color: "#c2410c", icon: "🚫" },
+  code_route:   { bg: "#f5f3ff", color: "#7c3aed", icon: "📋" },
+  conduite:     { bg: "#ecfdf5", color: "#059669", icon: "🚗" },
+  autre:        { bg: "#f8fafc", color: "#64748b", icon: "📌" },
+};
 
-# 4. Modify Clients Tab to use filteredClients and new Modal function
-# First, add the function to load client details
-if 'const openClientDetails' not in content:
-    client_func = '''  const openClientDetails = async (client) => {
-    setShowClientDetails(client);
-    setClientFullData(null);
-    setClientDetailsLoading(true);
-    try {
-      const [progRes, seancesRes, msgRes] = await Promise.allSettled([
-        axios.get(`${API}/progression/by-category?client_id=${client.id}`),
-        axios.get(`${API}/seances`),
-        axios.get(`${API}/contact-messages`)
-      ]);
-      const clientSeances = seancesRes.status === "fulfilled" 
-        ? seancesRes.value.data.filter(s => s.client?.id === client.id) 
-        : [];
-      const clientMessages = msgRes.status === "fulfilled"
-        ? msgRes.value.data.filter(m => m.email === client.email || m.telephone === client.telephone)
-        : [];
-      setClientFullData({
-        progressionCategories: progRes.status === "fulfilled" ? progRes.value.data : null,
-        seances: clientSeances,
-        messages: clientMessages
-      });
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setClientDetailsLoading(false);
+export default function ClientDashboard() {
+  const navigate = useNavigate();
+  const user     = JSON.parse(localStorage.getItem("user") || "{}");
+  const clientId = user?.id;
+
+  const [tab, setTab]         = useState("accueil");
+  const [loading, setLoading] = useState(true);
+
+  // Stats & Data
+  const [seances,       setSeances]       = useState([]);
+  const [cours,         setCours]         = useState([]);
+  const [progression,   setProgression]   = useState([]);
+  const [notifications, setNotifs]        = useState([]);
+  const [profil,        setProfil]        = useState(user);
+  
+  const [examHistory,   setExamHistory]   = useState([]);
+  const [examStats,     setExamStats]     = useState(null);
+
+  // Track visits
+  useEffect(() => {
+    if (clientId) {
+      const key = `visits_${clientId}`;
+      const v = parseInt(localStorage.getItem(key) || "0") + 1;
+      localStorage.setItem(key, v);
     }
+  }, [clientId]);
+
+  const loadAll = useCallback(async () => {
+    if (!clientId) { navigate("/connexion"); return; }
+    setLoading(true);
+    try {
+      const [seaRes, coursRes, progRes, notifRes, profilRes, examHistRes, examStatsRes] = await Promise.allSettled([
+        axios.get(`${API}/seances?client_id=${clientId}`),
+        axios.get(`${API}/cours`),
+        axios.get(`${API}/progression/by-category?client_id=${clientId}`),
+        axios.get(`${API}/notifications?client_id=${clientId}`),
+        axios.get(`${API}/clients/${clientId}`),
+        axios.get(`${API}/exam/results?client_id=${clientId}`),
+        axios.get(`${API}/exam/stats?client_id=${clientId}`),
+      ]);
+      if (seaRes.status    === "fulfilled") setSeances(seaRes.value.data);
+      if (coursRes.status  === "fulfilled") setCours(coursRes.value.data);
+      if (progRes.status   === "fulfilled") setProgression(progRes.value.data || []);
+      if (notifRes.status  === "fulfilled") setNotifs(notifRes.value.data || []);
+      if (profilRes.status === "fulfilled") setProfil(profilRes.value.data);
+      if (examHistRes.status === "fulfilled") setExamHistory(examHistRes.value.data);
+      if (examStatsRes.status === "fulfilled") setExamStats(examStatsRes.value.data);
+    } catch {}
+    setLoading(false);
+  }, [clientId, navigate]);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  // Notifications
+  const marquerLu = async (id) => {
+    try {
+      await axios.patch(`${API}/notifications/${id}/lire`);
+      setNotifs(prev => prev.map(n => n.id === id ? { ...n, lu: true } : n));
+    } catch {}
+  };
+  const marquerToutLu = async () => {
+    try {
+      await axios.patch(`${API}/notifications/lire-tout`, { client_id: clientId });
+      setNotifs(prev => prev.map(n => ({ ...n, lu: true })));
+    } catch {}
+  };
+  const supprimerNotif = async (id) => {
+    try {
+      await axios.delete(`${API}/notifications/${id}`);
+      setNotifs(prev => prev.filter(n => n.id !== id));
+    } catch {}
   };
 
-  const filteredClients = clients.filter(c => {
-    if (!globalSearch) return true;
-    const search = globalSearch.toLowerCase();
-    return (c.nom?.toLowerCase().includes(search) || 
-            c.prenom?.toLowerCase().includes(search) || 
-            c.email?.toLowerCase().includes(search) ||
-            c.telephone?.toLowerCase().includes(search));
-  });
-'''
-    # insert before return
-    content = content.replace('  /* ─────────── RENDER ─────────── */', client_func + '\n  /* ─────────── RENDER ─────────── */')
+  // Exam History
+  const supprimerExam = async (id) => {
+    if (!window.confirm("Supprimer ce résultat ?")) return;
+    try {
+      await axios.delete(`${API}/exam/results/${id}`);
+      setExamHistory(prev => prev.filter(e => e.id !== id));
+      loadAll(); // reload stats
+    } catch { alert("Erreur de suppression"); }
+  };
 
-# replace clients.map with filteredClients.map in clients tab
-# Also replace onView action
-clients_tab_target = '''{clients.map(c=>(
-                    <tr key={c.id}>
-                      <td className="db-id">{c.id}</td>
-                      <td><b>{c.nom} {c.prenom}</b></td>
-                      <td style={{color:"#64748b"}}>{c.email}</td>
-                      <td><Badge text={c.role} bg={c.role==="admin"?"#fee2e2":"#dbeafe"} color={c.role==="admin"?"#b91c1c":"#1d4ed8"}/></td>
-                      <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(c.created_at).toLocaleDateString("fr-FR")}</td>
-                      <td><ActionBtns
-                        onView  ={() => window.open(`/profil/${c.id}`,"_blank")}'''
-clients_tab_replacement = '''{filteredClients.map(c=>(
-                    <tr key={c.id}>
-                      <td className="db-id">{c.id}</td>
-                      <td><b>{c.nom} {c.prenom}</b></td>
-                      <td style={{color:"#64748b"}}>{c.email}</td>
-                      <td><Badge text={c.role} bg={c.role==="admin"?"#fee2e2":"#dbeafe"} color={c.role==="admin"?"#b91c1c":"#1d4ed8"}/></td>
-                      <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(c.created_at).toLocaleDateString("fr-FR")}</td>
-                      <td><ActionBtns
-                        onView  ={() => openClientDetails(c)}'''
-if clients_tab_target in content:
-    content = content.replace(clients_tab_target, clients_tab_replacement)
+  // Computed Data
+  const nbNonLus  = notifications.filter(n => !n.lu).length;
+  const seancesFutures   = seances.filter(s => s.statut === "planifiee");
+  const totalCours       = cours.length;
+  const coursCompletes   = Array.isArray(progression) ? progression.reduce((a, c) => a + (c.completed || 0), 0) : 0;
+  const progPct   = totalCours > 0 ? Math.round((coursCompletes / totalCours) * 100) : 0;
 
-# Also update clients count
-if 'Clients ({clients.length})' in content:
-    content = content.replace('Clients ({clients.length})', 'Clients ({filteredClients.length})')
+  // Badges logic
+  const has10Qcm = examHistory.length >= 10;
+  const hasAvg35 = (examStats?.avg_score || 0) >= 35;
+  const hasFinishedCat = Array.isArray(progression) && progression.some(c => c.completed === c.total && c.total > 0);
+  
+  // TABS: Cleaned up sidebar to avoid navbar duplicates
+  const TABS = [
+    { key: "accueil", icon: "🏠", label: "Tableau de Bord" },
+    { key: "exam",    icon: "🚦", label: "Examen Blanc" },
+    { key: "stats",   icon: "📊", label: "Statistiques" },
+    { key: "notifs",  icon: "🔔", label: "Historique", badge: nbNonLus },
+  ];
 
-# 5. Add Charts to Accueil
-charts_code = '''
-            {/* NEW CHARTS ROW */}
-            <div className="db-charts-grid" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 20, marginBottom: 20 }}>
-              <div className="db-card">
-                <div className="db-card-head"><span>📈 Évolution des Inscriptions</span></div>
-                <div style={{ height: 260, padding: "20px 20px 0 0" }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={(() => {
-                      const counts = clients.reduce((acc, c) => {
-                        const date = new Date(c.created_at).toLocaleDateString("fr-FR", { day: '2-digit', month: 'short' });
-                        acc[date] = (acc[date] || 0) + 1;
-                        return acc;
-                      }, {});
-                      return Object.keys(counts).map(date => ({ date, Inscriptions: counts[date] })).slice(-15);
-                    })()}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-                      <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-                      <RechartsTooltip contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
-                      <Line type="monotone" dataKey="Inscriptions" stroke="#2563eb" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: "#fff" }} activeDot={{ r: 6 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
+  if (loading) return (
+    <div className="cd-loading">
+      <div className="cd-spinner"/>
+      <p>Chargement…</p>
+    </div>
+  );
+
+  const initiales = `${profil?.prenom?.[0]||""}${profil?.nom?.[0]||""}`.toUpperCase();
+
+  return (
+    <div className="cd-layout">
+      {/* ── SIDEBAR ── */}
+      <aside className="cd-sidebar">
+        <div className="cd-brand">
+          <div className="cd-brand-logo">🚗</div>
+          <div>
+            <div className="cd-brand-name">Auto École</div>
+            <div className="cd-brand-sub">Narjiss</div>
+          </div>
+        </div>
+
+        <div className="cd-user-card">
+          <div className="cd-user-avatar" style={{ padding: profil?.photo_url || profil?.photo_profil ? 0 : undefined, overflow: "hidden" }}>
+            {profil?.photo_url || profil?.photo_profil ? (
+              <img 
+                src={profil.photo_url || `${API.replace('/api','')}/storage/${profil.photo_profil}`} 
+                alt="Profil" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} 
+              />
+            ) : initiales}
+          </div>
+          <div className="cd-user-info">
+            <div className="cd-user-name">{profil?.prenom} {profil?.nom}</div>
+            <div className="cd-user-role">🎓 Élève</div>
+          </div>
+        </div>
+
+        <nav className="cd-nav">
+          {TABS.map(t => (
+            <button key={t.key} className={`cd-nav-btn ${tab === t.key ? "active" : ""}`} onClick={() => setTab(t.key)}>
+              <span className="cd-nav-icon">{t.icon}</span>
+              <span className="cd-nav-label">{t.label}</span>
+              {t.badge > 0 && <span className="cd-nav-badge">{t.badge}</span>}
+            </button>
+          ))}
+        </nav>
+      </aside>
+
+      {/* ── MAIN ── */}
+      <main className="cd-main">
+        {/* ══ ACCUEIL ══ */}
+        {tab === "accueil" && (
+          <div className="cd-section fade-in">
+            <div className="cd-welcome">
+              <div>
+                <h2 className="cd-welcome-title">Bonjour, {profil?.prenom} 👋</h2>
+                <p className="cd-welcome-sub">Prêt pour votre prochaine leçon ?</p>
+              </div>
+              <button className="cd-btn-primary" onClick={() => navigate("/cours")}>
+                Continuer l'apprentissage 🚀
+              </button>
+            </div>
+
+            {/* Badges & Scores */}
+            <div className="cd-widgets-row">
+              <div className="cd-widget-card score-card">
+                <div className="score-icon">🏆</div>
+                <div className="score-info">
+                  <span className="score-label">Meilleur Score</span>
+                  <span className="score-val">{examStats?.best_score || 0}<small>/40</small></span>
+                </div>
+                <div className="score-info">
+                  <span className="score-label">Moyenne Générale</span>
+                  <span className="score-val" style={{color: '#fff'}}>{examStats?.avg_score || 0}</span>
                 </div>
               </div>
-              <div className="db-card">
-                <div className="db-card-head"><span>🍩 Séances par Statut</span></div>
-                <div style={{ height: 260, position: "relative" }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={(() => {
-                        const counts = seances.reduce((acc, s) => {
-                          acc[s.statut] = (acc[s.statut] || 0) + 1;
-                          return acc;
-                        }, {});
-                        const COLORS = { planifiee: "#3b82f6", en_cours: "#eab308", terminee: "#22c55e", annulee: "#94a3b8" };
-                        return Object.keys(counts).map(key => ({
-                          name: STATUT_SEANCE[key]?.label || key,
-                          value: counts[key],
-                          color: COLORS[key] || "#cbd5e1"
-                        }));
-                      })()} cx="50%" cy="45%" innerRadius={55} outerRadius={80} paddingAngle={5} dataKey="value">
-                        {(() => {
-                          const counts = seances.reduce((acc, s) => { acc[s.statut] = (acc[s.statut] || 0) + 1; return acc; }, {});
-                          const COLORS = { planifiee: "#3b82f6", en_cours: "#eab308", terminee: "#22c55e", annulee: "#94a3b8" };
-                          return Object.keys(counts).map(key => ({ name: STATUT_SEANCE[key]?.label || key, value: counts[key], color: COLORS[key] || "#cbd5e1" }));
-                        })().map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div style={{ position: "absolute", bottom: 10, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 15, flexWrap: "wrap", padding: "0 10px" }}>
-                    {(() => {
-                        const counts = seances.reduce((acc, s) => { acc[s.statut] = (acc[s.statut] || 0) + 1; return acc; }, {});
-                        const COLORS = { planifiee: "#3b82f6", en_cours: "#eab308", terminee: "#22c55e", annulee: "#94a3b8" };
-                        return Object.keys(counts).map(key => ({ name: STATUT_SEANCE[key]?.label || key, value: counts[key], color: COLORS[key] || "#cbd5e1" }));
-                    })().map(entry => (
-                      <div key={entry.name} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#475569", fontWeight: 600 }}>
-                        <span style={{ display: "block", width: 8, height: 8, borderRadius: "50%", background: entry.color }}/>
-                        {entry.name} ({entry.value})
+
+              <div className="cd-widget-card badges-card">
+                <h4 className="badges-title">🎖️ Vos Badges</h4>
+                <div className="badges-list">
+                  <div className={`badge-item ${has10Qcm ? 'active' : 'locked'}`} title="10 QCM successifs">
+                    <span className="badge-icon">🔥</span>
+                    <span>Assiduité</span>
+                  </div>
+                  <div className={`badge-item ${hasAvg35 ? 'active' : 'locked'}`} title="Moyenne +35/40">
+                    <span className="badge-icon">🌟</span>
+                    <span>Excellence</span>
+                  </div>
+                  <div className={`badge-item ${hasFinishedCat ? 'active' : 'locked'}`} title="Terminer une catégorie">
+                    <span className="badge-icon">🎯</span>
+                    <span>Spécialiste</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Progressions per category */}
+            <div className="cd-card">
+              <div className="cd-card-head">📈 Progression par Catégorie</div>
+              <div className="cd-prog-cats-grid">
+                {Array.isArray(progression) && progression.map((cat, i) => {
+                  const pct = cat.total > 0 ? Math.round((cat.completed / cat.total) * 100) : 0;
+                  const cc = CAT_COLORS[cat.categorie] || CAT_COLORS.autre;
+                  return (
+                    <div key={i} className="cd-cat-progress">
+                      <div className="cd-cat-info">
+                        <span className="cd-cat-icon" style={{background: cc.bg, color: cc.color}}>{cc.icon}</span>
+                        <span className="cd-cat-name">{cat.categorie}</span>
+                        <span className="cd-cat-pct">{pct}%</span>
                       </div>
-                    ))}
-                  </div>
+                      <div className="cd-prog-track" style={{height: 8}}>
+                        <div className="cd-prog-fill" style={{width: `${pct}%`, background: cc.color}} />
+                      </div>
+                      <div className="cd-cat-meta">{cat.completed} / {cat.total} leçons</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Prochaine Séance */}
+            {seancesFutures.length > 0 && (
+              <div className="cd-card">
+                <div className="cd-card-head">📅 Rendez-vous & Séances</div>
+                <div className="cd-seances-list">
+                  {seancesFutures.slice(0,2).map(s => (
+                    <div key={s.id} className="cd-seance-item">
+                      <div className="cd-seance-date">
+                        <span className="date-icon">📆</span>
+                        {new Date(s.date).toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"short"})}
+                      </div>
+                      <div className="cd-seance-time">⏰ {s.heure_debut} - {s.heure_fin}</div>
+                      <div className="cd-seance-type">🚗 {s.vehicule ? s.vehicule.marque : "Conduite"}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══ EXAMEN BLANC ══ */}
+        {tab === "exam" && (
+          <div className="cd-section fade-in">
+            <ExamenBlanc clientId={clientId} onBack={() => setTab("accueil")} />
+          </div>
+        )}
+
+        {/* ══ STATISTIQUES ══ */}
+        {tab === "stats" && (
+          <div className="cd-section fade-in">
+            <div className="cd-card">
+              <div className="cd-card-head">📊 Statistiques d'apprentissage</div>
+              <div className="cd-stats-grid-4">
+                <div className="stat-box">
+                  <div className="stat-val">{coursCompletes}</div>
+                  <div className="stat-lbl">Leçons terminées</div>
+                </div>
+                <div className="stat-box">
+                  <div className="stat-val">{examHistory.length}</div>
+                  <div className="stat-lbl">Quiz passés</div>
+                </div>
+                <div className="stat-box">
+                  <div className="stat-val" style={{color: '#15803d'}}>{examStats?.reussis || 0}</div>
+                  <div className="stat-lbl">Quiz réussis</div>
+                </div>
+                <div className="stat-box">
+                  <div className="stat-val" style={{color: '#e63946'}}>{(examHistory.length - (examStats?.reussis || 0))}</div>
+                  <div className="stat-lbl">Échecs</div>
                 </div>
               </div>
             </div>
-'''
-if 'db-charts-grid' not in content:
-    content = content.replace(
-        '<div className="db-recent-grid">',
-        charts_code + '\n            <div className="db-recent-grid">'
-    )
 
-# 6. Add Detailed Profile Modal
-modal_code = '''
-      {/* ── MODAL PROFIL ÉLÈVE DÉTAILLÉ ── */}
-      {showClientDetails && (
-        <div className="db-modal-overlay" onClick={() => setShowClientDetails(null)}>
-          <div className="db-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 850, width: "95%", background: "#f8fafc" }}>
-            <div className="db-modal-head" style={{ background: "white", padding: "15px 25px" }}>
-              <h5>👤 Profil Détaillé : {showClientDetails.prenom} {showClientDetails.nom}</h5>
-              <button className="db-modal-x" onClick={() => setShowClientDetails(null)}>×</button>
-            </div>
-            <div className="db-modal-body" style={{ padding: 20 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-                {/* Left col: Info + Prog */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  <div className="db-card" style={{ margin: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
-                    <div className="db-card-head"><span>ℹ️ Infos Personnelles</span></div>
-                    <div style={{ padding: "15px 20px" }}>
-                      <p style={{ margin: "0 0 10px 0", fontSize: 14 }}><strong>Email :</strong> <span style={{color:"#475569"}}>{showClientDetails.email}</span></p>
-                      <p style={{ margin: "0 0 10px 0", fontSize: 14 }}><strong>Téléphone :</strong> <span style={{color:"#475569"}}>{showClientDetails.telephone || "—"}</span></p>
-                      <p style={{ margin: "0 0 10px 0", fontSize: 14 }}><strong>Inscrit le :</strong> <span style={{color:"#475569"}}>{new Date(showClientDetails.created_at).toLocaleDateString("fr-FR")}</span></p>
-                      <Badge text={showClientDetails.role} bg={showClientDetails.role==="admin"?"#fee2e2":"#dbeafe"} color={showClientDetails.role==="admin"?"#b91c1c":"#1d4ed8"}/>
-                    </div>
-                  </div>
-
-                  <div className="db-card" style={{ margin: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
-                    <div className="db-card-head"><span>📚 Progression E-learning</span></div>
-                    <div style={{ padding: "15px 20px" }}>
-                      {clientDetailsLoading ? (
-                        <div style={{ fontSize: 13, color: "#64748b", textAlign: "center", padding: 20 }}>⏳ Chargement de la progression...</div>
-                      ) : clientFullData?.progressionCategories && Object.keys(clientFullData.progressionCategories).length > 0 ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-                          {Object.keys(clientFullData.progressionCategories).map(cat => {
-                            const data = clientFullData.progressionCategories[cat];
-                            return (
-                              <div key={cat}>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6, color: "#334155" }}>
-                                  <span style={{ fontWeight: 700, textTransform: "capitalize" }}>{cat.replace('_', ' ')}</span>
-                                  <span style={{ fontWeight: 600 }}>{data.done} / {data.total} ({data.pct}%)</span>
-                                </div>
-                                <div style={{ height: 8, background: "#e2e8f0", borderRadius: 4, overflow: "hidden" }}>
-                                  <div style={{ height: "100%", width: `${data.pct}%`, background: data.pct === 100 ? "#15803d" : "#3b82f6", borderRadius: 4, transition: "width 0.5s ease" }}/>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: 13, color: "#94a3b8", textAlign: "center", padding: 20 }}>Aucune progression trouvée.</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right col: Seances + Messages */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  <div className="db-card" style={{ margin: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
-                    <div className="db-card-head"><span>🚗 Historique des Séances</span></div>
-                    <div style={{ maxHeight: 220, overflowY: "auto", padding: "10px 15px" }}>
-                      {clientDetailsLoading ? (
-                        <div style={{ padding: 15, fontSize: 13, color: "#64748b", textAlign:"center" }}>⏳ Chargement...</div>
-                      ) : clientFullData?.seances?.length > 0 ? (
-                        <table className="db-table" style={{ margin: 0 }}>
-                          <tbody>
-                            {clientFullData.seances.map(s => (
-                              <tr key={s.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                                <td style={{ fontSize: 12.5, padding: "10px 5px" }}>{new Date(s.date).toLocaleDateString("fr-FR")}</td>
-                                <td style={{ fontSize: 12.5, padding: "10px 5px", color:"#64748b" }}>{s.heure_debut}</td>
-                                <td style={{ padding: "10px 5px", textAlign:"right" }}><Badge text={STATUT_SEANCE[s.statut]?.label||s.statut} bg={STATUT_SEANCE[s.statut]?.bg||"#f1f5f9"} color={STATUT_SEANCE[s.statut]?.color||"#64748b"}/></td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <div style={{ padding: 15, fontSize: 13, color: "#94a3b8", textAlign:"center" }}>Aucune séance planifiée.</div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="db-card" style={{ margin: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
-                    <div className="db-card-head"><span>✉️ Messages Envoyés</span></div>
-                    <div style={{ maxHeight: 220, overflowY: "auto", padding: "10px 15px" }}>
-                      {clientDetailsLoading ? (
-                        <div style={{ padding: 15, fontSize: 13, color: "#64748b", textAlign:"center" }}>⏳ Chargement...</div>
-                      ) : clientFullData?.messages?.length > 0 ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          {clientFullData.messages.map(m => (
-                            <div key={m.id} style={{ padding: 12, background: "white", border: "1px solid #e2e8f0", borderRadius: 8 }}>
-                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                                <span style={{ fontSize: 11.5, color: "#64748b", fontWeight: 600 }}>{new Date(m.created_at).toLocaleDateString("fr-FR")}</span>
-                                <Badge text={STATUT_MSG[m.statut]?.label||m.statut} bg={STATUT_MSG[m.statut]?.bg||"#f1f5f9"} color={STATUT_MSG[m.statut]?.color||"#64748b"}/>
-                              </div>
-                              <div style={{ fontSize: 13, color: "#334155", lineHeight: 1.5 }}>"{m.message}"</div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ padding: 15, fontSize: 13, color: "#94a3b8", textAlign:"center" }}>Aucun message envoyé.</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+            <div className="cd-card mt-15">
+              <div className="cd-card-head">📝 Derniers Examens (Historique)</div>
+              <div className="table-responsive">
+                <table className="cd-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Score</th>
+                      <th>Résultat</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {examHistory.length === 0 ? (
+                      <tr><td colSpan="4" style={{textAlign:'center', padding:'20px'}}>Aucun QCM passé pour l'instant.</td></tr>
+                    ) : (
+                      examHistory.slice(0, 10).map(ex => (
+                        <tr key={ex.id}>
+                          <td>{new Date(ex.created_at).toLocaleDateString("fr-FR", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"})}</td>
+                          <td style={{fontWeight: 700}}>{ex.score}/40</td>
+                          <td>
+                            <span className="cd-status-badge" style={{background: ex.reussi ? "#dcfce7" : "#fee2e2", color: ex.reussi ? "#15803d" : "#b91c1c"}}>
+                              {ex.reussi ? "✅ Réussi" : "❌ Échoué"}
+                            </span>
+                          </td>
+                          <td>
+                            <button className="cd-btn-icon del" onClick={() => supprimerExam(ex.id)}>🗑️</button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        </div>
-      )}
-'''
-if 'MODAL PROFIL ÉLÈVE DÉTAILLÉ' not in content:
-    content = content.replace(
-        '{/* â• â•  MODAL FAQ â• â•  */}',
-        modal_code + '\n      {/* â• â•  MODAL FAQ â• â•  */}'
-    )
+        )}
 
-with open(path, 'w', encoding='utf-8') as f:
+        {/* ══ NOTIFICATIONS (Historique) ══ */}
+        {tab === "notifs" && (
+          <div className="cd-section fade-in">
+            <div className="cd-card">
+              <div className="cd-card-head" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                <span>🔔 Historique des notifications</span>
+                {nbNonLus > 0 && <button className="cd-btn-outline-sm" onClick={marquerToutLu}>Tout marquer comme lu</button>}
+              </div>
+              
+              <div className="cd-notifs-page-list">
+                {notifications.length === 0 ? (
+                  <div className="cd-empty">Aucune notification.</div>
+                ) : (
+                  notifications.map(n => (
+                    <div key={n.id} className={`cd-notif-row ${!n.lu ? 'unread' : ''}`}>
+                      <div className="cd-notif-icon" style={{background: (n.color || "#e63946")+"22", color: n.color || "#e63946"}}>{n.icon || "🔔"}</div>
+                      <div className="cd-notif-content">
+                        <div className="cd-notif-title">{n.titre}</div>
+                        <div className="cd-notif-msg">{n.message}</div>
+                        <div className="cd-notif-date">{new Date(n.created_at).toLocaleString("fr-FR")}</div>
+                      </div>
+                      <div className="cd-notif-actions">
+                        {!n.lu && <button className="cd-btn-icon ok" onClick={() => marquerLu(n.id)} title="Marquer comme lu">✔️</button>}
+                        <button className="cd-btn-icon del" onClick={() => supprimerNotif(n.id)} title="Supprimer">🗑️</button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+      </main>
+    </div>
+  );
+}
+"""
+
+with open(dashboard_path, "w", encoding="utf-8") as f:
     f.write(content)
 
-print("Modifications appliquées avec succès.")
+print("ClientDashboard.js updated successfully.")

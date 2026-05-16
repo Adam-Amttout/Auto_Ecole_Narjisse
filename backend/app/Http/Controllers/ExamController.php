@@ -115,4 +115,14 @@ class ExamController extends Controller
             'category_avg' => $categoryAvg,
         ]);
     }
+
+    /**
+     * DELETE /api/exam/results/{id}
+     */
+    public function destroy($id)
+    {
+        $exam = ExamResult::findOrFail($id);
+        $exam->delete();
+        return response()->json(['message' => 'Résultat supprimé']);
+    }
 }

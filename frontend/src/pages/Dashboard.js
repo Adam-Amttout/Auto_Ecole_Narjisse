@@ -547,21 +547,20 @@ export default function Dashboard() {
     setClientFullData(null);
     setClientDetailsLoading(true);
     try {
-      const [progRes, seancesRes, msgRes] = await Promise.allSettled([
+      const [progRes, seancesRes, examHistRes, examStatsRes] = await Promise.allSettled([
         axios.get(`${API}/progression/by-category?client_id=${client.id}`),
         axios.get(`${API}/seances`),
-        axios.get(`${API}/contact-messages`)
+        axios.get(`${API}/exam/results?client_id=${client.id}`),
+        axios.get(`${API}/exam/stats?client_id=${client.id}`),
       ]);
-      const clientSeances = seancesRes.status === "fulfilled" 
-        ? seancesRes.value.data.filter(s => s.client?.id === client.id) 
-        : [];
-      const clientMessages = msgRes.status === "fulfilled"
-        ? msgRes.value.data.filter(m => m.email === client.email || m.telephone === client.telephone)
+      const clientSeances = seancesRes.status === "fulfilled"
+        ? seancesRes.value.data.filter(s => s.client?.id === client.id)
         : [];
       setClientFullData({
-        progressionCategories: progRes.status === "fulfilled" ? progRes.value.data : null,
+        progressionCategories: progRes.status === "fulfilled" ? progRes.value.data : [],
         seances: clientSeances,
-        messages: clientMessages
+        examHistory: examHistRes.status === "fulfilled" ? examHistRes.value.data : [],
+        examStats:   examStatsRes.status === "fulfilled" ? examStatsRes.value.data : null,
       });
     } catch (e) {
       console.error(e);
@@ -612,8 +611,197 @@ export default function Dashboard() {
   );
 
   /* ─────────── RENDER ─────────── */
+
+  const CAT_COLORS_ADMIN = {
+    danger:       { bg: "#fee2e2", color: "#b91c1c", icon: "⚠️" },
+    indication:   { bg: "#dbeafe", color: "#1d4ed8", icon: "ℹ️" },
+    interdiction: { bg: "#fff7ed", color: "#c2410c", icon: "🚫" },
+    code_route:   { bg: "#f5f3ff", color: "#7c3aed", icon: "📋" },
+    conduite:     { bg: "#ecfdf5", color: "#059669", icon: "🚗" },
+    autre:        { bg: "#f8fafc", color: "#64748b", icon: "📌" },
+  };
+
   return (
     <div className="db-layout">
+
+      {/* ══ CLIENT PROFILE OVERLAY ══ */}
+      {showClientDetails && (
+        <div className="cpo-overlay" onClick={() => setShowClientDetails(null)}>
+          <div className="cpo-panel" onClick={e => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className="cpo-header">
+              <div className="cpo-header-left">
+                <div className="cpo-avatar">
+                  {showClientDetails.photo_profil || showClientDetails.photo_url ? (
+                    <img
+                      src={showClientDetails.photo_url || `http://127.0.0.1:8000/storage/${showClientDetails.photo_profil}`}
+                      alt="avatar"
+                      style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}
+                    />
+                  ) : (
+                    `${showClientDetails.prenom?.[0]||""}${showClientDetails.nom?.[0]||""}`.toUpperCase()
+                  )}
+                </div>
+                <div>
+                  <div className="cpo-name">{showClientDetails.prenom} {showClientDetails.nom}</div>
+                  <div className="cpo-email">📧 {showClientDetails.email}</div>
+                  <div className="cpo-meta">
+                    <Badge text={showClientDetails.role} bg={showClientDetails.role==="admin"?"#fee2e2":"#dbeafe"} color={showClientDetails.role==="admin"?"#b91c1c":"#1d4ed8"}/>
+                    <span className="cpo-since">Inscrit le {new Date(showClientDetails.created_at).toLocaleDateString("fr-FR")}</span>
+                  </div>
+                </div>
+              </div>
+              <button className="cpo-close" onClick={() => setShowClientDetails(null)}>✕</button>
+            </div>
+
+            {/* Body */}
+            {clientDetailsLoading ? (
+              <div className="cpo-loading"><div className="db-spinner"/>Chargement du profil…</div>
+            ) : clientFullData ? (
+              <div className="cpo-body">
+
+                {/* ── STATS RAPIDES ── */}
+                <div className="cpo-stats-row">
+                  <div className="cpo-stat-box">
+                    <span className="cpo-stat-icon">🚗</span>
+                    <span className="cpo-stat-val">{clientFullData.seances.filter(s=>s.statut==="planifiee").length}</span>
+                    <span className="cpo-stat-lbl">Séances planifiées</span>
+                  </div>
+                  <div className="cpo-stat-box">
+                    <span className="cpo-stat-icon">✅</span>
+                    <span className="cpo-stat-val">{clientFullData.seances.filter(s=>s.statut==="terminee").length}</span>
+                    <span className="cpo-stat-lbl">Séances terminées</span>
+                  </div>
+                  <div className="cpo-stat-box">
+                    <span className="cpo-stat-icon">📝</span>
+                    <span className="cpo-stat-val">{clientFullData.examHistory.length}</span>
+                    <span className="cpo-stat-lbl">QCM passés</span>
+                  </div>
+                  <div className="cpo-stat-box">
+                    <span className="cpo-stat-icon">🏆</span>
+                    <span className="cpo-stat-val" style={{color:'#22c55e'}}>{clientFullData.examStats?.best_score || 0}/40</span>
+                    <span className="cpo-stat-lbl">Meilleur score</span>
+                  </div>
+                  <div className="cpo-stat-box">
+                    <span className="cpo-stat-icon">📊</span>
+                    <span className="cpo-stat-val">{clientFullData.examStats?.avg_score || 0}</span>
+                    <span className="cpo-stat-lbl">Moyenne QCM</span>
+                  </div>
+                  <div className="cpo-stat-box">
+                    <span className="cpo-stat-icon">🎯</span>
+                    <span className="cpo-stat-val" style={{color:'#15803d'}}>{clientFullData.examStats?.reussis || 0}</span>
+                    <span className="cpo-stat-lbl">Quiz réussis</span>
+                  </div>
+                </div>
+
+                <div className="cpo-cols">
+                  {/* ── LEFT: Progression + Séances ── */}
+                  <div className="cpo-col">
+
+                    {/* PROGRESSION */}
+                    <div className="cpo-card">
+                      <div className="cpo-card-head">📈 Progression par Catégorie</div>
+                      {Array.isArray(clientFullData.progressionCategories) && clientFullData.progressionCategories.length > 0 ? (
+                        <div className="cpo-prog-list">
+                          {clientFullData.progressionCategories.map((cat, i) => {
+                            const pct = cat.total > 0 ? Math.round((cat.completed/cat.total)*100) : 0;
+                            const cc  = CAT_COLORS_ADMIN[cat.categorie] || CAT_COLORS_ADMIN.autre;
+                            return (
+                              <div key={i} className="cpo-prog-row">
+                                <span className="cpo-prog-icon" style={{background:cc.bg,color:cc.color}}>{cc.icon}</span>
+                                <span className="cpo-prog-name">{cat.categorie}</span>
+                                <div className="cpo-prog-track">
+                                  <div className="cpo-prog-fill" style={{
+                                    width:`${pct}%`,
+                                    background: pct>=70?"#22c55e":pct>=40?"#f59e0b":"#e63946"
+                                  }}/>
+                                </div>
+                                <span className="cpo-prog-pct">{pct}%</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : <div className="cpo-empty">Aucune progression enregistrée.</div>}
+                    </div>
+
+                    {/* SEANCES */}
+                    <div className="cpo-card">
+                      <div className="cpo-card-head">🚗 Dernières Séances</div>
+                      {clientFullData.seances.length > 0 ? (
+                        <table className="db-table" style={{fontSize:12}}>
+                          <thead><tr><th>Date</th><th>Heure</th><th>Véhicule</th><th>Statut</th></tr></thead>
+                          <tbody>
+                            {clientFullData.seances.slice(0,5).map(s => (
+                              <tr key={s.id}>
+                                <td>{new Date(s.date).toLocaleDateString("fr-FR")}</td>
+                                <td>{s.heure_debut} - {s.heure_fin}</td>
+                                <td>{s.vehicule?.marque||"—"}</td>
+                                <td><Badge text={STATUT_SEANCE[s.statut]?.label||s.statut} bg={STATUT_SEANCE[s.statut]?.bg||"#f1f5f9"} color={STATUT_SEANCE[s.statut]?.color||"#64748b"}/></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : <div className="cpo-empty">Aucune séance.</div>}
+                    </div>
+                  </div>
+
+                  {/* ── RIGHT: Exam History ── */}
+                  <div className="cpo-col">
+                    <div className="cpo-card">
+                      <div className="cpo-card-head">📝 Historique QCM</div>
+                      {clientFullData.examHistory.length > 0 ? (
+                        <table className="db-table" style={{fontSize:12}}>
+                          <thead><tr><th>Date</th><th>Score</th><th>Résultat</th></tr></thead>
+                          <tbody>
+                            {clientFullData.examHistory.slice(0,8).map(ex => (
+                              <tr key={ex.id}>
+                                <td>{new Date(ex.created_at).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</td>
+                                <td style={{fontWeight:700}}>{ex.score}/40</td>
+                                <td>
+                                  <span style={{padding:"2px 8px",borderRadius:20,fontSize:11,fontWeight:700,
+                                    background:ex.reussi?"#dcfce7":"#fee2e2",
+                                    color:ex.reussi?"#15803d":"#b91c1c"}}>
+                                    {ex.reussi?"✅ Réussi":"❌ Échoué"}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : <div className="cpo-empty">Aucun QCM passé.</div>}
+                    </div>
+
+                    {/* EXAM CATEGORY BREAKDOWN */}
+                    {clientFullData.examStats?.category_avg && Object.keys(clientFullData.examStats.category_avg).length > 0 && (
+                      <div className="cpo-card">
+                        <div className="cpo-card-head">📊 Performance QCM par Catégorie</div>
+                        <div className="cpo-prog-list">
+                          {Object.entries(clientFullData.examStats.category_avg).sort((a,b)=>b[1]-a[1]).map(([cat,pct]) => {
+                            const cc = CAT_COLORS_ADMIN[cat] || CAT_COLORS_ADMIN.autre;
+                            const color = pct>=75?"#15803d":pct>=50?"#d97706":"#e63946";
+                            return (
+                              <div key={cat} className="cpo-prog-row">
+                                <span className="cpo-prog-icon" style={{background:cc.bg,color:cc.color}}>{cc.icon}</span>
+                                <span className="cpo-prog-name">{cat}</span>
+                                <div className="cpo-prog-track">
+                                  <div className="cpo-prog-fill" style={{width:`${pct}%`,background:color}}/>
+                                </div>
+                                <span className="cpo-prog-pct" style={{color}}>{pct}%</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+          </div>
+        </div>
+      )}
 
       {/* ── SIDEBAR ── */}
       <aside className={`db-sidebar ${sidebarOpen ? "open" : ""}`}>

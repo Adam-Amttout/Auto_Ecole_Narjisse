@@ -116,3 +116,4 @@ Route::get('/exam/questions',  [ExamController::class, 'questions']);
 Route::post('/exam/results',   [ExamController::class, 'store']);
 Route::get('/exam/results',    [ExamController::class, 'history']);
 Route::get('/exam/stats',      [ExamController::class, 'stats']);
+Route::delete('/exam/results/{id}', [ExamController::class, 'destroy']);
