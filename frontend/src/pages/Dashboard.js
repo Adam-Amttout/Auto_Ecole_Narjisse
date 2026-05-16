@@ -17,6 +17,7 @@ const TABS = [
   { key:"moniteurs",    icon:"🧑‍🏫", label:"Moniteurs"     },
   { key:"vehicules",    icon:"🚗", label:"Véhicules"        },
   { key:"seances",      icon:"📅", label:"Séances"          },
+  { key:"dossiers",     icon:"📂", label:"Dossiers"         },
   { key:"qcm",          icon:"📝", label:"QCM"              },
   { key:"avis",         icon:"⭐", label:"Avis"             },
   { key:"faq",          icon:"❓", label:"FAQ"              },
@@ -234,6 +235,10 @@ export default function Dashboard() {
   const [questions,    setQuestions]    = useState([]);
   const [qcmCat,       setQcmCat]       = useState("danger");
   const [progStats,    setProgStats]    = useState(null); // admin progression stats
+  const [dossiers,     setDossiers]     = useState([]);   // tous les dossiers admin
+  const [dossierActif, setDossierActif] = useState(null); // dossier ouvert dans le panneau
+  const [dossierDocs,  setDossierDocs]  = useState([]);   // documents du dossier actif
+  const [dossierSaving,setDossierSaving]= useState(false);
 
   /* ── messages : conversation ouverte + filtres ── */
   const [convMsg,      setConvMsg]      = useState(null);   // message ouvert dans ConversationView
@@ -313,6 +318,8 @@ export default function Dashboard() {
         const res = await axios.get(`${API}/contact-messages`); setMessages(res.data);
       } else if (activeTab === "qcm") {
         const res = await axios.get(`${API}/qcm`); setQuestions(res.data);
+      } else if (activeTab === "dossiers") {
+        const res = await axios.get(`${API}/dossiers`); setDossiers(res.data);
       }
     } catch {}
   }, []);
@@ -863,11 +870,240 @@ export default function Dashboard() {
 
         {toast.show && (
           <div className={`db-toast ${toast.ok?"ok":"err"}`}>
-            {toast.ok ? "✅" : "âŒ"} {toast.msg}
+            {toast.ok ? "✅" : "❌"} {toast.msg}
           </div>
         )}
 
-        {/* â•â• ACCUEIL â•â• */}
+        {/* ══ DOSSIERS ADMIN ══ */}
+        {tab === "dossiers" && (() => {
+          const ETAPES_ADMIN = [
+            { key: "visite_medicale",         label: "Visite Médicale",             icon: "🏥" },
+            { key: "dossier_depose",           label: "Dossier Déposé",              icon: "📋" },
+            { key: "exam_theorique_programme", label: "Examen Théorique Programmé",  icon: "📝" },
+            { key: "exam_pratique_programme",  label: "Examen Pratique Programmé",   icon: "🚗" },
+            { key: "permis_pret",              label: "Permis Prêt",                 icon: "🎉" },
+          ];
+          const STATUT_DOC_ADMIN = {
+            en_attente: { label: "En attente", bg: "#fef9c3", color: "#a16207" },
+            valide:     { label: "Validé",     bg: "#dcfce7", color: "#15803d" },
+            rejete:     { label: "Rejeté",     bg: "#fee2e2", color: "#b91c1c" },
+          };
+          const DOC_TYPE_LABEL = {
+            cin: "Copie CIN", photo: "Photo d'identité",
+            certificat_medical: "Certificat Médical", autre: "Autre",
+          };
+
+          const openDossier = async (d) => {
+            setDossierActif({ ...d });
+            try {
+              const res = await axios.get(`${API}/dossiers/${d.client_id}`);
+              setDossierActif(prev => ({ ...prev, ...res.data.dossier }));
+              setDossierDocs(res.data.documents || []);
+            } catch {}
+          };
+
+          const saveDossier = async () => {
+            if (!dossierActif) return;
+            setDossierSaving(true);
+            try {
+              await axios.put(`${API}/dossiers/${dossierActif.client_id}`, dossierActif);
+              // Notifier le client
+              await axios.post(`${API}/notifications`, {
+                client_id: dossierActif.client_id,
+                titre: "📂 Dossier mis à jour",
+                message: "L'auto-école a mis à jour l'état de votre dossier administratif.",
+                icon: "📂", color: "#1d4ed8",
+              });
+              showToast("Dossier mis à jour et client notifié !");
+              // Refresh liste
+              loadedTabs.current.delete("dossiers");
+              await loadTab("dossiers");
+            } catch { showToast("Erreur lors de la sauvegarde.", false); }
+            setDossierSaving(false);
+          };
+
+          const validateDoc = async (docId, statut, remarque = "") => {
+            try {
+              await axios.patch(`${API}/documents/${docId}/statut`, { statut, remarque });
+              setDossierDocs(prev => prev.map(d => d.id === docId ? { ...d, statut, remarque } : d));
+              // Notifier le client
+              const msg = statut === "valide"
+                ? `✅ Votre document "${DOC_TYPE_LABEL[dossierDocs.find(d=>d.id===docId)?.type] || ""}" a été validé.`
+                : `❌ Votre document a été rejeté. ${remarque ? 'Motif : ' + remarque : 'Veuillez le re-uploader.'}`;
+              await axios.post(`${API}/notifications`, {
+                client_id: dossierActif.client_id,
+                titre: statut === "valide" ? "✅ Document validé" : "❌ Document rejeté",
+                message: msg,
+                icon: statut === "valide" ? "✅" : "❌",
+                color: statut === "valide" ? "#15803d" : "#b91c1c",
+              });
+              showToast(statut === "valide" ? "Document validé !" : "Document rejeté.");
+            } catch { showToast("Erreur.", false); }
+          };
+
+          return (
+            <div className="db-section">
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:12 }}>
+                <h4 className="db-title">📂 Gestion des Dossiers</h4>
+                <button className="db-btn primary" onClick={() => { loadedTabs.current.delete("dossiers"); loadTab("dossiers"); }}>🔄 Actualiser</button>
+              </div>
+
+              {dossiers.length === 0 ? (
+                <div className="db-empty"><div style={{fontSize:48}}>📁</div><p>Aucun dossier pour l'instant.</p></div>
+              ) : (
+                <div style={{ display:"grid", gridTemplateColumns: dossierActif ? "340px 1fr" : "1fr", gap:20, alignItems:"start" }}>
+
+                  {/* ── LISTE DOSSIERS ── */}
+                  <div>
+                    {dossiers.map(d => {
+                      const pct = d.progression ?? 0;
+                      const pColor = pct===100?"#15803d":pct>=60?"#d97706":"#e63946";
+                      const isActive = dossierActif?.client_id === d.client_id;
+                      return (
+                        <div key={d.id}
+                          onClick={() => openDossier(d)}
+                          style={{
+                            background: isActive ? "#f0f7ff" : "white",
+                            border: `1.5px solid ${isActive ? "#2563eb" : "#e2e8f0"}`,
+                            borderRadius: 14, padding: "14px 16px", marginBottom: 10,
+                            cursor: "pointer", transition: ".2s",
+                          }}
+                        >
+                          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                            <div style={{ fontWeight:700, fontSize:14, color:"#1d3557" }}>
+                              👤 {d.client?.prenom} {d.client?.nom}
+                            </div>
+                            <span style={{ fontSize:16, fontWeight:900, color:pColor }}>{pct}%</span>
+                          </div>
+                          <div style={{ height:6, background:"#f1f5f9", borderRadius:20, overflow:"hidden" }}>
+                            <div style={{ height:"100%", width:`${pct}%`, background:pColor, borderRadius:20, transition:"width .6s" }}/>
+                          </div>
+                          <div style={{ fontSize:11, color:"#94a3b8", marginTop:6 }}>
+                            {ETAPES_ADMIN.filter(e=>d[e.key]).length}/{ETAPES_ADMIN.length} étapes • {d.client?.email}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* ── PANNEAU DÉTAIL DOSSIER ── */}
+                  {dossierActif && (
+                    <div>
+                      {/* Header */}
+                      <div className="db-card" style={{ marginBottom:16 }}>
+                        <div className="db-card-head" style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                          <span>🗂️ Dossier de {dossierActif.client?.prenom} {dossierActif.client?.nom}</span>
+                          <button className="db-btn neutral" style={{fontSize:12}} onClick={() => { setDossierActif(null); setDossierDocs([]); }}>✕ Fermer</button>
+                        </div>
+                        <div style={{ padding:"14px 16px" }}>
+
+                          {/* Étapes */}
+                          <div style={{ marginBottom:16 }}>
+                            <div style={{ fontSize:12, fontWeight:700, color:"#64748b", textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:10 }}>Étapes administratives</div>
+                            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                              {ETAPES_ADMIN.map(etape => (
+                                <label key={etape.key}
+                                  style={{
+                                    display:"flex", alignItems:"center", gap:10,
+                                    padding:"10px 14px", borderRadius:10, cursor:"pointer",
+                                    background: dossierActif[etape.key] ? "#f0fdf4" : "#f8fafc",
+                                    border: `1.5px solid ${dossierActif[etape.key] ? "#86efac" : "#e2e8f0"}`,
+                                    transition:".2s",
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={!!dossierActif[etape.key]}
+                                    onChange={e => setDossierActif(prev => ({ ...prev, [etape.key]: e.target.checked }))}
+                                    style={{ width:16, height:16, accentColor:"#22c55e", cursor:"pointer" }}
+                                  />
+                                  <span style={{fontSize:16}}>{etape.icon}</span>
+                                  <span style={{ fontSize:13, fontWeight:600, color: dossierActif[etape.key] ? "#15803d" : "#475569", flex:1 }}>{etape.label}</span>
+                                  {dossierActif[etape.key] && <span style={{fontSize:12,color:"#22c55e",fontWeight:700}}>✅</span>}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Note admin */}
+                          <div style={{ marginBottom:16 }}>
+                            <label style={{ fontSize:12, fontWeight:700, color:"#64748b", display:"block", marginBottom:6 }}>💬 Note pour le client (optionnel)</label>
+                            <textarea
+                              className="db-input"
+                              rows={2}
+                              placeholder="Ex: Votre visite médicale doit être faite avant le 30 mai…"
+                              value={dossierActif.notes_admin || ""}
+                              onChange={e => setDossierActif(prev => ({ ...prev, notes_admin: e.target.value }))}
+                            />
+                          </div>
+
+                          <button
+                            className="db-btn primary lg"
+                            onClick={saveDossier}
+                            disabled={dossierSaving}
+                            style={{ width:"100%", justifyContent:"center" }}
+                          >
+                            {dossierSaving ? "⏳ Enregistrement…" : "💾 Sauvegarder & Notifier le client"}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Documents */}
+                      <div className="db-card">
+                        <div className="db-card-head">📎 Documents soumis ({dossierDocs.length})</div>
+                        <div style={{ padding:"10px 16px 16px" }}>
+                          {dossierDocs.length === 0 ? (
+                            <div style={{ color:"#94a3b8", fontSize:13, textAlign:"center", padding:20 }}>Aucun document soumis.</div>
+                          ) : (
+                            dossierDocs.map(doc => {
+                              const st = STATUT_DOC_ADMIN[doc.statut] || STATUT_DOC_ADMIN.en_attente;
+                              const isPdf = doc.nom_fichier?.endsWith(".pdf");
+                              return (
+                                <div key={doc.id} style={{
+                                  display:"flex", alignItems:"center", gap:10, padding:"12px",
+                                  background:"#f8fafc", borderRadius:10, marginBottom:8,
+                                  border:"1px solid #e2e8f0", flexWrap:"wrap",
+                                }}>
+                                  <div style={{ flex:1, minWidth:0 }}>
+                                    <div style={{ fontWeight:700, fontSize:13, color:"#1d3557" }}>
+                                      {DOC_TYPE_LABEL[doc.type] || doc.type}
+                                    </div>
+                                    <div style={{ fontSize:11, color:"#94a3b8" }}>{doc.nom_fichier}</div>
+                                    {doc.remarque && <div style={{ fontSize:11, color:"#b91c1c", marginTop:2 }}>💬 {doc.remarque}</div>}
+                                  </div>
+                                  <span style={{ fontSize:11, fontWeight:800, padding:"3px 10px", borderRadius:20, background:st.bg, color:st.color, whiteSpace:"nowrap" }}>
+                                    {st.label}
+                                  </span>
+                                  <a href={doc.url} target="_blank" rel="noreferrer"
+                                    style={{ padding:"5px 8px", background:"#f0f9ff", color:"#0284c7", borderRadius:8, fontSize:14, textDecoration:"none" }}
+                                    title="Voir le fichier"
+                                  >{isPdf ? "📄" : "👁️"}</a>
+                                  {doc.statut !== "valide" && (
+                                    <button className="db-btn" style={{background:"#dcfce7",color:"#15803d",border:"none",fontSize:12,padding:"5px 10px",borderRadius:8,cursor:"pointer",fontWeight:700}}
+                                      onClick={() => validateDoc(doc.id, "valide")}>✅ Valider</button>
+                                  )}
+                                  {doc.statut !== "rejete" && (
+                                    <button className="db-btn" style={{background:"#fee2e2",color:"#b91c1c",border:"none",fontSize:12,padding:"5px 10px",borderRadius:8,cursor:"pointer",fontWeight:700}}
+                                      onClick={() => {
+                                        const motif = window.prompt("Motif du rejet (optionnel) :", "");
+                                        if (motif !== null) validateDoc(doc.id, "rejete", motif);
+                                      }}>❌ Rejeter</button>
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ── ACCUEIL ── */}
         {tab === "accueil" && (
           <div className="db-section">
             <h4 className="db-title">Tableau de bord</h4>

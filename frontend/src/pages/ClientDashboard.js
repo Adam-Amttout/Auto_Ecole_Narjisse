@@ -41,6 +41,12 @@ export default function ClientDashboard() {
   const [examHistory,   setExamHistory]   = useState([]);
   const [examStats,     setExamStats]     = useState(null);
 
+  // Dossier Administratif
+  const [dossier,       setDossier]       = useState(null);
+  const [documents,     setDocuments]     = useState([]);
+  const [uploadingDoc,  setUploadingDoc]  = useState(false);
+  const [uploadType,    setUploadType]    = useState("cin");
+
   // Track visits
   useEffect(() => {
     if (clientId) {
@@ -54,7 +60,7 @@ export default function ClientDashboard() {
     if (!clientId) { navigate("/connexion"); return; }
     setLoading(true);
     try {
-      const [seaRes, coursRes, progRes, notifRes, profilRes, examHistRes, examStatsRes] = await Promise.allSettled([
+      const [seaRes, coursRes, progRes, notifRes, profilRes, examHistRes, examStatsRes, dossierRes] = await Promise.allSettled([
         axios.get(`${API}/seances?client_id=${clientId}`),
         axios.get(`${API}/cours`),
         axios.get(`${API}/progression/by-category?client_id=${clientId}`),
@@ -62,14 +68,19 @@ export default function ClientDashboard() {
         axios.get(`${API}/clients/${clientId}`),
         axios.get(`${API}/exam/results?client_id=${clientId}`),
         axios.get(`${API}/exam/stats?client_id=${clientId}`),
+        axios.get(`${API}/dossiers/${clientId}`),
       ]);
       if (seaRes.status    === "fulfilled") setSeances(seaRes.value.data);
       if (coursRes.status  === "fulfilled") setCours(coursRes.value.data);
       if (progRes.status   === "fulfilled") setProgression(progRes.value.data || []);
       if (notifRes.status  === "fulfilled") setNotifs(notifRes.value.data || []);
       if (profilRes.status === "fulfilled") setProfil(profilRes.value.data);
-      if (examHistRes.status === "fulfilled") setExamHistory(examHistRes.value.data);
+      if (examHistRes.status  === "fulfilled") setExamHistory(examHistRes.value.data);
       if (examStatsRes.status === "fulfilled") setExamStats(examStatsRes.value.data);
+      if (dossierRes.status  === "fulfilled") {
+        setDossier(dossierRes.value.data.dossier);
+        setDocuments(dossierRes.value.data.documents || []);
+      }
     } catch {}
     setLoading(false);
   }, [clientId, navigate]);
@@ -118,9 +129,39 @@ export default function ClientDashboard() {
   const hasAvg35 = (examStats?.avg_score || 0) >= 35;
   const hasFinishedCat = Array.isArray(progression) && progression.some(c => c.completed === c.total && c.total > 0);
   
+  // Dossier upload handler
+  const handleUploadDocument = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingDoc(true);
+    const form = new FormData();
+    form.append("fichier", file);
+    form.append("type", uploadType);
+    try {
+      const res = await axios.post(`${API}/dossiers/${clientId}/documents`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setDocuments(prev => {
+        const filtered = prev.filter(d => d.type !== uploadType);
+        return [res.data, ...filtered];
+      });
+    } catch { alert("Erreur lors de l'upload."); }
+    setUploadingDoc(false);
+    e.target.value = "";
+  };
+
+  const handleDeleteDocument = async (docId) => {
+    if (!window.confirm("Supprimer ce document ?")) return;
+    try {
+      await axios.delete(`${API}/documents/${docId}`);
+      setDocuments(prev => prev.filter(d => d.id !== docId));
+    } catch { alert("Erreur de suppression."); }
+  };
+
   // TABS: Cleaned up sidebar to avoid navbar duplicates
   const TABS = [
     { key: "accueil", icon: "🏠", label: "Tableau de Bord" },
+    { key: "dossier", icon: "📂", label: "Mon Dossier" },
     { key: "exam",    icon: "🚦", label: "Examen Blanc" },
     { key: "stats",   icon: "📊", label: "Statistiques" },
     { key: "notifs",  icon: "🔔", label: "Historique", badge: nbNonLus },
@@ -497,6 +538,188 @@ export default function ClientDashboard() {
         )}
 
 
+
+        {/* ══ DOSSIER ADMINISTRATIF ══ */}
+        {tab === "dossier" && (() => {
+          const ETAPES = [
+            { key: "visite_medicale",          label: "Visite Médicale",               icon: "🏥", desc: "Passer la visite médicale obligatoire" },
+            { key: "dossier_depose",            label: "Dossier Déposé",                icon: "📋", desc: "Dépôt du dossier au centre d'immatriculation" },
+            { key: "exam_theorique_programme",  label: "Examen Théorique Programmé",   icon: "📝", desc: "Date d'examen du code fixée" },
+            { key: "exam_pratique_programme",   label: "Examen Pratique Programmé",    icon: "🚗", desc: "Date d'examen de conduite fixée" },
+            { key: "permis_pret",               label: "Permis Prêt",                  icon: "🎉", desc: "Votre permis de conduire est disponible" },
+          ];
+
+          const DOC_TYPES = [
+            { key: "cin",                label: "Copie CIN",            icon: "🪪", accept: ".jpg,.jpeg,.png,.pdf" },
+            { key: "photo",              label: "Photo d'identité",     icon: "📸", accept: ".jpg,.jpeg,.png" },
+            { key: "certificat_medical", label: "Certificat Médical",   icon: "🏥", accept: ".jpg,.jpeg,.png,.pdf" },
+            { key: "autre",              label: "Autre document",       icon: "📄", accept: ".jpg,.jpeg,.png,.pdf" },
+          ];
+
+          const STATUT_DOC = {
+            en_attente: { label: "En attente",  bg: "#fef9c3", color: "#a16207", icon: "⏳" },
+            valide:     { label: "Validé",      bg: "#dcfce7", color: "#15803d", icon: "✅" },
+            rejete:     { label: "Rejeté",      bg: "#fee2e2", color: "#b91c1c", icon: "❌" },
+          };
+
+          const etapesOk = dossier ? ETAPES.filter(e => dossier[e.key]).length : 0;
+          const progression = dossier?.progression ?? 0;
+
+          return (
+            <div className="cd-section fade-in">
+
+              {/* ── BARRE DE PROGRESSION GLOBALE ── */}
+              <div className="cd-dossier-hero">
+                <div className="cd-dossier-hero-left">
+                  <div className="cd-dossier-hero-icon">📂</div>
+                  <div>
+                    <div className="cd-dossier-hero-title">Mon Dossier Administratif</div>
+                    <div className="cd-dossier-hero-sub">{etapesOk} / {ETAPES.length} étapes complétées</div>
+                  </div>
+                </div>
+                <div className="cd-dossier-hero-right">
+                  <div className="cd-dossier-pct" style={{
+                    color: progression === 100 ? "#15803d" : progression >= 60 ? "#d97706" : "#e63946"
+                  }}>{progression}%</div>
+                  <div className="cd-dossier-status-lbl">
+                    {progression === 100 ? "🎉 Dossier complet !" : "En cours…"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Global progress bar */}
+              <div className="cd-dossier-global-track">
+                <div className="cd-dossier-global-fill" style={{
+                  width: `${progression}%`,
+                  background: progression === 100
+                    ? "linear-gradient(90deg,#22c55e,#16a34a)"
+                    : progression >= 60
+                    ? "linear-gradient(90deg,#f59e0b,#d97706)"
+                    : "linear-gradient(90deg,#e63946,#dc2626)"
+                }}/>
+              </div>
+
+              {/* ── ÉTAPES ── */}
+              <div className="cd-card">
+                <div className="cd-card-head">🗂️ Étapes du dossier</div>
+                <div className="cd-dossier-steps">
+                  {ETAPES.map((etape, idx) => {
+                    const done = dossier ? !!dossier[etape.key] : false;
+                    const isNext = !done && ETAPES.slice(0, idx).every(e => dossier?.[e.key]);
+                    return (
+                      <div key={etape.key} className={`cd-dossier-step ${done ? "done" : isNext ? "next" : "pending"}`}>
+                        <div className="cd-step-connector">
+                          <div className="cd-step-circle">
+                            {done ? "✓" : idx + 1}
+                          </div>
+                          {idx < ETAPES.length - 1 && <div className="cd-step-line" />}
+                        </div>
+                        <div className="cd-step-body">
+                          <div className="cd-step-header">
+                            <span className="cd-step-icon">{etape.icon}</span>
+                            <span className="cd-step-label">{etape.label}</span>
+                            {done && <span className="cd-step-badge done-badge">Complété ✅</span>}
+                            {isNext && !done && <span className="cd-step-badge next-badge">⚡ Prochaine étape</span>}
+                          </div>
+                          <div className="cd-step-desc">{etape.desc}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {dossier?.notes_admin && (
+                  <div className="cd-dossier-notes">
+                    <span style={{fontWeight:600}}>💬 Note de l'auto-école :</span> {dossier.notes_admin}
+                  </div>
+                )}
+              </div>
+
+              {/* ── UPLOAD DOCUMENTS ── */}
+              <div className="cd-card">
+                <div className="cd-card-head">📎 Mes Documents</div>
+
+                {/* Upload form */}
+                <div className="cd-doc-upload-zone">
+                  <div className="cd-doc-upload-row">
+                    <div className="cd-doc-type-select-wrap">
+                      <label className="cd-doc-select-label">Type de document</label>
+                      <select
+                        className="cd-doc-type-select"
+                        value={uploadType}
+                        onChange={e => setUploadType(e.target.value)}
+                      >
+                        {DOC_TYPES.map(t => (
+                          <option key={t.key} value={t.key}>{t.icon} {t.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <label className={`cd-upload-btn ${uploadingDoc ? "loading" : ""}`}>
+                      {uploadingDoc ? "⏳ Upload en cours…" : "📤 Choisir un fichier"}
+                      <input
+                        type="file"
+                        accept={DOC_TYPES.find(t => t.key === uploadType)?.accept}
+                        style={{display:"none"}}
+                        onChange={handleUploadDocument}
+                        disabled={uploadingDoc}
+                      />
+                    </label>
+                  </div>
+                  <div className="cd-doc-upload-hint">JPG, PNG ou PDF — max 5 Mo par fichier</div>
+                </div>
+
+                {/* Documents list */}
+                <div className="cd-doc-list">
+                  {documents.length === 0 ? (
+                    <div className="cd-doc-empty">
+                      <div style={{fontSize:40,marginBottom:10}}>📁</div>
+                      <div>Aucun document uploadé pour l'instant.</div>
+                      <div style={{fontSize:12,color:"#94a3b8",marginTop:4}}>Commencez par uploader votre copie de CIN.</div>
+                    </div>
+                  ) : (
+                    DOC_TYPES.map(dtype => {
+                      const doc = documents.find(d => d.type === dtype.key);
+                      if (!doc) return null;
+                      const st = STATUT_DOC[doc.statut] || STATUT_DOC.en_attente;
+                      const isPdf = doc.nom_fichier?.endsWith(".pdf");
+                      return (
+                        <div key={doc.id} className="cd-doc-item">
+                          <div className="cd-doc-item-left">
+                            <div className="cd-doc-item-icon">{dtype.icon}</div>
+                            <div className="cd-doc-item-info">
+                              <div className="cd-doc-item-name">{dtype.label}</div>
+                              <div className="cd-doc-item-file">{doc.nom_fichier}</div>
+                              {doc.remarque && (
+                                <div className="cd-doc-item-remark">💬 {doc.remarque}</div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="cd-doc-item-right">
+                            <span className="cd-doc-statut-badge" style={{background: st.bg, color: st.color}}>
+                              {st.icon} {st.label}
+                            </span>
+                            <a
+                              href={doc.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="cd-btn-icon view"
+                              title="Voir le fichier"
+                            >{isPdf ? "📄" : "👁️"}</a>
+                            <button
+                              className="cd-btn-icon del"
+                              title="Supprimer"
+                              onClick={() => handleDeleteDocument(doc.id)}
+                            >🗑️</button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+            </div>
+          );
+        })()}
 
         {/* ══ EXAMEN BLANC ══ */}
         {tab === "exam" && (

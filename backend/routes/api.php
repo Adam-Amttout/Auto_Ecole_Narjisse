@@ -15,6 +15,7 @@ use App\Http\Controllers\FaqController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ExamController;
+use App\Http\Controllers\DossierController;
 
 
 // ── TEST
@@ -117,3 +118,11 @@ Route::post('/exam/results',   [ExamController::class, 'store']);
 Route::get('/exam/results',    [ExamController::class, 'history']);
 Route::get('/exam/stats',      [ExamController::class, 'stats']);
 Route::delete('/exam/results/{id}', [ExamController::class, 'destroy']);
+
+// ── DOSSIER ADMINISTRATIF
+Route::get('/dossiers',                              [DossierController::class, 'index']);
+Route::get('/dossiers/{clientId}',                   [DossierController::class, 'show']);
+Route::put('/dossiers/{clientId}',                   [DossierController::class, 'update']);
+Route::post('/dossiers/{clientId}/documents',        [DossierController::class, 'uploadDocument']);
+Route::delete('/documents/{docId}',                  [DossierController::class, 'deleteDocument']);
+Route::patch('/documents/{docId}/statut',            [DossierController::class, 'updateDocumentStatut']);

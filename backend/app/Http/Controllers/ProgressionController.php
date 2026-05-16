@@ -92,10 +92,11 @@ class ProgressionController extends Controller
         $categories = [];
         foreach ($totals as $cat => $total) {
             $done = $completed[$cat] ?? 0;
-            $categories[$cat] = [
+            $categories[] = [
+                'categorie' => $cat,
                 'total'     => (int) $total,
-                'done'      => (int) $done,
-                'completed' => $done >= $total && $total > 0,
+                'completed' => (int) $done,
+                'is_finished' => $done >= $total && $total > 0,
                 'pct'       => $total > 0 ? round(($done / $total) * 100) : 0,
             ];
         }
