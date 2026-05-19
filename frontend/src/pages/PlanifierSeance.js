@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container, Row, Col, Form, Button,
-  Alert, Spinner, Card
+  Alert, Spinner, Card, Badge
 } from 'react-bootstrap';
-import { getMoniteurs, getVehicules, createSeance, updateSeance } from '../api/seancesService';
+import { getMoniteurs, getVehicules, createSeance, updateSeance, getCreneaux } from '../api/seancesService';
 import './PlanifierSeance.css';
 
 /**
@@ -16,36 +16,78 @@ import './PlanifierSeance.css';
  */
 function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalone = true }) {
 
-  const isEditing = Boolean(seanceAModifier?.moniteur_id); // vrai objet séance
-
-  // Récupère le client connecté depuis localStorage (votre convention)
+  const isEditing = Boolean(seanceAModifier?.moniteur_id);
   const clientConnecte = JSON.parse(localStorage.getItem('user'));
 
+  // ✅ heure_fin n'est plus dans le form — calculé automatiquement
   const [formData, setFormData] = useState({
     client_id:   seanceAModifier?.client_id   || clientConnecte?.id || '',
     moniteur_id: seanceAModifier?.moniteur_id || '',
     vehicule_id: seanceAModifier?.vehicule_id || '',
     date:        seanceAModifier?.date        || '',
     heure_debut: seanceAModifier?.heure_debut || '',
-    heure_fin:   seanceAModifier?.heure_fin   || '',
     notes:       seanceAModifier?.notes       || '',
   });
 
-  const [moniteurs, setMoniteurs]     = useState([]);
-  const [vehicules, setVehicules]     = useState([]);
-  const [loadingData, setLoadingData] = useState(true);
-  const [loading, setLoading]         = useState(false);
-  const [errors, setErrors]           = useState({});
-  const [apiError, setApiError]       = useState('');
-  const [success, setSuccess]         = useState('');
+  const [moniteurs,    setMoniteurs]    = useState([]);
+  const [vehicules,    setVehicules]    = useState([]);
+  const [creneaux,     setCreneaux]     = useState([]);  // créneaux disponibles depuis l'API
+  const [loadingData,  setLoadingData]  = useState(true);
+  const [loadingDispo, setLoadingDispo] = useState(false);
+  const [loading,      setLoading]      = useState(false);
+  const [errors,       setErrors]       = useState({});
+  const [apiError,     setApiError]     = useState('');
+  const [success,      setSuccess]      = useState('');
 
-  // Chargement des listes
+  /** Calcule heure_fin = heure_debut + 30 min */
+  const heureFinAttendue = (heureDebut) => {
+    if (!heureDebut) return '';
+    const [h, m] = heureDebut.split(':').map(Number);
+    const total = h * 60 + m + 30;
+    return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+  };
+
+  // Chargement moniteurs + véhicules
   useEffect(() => {
     Promise.all([getMoniteurs(), getVehicules()])
       .then(([m, v]) => { setMoniteurs(m); setVehicules(v); })
       .catch(() => setApiError('Impossible de charger les données.'))
       .finally(() => setLoadingData(false));
   }, []);
+
+  // ✅ Chargement des créneaux disponibles dès que moniteur + véhicule + date sont renseignés
+  useEffect(() => {
+    if (!formData.moniteur_id || !formData.vehicule_id || !formData.date) {
+      setCreneaux([]);
+      return;
+    }
+
+    const fetchCreneaux = async () => {
+      setLoadingDispo(true);
+      try {
+        const data = await getCreneaux({
+          date:        formData.date,
+          moniteur_id: formData.moniteur_id,
+          vehicule_id: formData.vehicule_id,
+          client_id:   formData.client_id || undefined,
+        });
+        setCreneaux(data);
+        // Si le créneau sélectionné est devenu indisponible, on le réinitialise
+        if (formData.heure_debut) {
+          const creneauActuel = data.find(c => c.heure_debut === formData.heure_debut);
+          if (creneauActuel && !creneauActuel.disponible) {
+            setFormData(prev => ({ ...prev, heure_debut: '' }));
+          }
+        }
+      } catch {
+        setCreneaux([]);
+      } finally {
+        setLoadingDispo(false);
+      }
+    };
+
+    fetchCreneaux();
+  }, [formData.moniteur_id, formData.vehicule_id, formData.date]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,16 +102,19 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
     if (!formData.moniteur_id) e.moniteur_id = 'Choisissez un moniteur.';
     if (!formData.vehicule_id) e.vehicule_id = 'Choisissez un véhicule.';
     if (!formData.date)        e.date        = 'La date est obligatoire.';
-    if (!formData.heure_debut) e.heure_debut = 'L\'heure de début est obligatoire.';
-    if (!formData.heure_fin)   e.heure_fin   = 'L\'heure de fin est obligatoire.';
-
-    if (formData.heure_debut && formData.heure_fin && formData.heure_fin <= formData.heure_debut) {
-      e.heure_fin = 'L\'heure de fin doit être après l\'heure de début.';
-    }
+    if (!formData.heure_debut) e.heure_debut = 'Choisissez un créneau.';
 
     const today = new Date().toISOString().split('T')[0];
     if (formData.date && formData.date < today) {
       e.date = 'La date ne peut pas être dans le passé.';
+    }
+
+    // ✅ Vérifier que le créneau sélectionné est bien disponible
+    if (formData.heure_debut && creneaux.length > 0) {
+      const creneau = creneaux.find(c => c.heure_debut === formData.heure_debut);
+      if (creneau && !creneau.disponible) {
+        e.heure_debut = `Ce créneau est déjà pris. ${creneau.raison || ''}`;
+      }
     }
 
     setErrors(e);
@@ -85,16 +130,19 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
     setSuccess('');
 
     try {
+      // ✅ On n'envoie plus heure_fin — le backend la calcule automatiquement
+      const payload = { ...formData };
+      delete payload.heure_fin;
+
       const result = isEditing
-        ? await updateSeance(seanceAModifier.id, formData)
-        : await createSeance(formData);
+        ? await updateSeance(seanceAModifier.id, payload)
+        : await createSeance(payload);
 
       setSuccess(result.message || 'Séance enregistrée avec succès !');
       setTimeout(() => onSuccess && onSuccess(result.data), 1500);
 
     } catch (err) {
       if (err.response?.status === 422) {
-        // Erreurs Laravel (validation ou logique métier)
         const laravelErrors = err.response.data.errors || {};
         const flat = Object.fromEntries(
           Object.entries(laravelErrors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])
@@ -110,6 +158,7 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
   };
 
   const today = new Date().toISOString().split('T')[0];
+  const creneauSelectionne = creneaux.find(c => c.heure_debut === formData.heure_debut);
 
   const content = (
     <Card className="shadow-sm planifier-card">
@@ -117,18 +166,25 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
         <h5 className="mb-0">
           🚗 {isEditing ? 'Modifier la séance' : 'Planifier une séance de conduite'}
         </h5>
+        <small className="text-muted">Durée : 30 minutes · Un seul élève par créneau</small>
       </Card.Header>
 
       <Card.Body>
         {loadingData ? (
           <div className="text-center py-4">
             <Spinner animation="border" variant="primary" />
-            <p className="mt-2 text-muted">Chargement...</p>
+            <p className="mt-2 text-muted">Chargement…</p>
           </div>
         ) : (
           <>
-            {success   && <Alert variant="success">✅ {success}</Alert>}
-            {apiError  && <Alert variant="danger">❌ {apiError}</Alert>}
+            {success  && <Alert variant="success">✅ {success}</Alert>}
+            {apiError && <Alert variant="danger">❌ {apiError}</Alert>}
+
+            {/* Info règle métier */}
+            <Alert variant="info" className="py-2 mb-3">
+              ℹ️ Chaque séance dure <strong>30 minutes</strong>. L'heure de fin est calculée automatiquement.
+              Un seul élève peut réserver un créneau à une date précise.
+            </Alert>
 
             <Form onSubmit={handleSubmit}>
               <Row className="mb-3">
@@ -143,7 +199,7 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
                       isInvalid={!!errors.moniteur_id}
                     >
                       <option value="">-- Choisir un moniteur --</option>
-                      {moniteurs.map(m => (
+                      {moniteurs.filter(m => m.actif).map(m => (
                         <option key={m.id} value={m.id}>
                           {m.nom_complet || `${m.prenom} ${m.nom}`}
                         </option>
@@ -201,36 +257,67 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
                   </Form.Group>
                 </Col>
 
-                {/* Heure début */}
+                {/* ✅ Créneau de 30 min — Select avec créneaux disponibles */}
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label>Heure de début *</Form.Label>
-                    <Form.Control
-                      type="time"
+                    <Form.Label>
+                      Créneau (30 min) *{' '}
+                      {loadingDispo && <Spinner size="sm" animation="border" />}
+                    </Form.Label>
+                    <Form.Select
                       name="heure_debut"
                       value={formData.heure_debut}
                       onChange={handleChange}
                       isInvalid={!!errors.heure_debut}
-                    />
-                    <Form.Control.Feedback type="invalid">{errors.heure_debut}</Form.Control.Feedback>
+                      disabled={!formData.moniteur_id || !formData.vehicule_id || !formData.date || loadingDispo}
+                    >
+                      <option value="">-- Choisir un créneau --</option>
+                      {creneaux.map(c => (
+                        <option
+                          key={c.heure_debut}
+                          value={c.heure_debut}
+                          disabled={!c.disponible}
+                        >
+                          {c.heure_debut} – {c.heure_fin}
+                          {c.disponible ? ' ✓' : ' ✗ Réservé'}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.heure_debut}
+                    </Form.Control.Feedback>
+                    {(!formData.moniteur_id || !formData.vehicule_id || !formData.date) && (
+                      <Form.Text className="text-muted">
+                        Sélectionnez d'abord moniteur, véhicule et date.
+                      </Form.Text>
+                    )}
                   </Form.Group>
                 </Col>
 
-                {/* Heure fin */}
+                {/* ✅ Heure fin — calculée automatiquement, lecture seule */}
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label>Heure de fin *</Form.Label>
+                    <Form.Label>Heure de fin (auto)</Form.Label>
                     <Form.Control
-                      type="time"
-                      name="heure_fin"
-                      value={formData.heure_fin}
-                      onChange={handleChange}
-                      isInvalid={!!errors.heure_fin}
+                      type="text"
+                      value={formData.heure_debut ? heureFinAttendue(formData.heure_debut) : '—'}
+                      readOnly
+                      style={{ background: '#f8f9fa', color: '#6c757d' }}
                     />
-                    <Form.Control.Feedback type="invalid">{errors.heure_fin}</Form.Control.Feedback>
+                    <Form.Text className="text-muted">Calculée automatiquement (+30 min)</Form.Text>
                   </Form.Group>
                 </Col>
               </Row>
+
+              {/* Indicateur disponibilité du créneau sélectionné */}
+              {creneauSelectionne && (
+                <Alert variant={creneauSelectionne.disponible ? 'success' : 'danger'} className="py-2 mb-3">
+                  {creneauSelectionne.disponible
+                    ? `✅ Créneau ${creneauSelectionne.heure_debut}–${creneauSelectionne.heure_fin} disponible !`
+                    : `❌ Ce créneau est déjà pris. ${creneauSelectionne.raison || ''}`
+                  }
+                </Alert>
+              )}
 
               {/* Notes */}
               <Form.Group className="mb-4">
@@ -241,14 +328,18 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
                   name="notes"
                   value={formData.notes}
                   onChange={handleChange}
-                  placeholder="Instructions, objectifs de la séance..."
+                  placeholder="Instructions, objectifs de la séance…"
                 />
               </Form.Group>
 
               <div className="d-flex gap-2">
-                <Button type="submit" className="btn-planifier" disabled={loading}>
+                <Button
+                  type="submit"
+                  className="btn-planifier"
+                  disabled={loading || (creneauSelectionne && !creneauSelectionne.disponible)}
+                >
                   {loading
-                    ? <><Spinner size="sm" animation="border" className="me-2" />Enregistrement...</>
+                    ? <><Spinner size="sm" animation="border" className="me-2" />Enregistrement…</>
                     : isEditing ? '✏️ Modifier la séance' : '📅 Planifier la séance'
                   }
                 </Button>

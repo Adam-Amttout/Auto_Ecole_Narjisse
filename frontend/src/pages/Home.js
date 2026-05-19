@@ -70,7 +70,7 @@ function Home() {
       <section id="about"><About/></section>
       <section id="services"><Services/></section>
       <section id="gallery"><Gallery/></section>
-      <section id="formation"><Formation/></section>
+      {/* <section id="formation"><Formation/></section> */}
       <section id="faq"><Faq/></section>
 
       {/* CONTACT COMPLET */}

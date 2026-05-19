@@ -13,7 +13,8 @@ class Vehicule extends Model
         'disponibilite',
     ];
 
-    const MAX_ELEVES_PAR_CRENEAU = 3;
+    // ✅ RÈGLE : UN SEUL ÉLÈVE PAR CRÉNEAU
+    const MAX_ELEVES_PAR_CRENEAU = 1;
 
     /** Relation : un véhicule a plusieurs séances */
     public function seances()
@@ -28,9 +29,8 @@ class Vehicule extends Model
     }
 
     /**
-     * Vérifie si le véhicule peut encore accepter un élève sur ce créneau.
-     * Un véhicule peut transporter au maximum MAX_ELEVES_PAR_CRENEAU élèves simultanément.
-     * On exclut la séance $excludeId pour permettre la modification.
+     * Vérifie si le véhicule est disponible sur ce créneau.
+     * ✅ Règle : un seul élève par créneau → indisponible dès qu'il y a 1 séance active.
      */
     public function estDisponible(string $date, string $heureDebut, string $heureFin, ?int $excludeId = null): bool
     {
@@ -49,12 +49,11 @@ class Vehicule extends Model
             $query->where('id', '!=', $excludeId);
         }
 
-        // Le véhicule est disponible si le nombre de réservations < MAX
         return $query->count() < self::MAX_ELEVES_PAR_CRENEAU;
     }
 
     /**
-     * Retourne le nombre de places restantes dans le véhicule sur ce créneau.
+     * Retourne le nombre de places restantes (0 ou 1).
      */
     public function placesRestantes(string $date, string $heureDebut, string $heureFin, ?int $excludeId = null): int
     {

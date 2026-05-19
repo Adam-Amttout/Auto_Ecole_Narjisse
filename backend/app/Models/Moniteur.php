@@ -18,7 +18,8 @@ class Moniteur extends Model
         'actif' => 'boolean',
     ];
 
-    const MAX_ELEVES_PAR_CRENEAU = 3;
+    // ✅ RÈGLE : UN SEUL ÉLÈVE PAR CRÉNEAU (séance de 30 minutes, exclusivité totale)
+    const MAX_ELEVES_PAR_CRENEAU = 1;
 
     /** Relation : un moniteur a plusieurs séances */
     public function seances()
@@ -33,9 +34,9 @@ class Moniteur extends Model
     }
 
     /**
-     * Vérifie si le moniteur peut encore accepter un élève sur ce créneau.
-     * Un moniteur peut avoir au maximum MAX_ELEVES_PAR_CRENEAU élèves simultanément.
-     * On exclut la séance $excludeId pour permettre la modification.
+     * Vérifie si le moniteur est disponible sur ce créneau.
+     * ✅ Règle : un seul élève par créneau → le moniteur est indisponible
+     * dès qu'il a 1 séance active sur ce créneau.
      */
     public function estDisponible(string $date, string $heureDebut, string $heureFin, ?int $excludeId = null): bool
     {
@@ -49,12 +50,11 @@ class Moniteur extends Model
             $query->where('id', '!=', $excludeId);
         }
 
-        // Le moniteur est disponible si le nombre d'élèves sur ce créneau < MAX
         return $query->count() < self::MAX_ELEVES_PAR_CRENEAU;
     }
 
     /**
-     * Retourne le nombre de places restantes sur un créneau.
+     * Retourne le nombre de places restantes sur un créneau (0 ou 1).
      */
     public function placesRestantes(string $date, string $heureDebut, string $heureFin, ?int $excludeId = null): int
     {

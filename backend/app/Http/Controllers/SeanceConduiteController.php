@@ -11,16 +11,40 @@ use Illuminate\Http\Request;
 
 class SeanceConduiteController extends Controller
 {
+    /**
+     * ✅ Créneaux de 30 minutes, de 08h00 à 19h30
+     * Chaque créneau dure exactement 30 minutes.
+     */
     private const HEURES_AUTORISEES = [
-        '08:00', '09:00', '10:00', '11:00', '12:00',
-        '13:00', '14:00', '15:00', '16:00', '17:00',
-        '18:00', '19:00',
+        '08:00', '08:30',
+        '09:00', '09:30',
+        '10:00', '10:30',
+        '11:00', '11:30',
+        '12:00', '12:30',
+        '13:00', '13:30',
+        '14:00', '14:30',
+        '15:00', '15:30',
+        '16:00', '16:30',
+        '17:00', '17:30',
+        '18:00', '18:30',
+        '19:00', '19:30',
     ];
 
+    /**
+     * Vérifie que l'heure de début est un créneau autorisé.
+     */
     private function heureValide(string $heure): bool
     {
         $normalized = date('H:i', strtotime($heure));
         return in_array($normalized, self::HEURES_AUTORISEES);
+    }
+
+    /**
+     * Calcule l'heure de fin attendue (début + 30 minutes).
+     */
+    private function heureFinAttendue(string $heureDebut): string
+    {
+        return date('H:i', strtotime($heureDebut . ' +30 minutes'));
     }
 
     /** Helper : crée une notification privée pour un client */
@@ -56,47 +80,80 @@ class SeanceConduiteController extends Controller
             ->header('Cache-Control', 'public, max-age=30');
     }
 
-    /** GET /api/seances/creneaux */
+    /**
+     * GET /api/seances/creneaux
+     * Retourne tous les créneaux de 30 min avec leur disponibilité.
+     * ✅ Un créneau est disponible seulement si AUCUNE séance active n'existe dessus.
+     */
     public function creneaux(Request $request)
     {
         $request->validate([
             'date'        => 'required|date|after_or_equal:today',
             'moniteur_id' => 'nullable|exists:moniteurs,id',
             'vehicule_id' => 'nullable|exists:vehicules,id',
+            'client_id'   => 'nullable|exists:clients,id',
         ]);
 
         $date       = $request->date;
         $moniteurId = $request->moniteur_id;
         $vehiculeId = $request->vehicule_id;
+        $clientId   = $request->client_id;
         $creneaux   = [];
 
         foreach (self::HEURES_AUTORISEES as $heure) {
-            $heureFin       = date('H:i', strtotime($heure . ' +1 hour'));
-            $disponible     = true;
-            $placesMoniteur = Moniteur::MAX_ELEVES_PAR_CRENEAU;
-            $placesVehicule = Vehicule::MAX_ELEVES_PAR_CRENEAU;
+            $heureFin   = $this->heureFinAttendue($heure);
+            $disponible = true;
+            $raison     = null;
 
+            // ── Vérifier le moniteur (max 1 élève)
             if ($moniteurId) {
                 $moniteur = Moniteur::find($moniteurId);
                 if ($moniteur) {
-                    $placesMoniteur = $moniteur->placesRestantes($date, $heure, $heureFin);
-                    if ($placesMoniteur === 0) $disponible = false;
+                    if (!$moniteur->actif) {
+                        $disponible = false;
+                        $raison = 'Moniteur inactif';
+                    } elseif (!$moniteur->estDisponible($date, $heure, $heureFin)) {
+                        $disponible = false;
+                        $raison = 'Moniteur déjà réservé';
+                    }
                 }
             }
-            if ($vehiculeId) {
+
+            // ── Vérifier le véhicule (max 1 élève)
+            if ($disponible && $vehiculeId) {
                 $vehicule = Vehicule::find($vehiculeId);
                 if ($vehicule) {
-                    $placesVehicule = $vehicule->placesRestantes($date, $heure, $heureFin);
-                    if ($placesVehicule === 0) $disponible = false;
+                    if (!$vehicule->estDisponible($date, $heure, $heureFin)) {
+                        $disponible = false;
+                        $raison = $vehicule->disponibilite !== 'disponible'
+                            ? 'Véhicule en maintenance'
+                            : 'Véhicule déjà réservé';
+                    }
+                }
+            }
+
+            // ── Vérifier l'élève (un seul créneau actif par date/heure)
+            if ($disponible && $clientId) {
+                $conflitEleve = SeanceConduite::where('client_id', $clientId)
+                    ->where('date', $date)
+                    ->where('statut', '!=', 'annulee')
+                    ->where('heure_debut', '<', $heureFin)
+                    ->where('heure_fin',   '>', $heure)
+                    ->exists();
+
+                if ($conflitEleve) {
+                    $disponible = false;
+                    $raison = 'Vous avez déjà une séance sur ce créneau';
                 }
             }
 
             $creneaux[] = [
-                'heure_debut'     => $heure,
-                'heure_fin'       => $heureFin,
-                'disponible'      => $disponible,
-                'places_moniteur' => $placesMoniteur,
-                'places_vehicule' => $placesVehicule,
+                'heure_debut' => $heure,
+                'heure_fin'   => $heureFin,
+                'disponible'  => $disponible,
+                'raison'      => $raison,
+                // ✅ Toujours 0 ou 1 place (exclusivité totale)
+                'places'      => $disponible ? 1 : 0,
             ];
         }
 
@@ -112,74 +169,88 @@ class SeanceConduiteController extends Controller
             'vehicule_id' => 'required|exists:vehicules,id',
             'date'        => 'required|date|after_or_equal:today',
             'heure_debut' => 'required|date_format:H:i',
-            'heure_fin'   => 'required|date_format:H:i|after:heure_debut',
             'notes'       => 'nullable|string|max:500',
         ]);
 
+        // ✅ Validation : heure de début doit être un créneau autorisé
         if (!$this->heureValide($validated['heure_debut'])) {
             return response()->json([
-                'message' => "L'heure de début doit être une heure ronde (8:00, 9:00…).",
+                'message' => "L'heure de début n'est pas un créneau valide. Choisissez un créneau de 30 minutes (08:00, 08:30, 09:00…).",
             ], 422);
         }
 
-        $heureFin_attendue = date('H:i', strtotime($validated['heure_debut'] . ' +1 hour'));
-        if ($validated['heure_fin'] !== $heureFin_attendue) {
-            return response()->json([
-                'message' => "La séance dure exactement 1 heure. Fin attendue : {$heureFin_attendue}.",
-            ], 422);
-        }
+        // ✅ Heure de fin calculée automatiquement : début + 30 minutes
+        $heureFin = $this->heureFinAttendue($validated['heure_debut']);
+        $validated['heure_fin'] = $heureFin;
 
         $moniteur = Moniteur::findOrFail($validated['moniteur_id']);
         $vehicule  = Vehicule::findOrFail($validated['vehicule_id']);
 
+        // ── Vérifier moniteur actif
         if (!$moniteur->actif) {
             return response()->json(['message' => "Ce moniteur n'est plus actif."], 422);
         }
-        if (!$moniteur->estDisponible($validated['date'], $validated['heure_debut'], $validated['heure_fin'])) {
-            $max = Moniteur::MAX_ELEVES_PAR_CRENEAU;
-            return response()->json(['message' => "Ce moniteur a déjà {$max} élèves sur ce créneau."], 422);
+
+        // ── Vérifier disponibilité moniteur (max 1 élève)
+        if (!$moniteur->estDisponible($validated['date'], $validated['heure_debut'], $heureFin)) {
+            return response()->json([
+                'message' => "Ce créneau est déjà réservé avec ce moniteur. Veuillez choisir un autre créneau.",
+            ], 422);
         }
-        if (!$vehicule->estDisponible($validated['date'], $validated['heure_debut'], $validated['heure_fin'])) {
+
+        // ── Vérifier disponibilité véhicule (max 1 élève)
+        if (!$vehicule->estDisponible($validated['date'], $validated['heure_debut'], $heureFin)) {
             if ($vehicule->disponibilite !== 'disponible') {
                 return response()->json(['message' => 'Ce véhicule est en maintenance ou hors service.'], 422);
             }
-            $max = Vehicule::MAX_ELEVES_PAR_CRENEAU;
-            return response()->json(['message' => "Ce véhicule a déjà {$max} élèves sur ce créneau."], 422);
+            return response()->json([
+                'message' => "Ce créneau est déjà réservé avec ce véhicule. Veuillez choisir un autre créneau.",
+            ], 422);
         }
 
+        // ✅ RÈGLE PRINCIPALE : un seul élève peut réserver un créneau (date + heure_debut)
+        // On vérifie que le CRÉNEAU n'est pas déjà pris par N'IMPORTE QUEL autre élève
+        $conflitCreneau = SeanceConduite::where('date', $validated['date'])
+            ->where('heure_debut', $validated['heure_debut'])
+            ->where('statut', '!=', 'annulee')
+            ->exists();
+
+        if ($conflitCreneau) {
+            return response()->json([
+                'message' => "Ce créneau est déjà pris. Un seul élève peut réserver un créneau à une date et heure précises.",
+            ], 422);
+        }
+
+        // ── Vérifier que l'élève n'a pas déjà une séance sur ce créneau (protection supplémentaire)
         $conflitEleve = SeanceConduite::where('client_id', $validated['client_id'])
             ->where('date', $validated['date'])
             ->where('statut', '!=', 'annulee')
-            ->where('heure_debut', '<', $validated['heure_fin'])
+            ->where('heure_debut', '<', $heureFin)
             ->where('heure_fin',   '>', $validated['heure_debut'])
             ->exists();
 
         if ($conflitEleve) {
-            return response()->json(['message' => 'Cet élève a déjà une séance sur ce créneau.'], 422);
+            return response()->json(['message' => 'Vous avez déjà une séance planifiée sur ce créneau.'], 422);
         }
 
         $seance = SeanceConduite::create($validated);
         $seance->load(['client', 'moniteur', 'vehicule']);
 
-        // ── 🔔 Notification privée : séance planifiée ──
+        // ── 🔔 Notification privée : séance planifiée
         $dateF    = \Carbon\Carbon::parse($validated['date'])->locale('fr')->isoFormat('dddd D MMMM YYYY');
         $monitNom = $moniteur->prenom . ' ' . $moniteur->nom;
         $this->notifClient(
             $validated['client_id'],
             'seance',
             '📅 Séance planifiée !',
-            "Votre séance de conduite du {$dateF} à {$validated['heure_debut']} avec {$monitNom} a été confirmée.",
+            "Votre séance de conduite du {$dateF} à {$validated['heure_debut']} (30 min) avec {$monitNom} a été confirmée.",
             '📅',
             '#2563eb'
         );
 
-        $placesMoniteur = $moniteur->placesRestantes($validated['date'], $validated['heure_debut'], $validated['heure_fin']);
-        $placesVehicule = $vehicule->placesRestantes($validated['date'], $validated['heure_debut'], $validated['heure_fin']);
-
         return response()->json([
-            'message'          => 'Séance planifiée avec succès !',
-            'data'             => $seance,
-            'places_restantes' => ['moniteur' => $placesMoniteur, 'vehicule' => $placesVehicule],
+            'message' => 'Séance de 30 minutes planifiée avec succès !',
+            'data'    => $seance,
         ], 201);
     }
 
@@ -203,39 +274,57 @@ class SeanceConduiteController extends Controller
             'vehicule_id' => 'sometimes|required|exists:vehicules,id',
             'date'        => 'sometimes|required|date|after_or_equal:today',
             'heure_debut' => 'sometimes|required|date_format:H:i',
-            'heure_fin'   => 'sometimes|required|date_format:H:i|after:heure_debut',
             'statut'      => 'sometimes|in:planifiee,en_cours,terminee,annulee',
             'notes'       => 'nullable|string|max:500',
         ]);
 
         $date       = $validated['date']        ?? $seance->date->format('Y-m-d');
         $heureDebut = $validated['heure_debut'] ?? $seance->heure_debut;
-        $heureFin   = $validated['heure_fin']   ?? $seance->heure_fin;
         $moniteurId = $validated['moniteur_id'] ?? $seance->moniteur_id;
         $vehiculeId = $validated['vehicule_id'] ?? $seance->vehicule_id;
 
+        // ✅ Validation heure créneau si modifiée
         if (isset($validated['heure_debut']) && !$this->heureValide($heureDebut)) {
-            return response()->json(['message' => "L'heure de début doit être une heure ronde."], 422);
+            return response()->json(['message' => "L'heure de début n'est pas un créneau valide (créneaux de 30 min)."], 422);
         }
 
+        // ✅ Recalcul automatique heure_fin = debut + 30 min
+        $heureFin = $this->heureFinAttendue($heureDebut);
+        $validated['heure_fin'] = $heureFin;
+
+        // ── Vérifier moniteur
         $moniteur = Moniteur::findOrFail($moniteurId);
         if (!$moniteur->estDisponible($date, $heureDebut, $heureFin, $seance->id)) {
-            return response()->json(['message' => "Ce moniteur a déjà " . Moniteur::MAX_ELEVES_PAR_CRENEAU . " élèves sur ce créneau."], 422);
+            return response()->json(['message' => "Ce créneau est déjà réservé avec ce moniteur."], 422);
         }
 
+        // ── Vérifier véhicule
         $vehicule = Vehicule::findOrFail($vehiculeId);
         if (!$vehicule->estDisponible($date, $heureDebut, $heureFin, $seance->id)) {
             if ($vehicule->disponibilite !== 'disponible') {
                 return response()->json(['message' => 'Véhicule indisponible.'], 422);
             }
-            return response()->json(['message' => "Ce véhicule a déjà " . Vehicule::MAX_ELEVES_PAR_CRENEAU . " élèves sur ce créneau."], 422);
+            return response()->json(['message' => "Ce créneau est déjà réservé avec ce véhicule."], 422);
+        }
+
+        // ✅ Vérifier que le créneau n'est pas pris par un autre élève
+        $conflitCreneau = SeanceConduite::where('date', $date)
+            ->where('heure_debut', $heureDebut)
+            ->where('statut', '!=', 'annulee')
+            ->where('id', '!=', $seance->id) // exclure la séance en cours de modification
+            ->exists();
+
+        if ($conflitCreneau) {
+            return response()->json([
+                'message' => "Ce créneau est déjà pris. Un seul élève peut réserver un créneau à une date et heure précises.",
+            ], 422);
         }
 
         $oldStatut = $seance->statut;
         $seance->update($validated);
         $seance->load(['client', 'moniteur', 'vehicule']);
 
-        // ── 🔔 Notification si passage à "terminee" ──
+        // ── 🔔 Notification si passage à "terminee"
         if (isset($validated['statut']) && $validated['statut'] === 'terminee' && $oldStatut !== 'terminee') {
             $this->notifClient(
                 $seance->client_id,
@@ -272,7 +361,7 @@ class SeanceConduiteController extends Controller
 
         $seance->update(['statut' => 'annulee']);
 
-        // ── 🔔 Notification privée : séance annulée ──
+        // ── 🔔 Notification privée : séance annulée
         $dateF = \Carbon\Carbon::parse($seance->date)->locale('fr')->isoFormat('dddd D MMMM YYYY');
         $this->notifClient(
             $seance->client_id,

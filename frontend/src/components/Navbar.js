@@ -163,9 +163,9 @@ export default function Navbar({ theme, toggleTheme }) {
     { l:"Accueil",   a:()=>scrollTo("home"),      active: activeSec==="home" },
     { l:"À propos",  a:()=>scrollTo("about"),     active: activeSec==="about" },
     { l:"Services",  a:()=>scrollTo("services"),  active: activeSec==="services" },
-    { l:"Démarches", a:()=>scrollTo("demarches"), active: activeSec==="demarches" },
+    
     { l:"Galerie",   a:()=>scrollTo("gallery"),   active: activeSec==="gallery" },
-    { l:"Formation", a:()=>scrollTo("formation"), active: activeSec==="formation" },
+    // { l:"Formation", a:()=>scrollTo("formation"), active: activeSec==="formation" },
     { l:"Cours",     a:()=>goTo(user?"/cours":"/connexion"), active: location.pathname==="/cours" },
     ...(user ? [{ l:"Séances", a:()=>goTo("/seances"), active: location.pathname==="/seances" }] : []),
     { l:"FAQ",       a:()=>scrollTo("faq"),       active: activeSec==="faq" },

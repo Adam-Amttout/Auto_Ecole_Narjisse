@@ -27,3 +27,18 @@ export const deleteSeance = (id) =>
 
 export const annulerSeance = (id) =>
   axios.patch(`${API}/seances/${id}/annuler`).then(r => r.data);
+
+/**
+ * ✅ Récupère les créneaux de 30 minutes avec leur disponibilité en temps réel.
+ *
+ * Paramètres attendus :
+ *   - date        : string 'YYYY-MM-DD' (obligatoire)
+ *   - moniteur_id : number (optionnel)
+ *   - vehicule_id : number (optionnel)
+ *   - client_id   : number (optionnel) — pour vérifier les conflits élève
+ *
+ * Retourne un tableau de créneaux :
+ *   [{ heure_debut, heure_fin, disponible, raison, places }]
+ */
+export const getCreneaux = (params = {}) =>
+  axios.get(`${API}/seances/creneaux`, { params }).then(r => r.data);
