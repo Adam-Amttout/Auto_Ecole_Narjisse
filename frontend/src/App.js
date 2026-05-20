@@ -34,7 +34,6 @@ const PageLoader = () => (
     animation: "fadeInLoader 0.2s ease",
   }}>
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&display=swap');
 
       @keyframes fadeInLoader {
         from { opacity: 0; }
@@ -158,7 +157,6 @@ const PageLoader = () => (
 /* ─── Global route transition overlay ─── */
 /* Uses navCount as `key` → forces full remount → CSS animations restart cleanly every time */
 const RT_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@800&display=swap');
   @keyframes rt-fadein  { from { opacity:0 } to { opacity:1 } }
   @keyframes rt-fadeout { from { opacity:1 } to { opacity:0 } }
   @keyframes rt-pop {
@@ -198,8 +196,8 @@ function TransitionScreen({ onDone }) {
   const [out, setOut] = useState(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setOut(true),  1200); // stay 1.2s then fade
-    const t2 = setTimeout(() => onDone(),       1800); // remove after fade
+    const t1 = setTimeout(() => setOut(true),  180); // stay 0.18s then fade
+    const t2 = setTimeout(() => onDone(),       350); // remove after fade
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [onDone]);
 
@@ -308,6 +306,14 @@ function AdminRoute({ children }) {
   return role === "admin" ? children : <Navigate to="/" replace />;
 }
 
+/* ── Wrapper to conditionally hide Footer on dashboard pages ── */
+function ConditionalFooter() {
+  const location = useLocation();
+  const hideFooter = location.pathname === "/dashboard" || location.pathname === "/mon-espace";
+  if (hideFooter) return null;
+  return <Footer />;
+}
+
 function App() {
   const [theme, setTheme] = React.useState(localStorage.getItem("theme") || "light");
 
@@ -357,7 +363,7 @@ function App() {
 
         </Routes>
       </Suspense>
-      <Footer />
+      <ConditionalFooter />
     </BrowserRouter>
   );
 }

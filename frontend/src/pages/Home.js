@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { Container, Button } from "react-bootstrap";
 import { FaWhatsapp } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,10 +6,38 @@ import "./Home.css";
 
 import About    from "../pages/About";
 import Services from "../pages/Services";
-import Gallery  from "./Gallery";
-import Faq      from "../pages/Faq";
-import Formation from "../pages/formation";
-import Contact   from "../pages/Contact";  // ← NOUVEAU
+
+/* ─── Lazy-loaded heavy sections (Gallery = 20KB, Contact = 10KB) ─── */
+const Gallery  = lazy(() => import("./Gallery"));
+const Faq      = lazy(() => import("../pages/Faq"));
+const Contact  = lazy(() => import("../pages/Contact"));
+
+/* ─── IntersectionObserver hook: only mounts component when near viewport ─── */
+function LazySection({ children, id, rootMargin = "400px" }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { rootMargin }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [rootMargin]);
+
+  return (
+    <section id={id} ref={ref} style={{ minHeight: visible ? undefined : 200 }}>
+      {visible ? (
+        <Suspense fallback={<div style={{ padding: 60, textAlign: "center", color: "#94a3b8" }}>Chargement…</div>}>
+          {children}
+        </Suspense>
+      ) : null}
+    </section>
+  );
+}
 
 function Home() {
   const location = useLocation();
@@ -66,15 +94,14 @@ function Home() {
         </div>
       </section>
 
-      {/* Sections */}
+      {/* Eagerly-loaded lightweight sections */}
       <section id="about"><About/></section>
       <section id="services"><Services/></section>
-      <section id="gallery"><Gallery/></section>
-      {/* <section id="formation"><Formation/></section> */}
-      <section id="faq"><Faq/></section>
 
-      {/* CONTACT COMPLET */}
-      <section id="contact"><Contact/></section>
+      {/* Lazy-loaded heavy sections — only mount when user scrolls near them */}
+      <LazySection id="gallery" rootMargin="600px"><Gallery/></LazySection>
+      <LazySection id="faq" rootMargin="400px"><Faq/></LazySection>
+      <LazySection id="contact" rootMargin="400px"><Contact/></LazySection>
 
       {/* WhatsApp flotant */}
       <a href="https://wa.me/212698837698" className="whatsapp-float" target="_blank" rel="noopener noreferrer">

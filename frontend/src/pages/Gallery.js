@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import "./Gallery.css";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -18,8 +18,7 @@ function Gallery() {
       .catch(() => {});
   }, []);
 
-  // Import all images dynamically with error handling
-  const importAllImages = () => {
+  const allImages = useMemo(() => {
     const images = [];
     for (let i = 1; i <= 16; i++) {
       try {
@@ -30,7 +29,6 @@ function Gallery() {
           category: i <= 6 ? "formation" : i <= 10 ? "entreprise" : "reussite"
         });
       } catch (error) {
-        console.warn(`Image car${i}.jpg not found`);
         images.push({
           id: i,
           src: `https://via.placeholder.com/600x400?text=Image+${i}`,
@@ -40,9 +38,7 @@ function Gallery() {
       }
     }
     return images;
-  };
-
-  const allImages = importAllImages();
+  }, []);
   
   // Split images for different sections
   const carouselImages = allImages.slice(0, 6);
@@ -51,11 +47,12 @@ function Gallery() {
 
   useEffect(() => {
     AOS.init({
-      duration: 400,
+      duration: 300,
       once: true,
-      offset: 60,
+      offset: 50,
       easing: 'ease-out',
-      delay: 0
+      delay: 0,
+      disable: window.innerWidth < 768
     });
     
     
@@ -225,7 +222,7 @@ function Gallery() {
 
           <div className="carousel" ref={scrollRef}>
             {carouselImages.map((image, index) => (
-              <div className="carousel-card" key={image.id} data-aos="fade-up" data-aos-delay={index * 150}>
+              <div className="carousel-card" key={image.id} data-aos="fade-up">
                 <div className="card-image-wrapper" onClick={() => openLightbox(image)}>
                   <img 
                     src={image.src} 

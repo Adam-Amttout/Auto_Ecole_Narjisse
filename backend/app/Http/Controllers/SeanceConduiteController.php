@@ -208,19 +208,6 @@ class SeanceConduiteController extends Controller
             ], 422);
         }
 
-        // ✅ RÈGLE PRINCIPALE : un seul élève peut réserver un créneau (date + heure_debut)
-        // On vérifie que le CRÉNEAU n'est pas déjà pris par N'IMPORTE QUEL autre élève
-        $conflitCreneau = SeanceConduite::where('date', $validated['date'])
-            ->where('heure_debut', $validated['heure_debut'])
-            ->where('statut', '!=', 'annulee')
-            ->exists();
-
-        if ($conflitCreneau) {
-            return response()->json([
-                'message' => "Ce créneau est déjà pris. Un seul élève peut réserver un créneau à une date et heure précises.",
-            ], 422);
-        }
-
         // ── Vérifier que l'élève n'a pas déjà une séance sur ce créneau (protection supplémentaire)
         $conflitEleve = SeanceConduite::where('client_id', $validated['client_id'])
             ->where('date', $validated['date'])
@@ -307,18 +294,7 @@ class SeanceConduiteController extends Controller
             return response()->json(['message' => "Ce créneau est déjà réservé avec ce véhicule."], 422);
         }
 
-        // ✅ Vérifier que le créneau n'est pas pris par un autre élève
-        $conflitCreneau = SeanceConduite::where('date', $date)
-            ->where('heure_debut', $heureDebut)
-            ->where('statut', '!=', 'annulee')
-            ->where('id', '!=', $seance->id) // exclure la séance en cours de modification
-            ->exists();
-
-        if ($conflitCreneau) {
-            return response()->json([
-                'message' => "Ce créneau est déjà pris. Un seul élève peut réserver un créneau à une date et heure précises.",
-            ], 422);
-        }
+        // ✅ Le conflit moniteur/véhicule est déjà vérifié ci-dessus — pas besoin de bloquer tout le créneau globalement
 
         $oldStatut = $seance->statut;
         $seance->update($validated);

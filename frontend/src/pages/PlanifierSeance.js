@@ -129,6 +129,13 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
     setApiError('');
     setSuccess('');
 
+    // ✅ FIX: Vérifier client_id avant d'envoyer
+    if (!formData.client_id) {
+      setApiError('Impossible d\'identifier le client. Veuillez vous reconnecter.');
+      setLoading(false);
+      return;
+    }
+
     try {
       // ✅ On n'envoie plus heure_fin — le backend la calcule automatiquement
       const payload = { ...formData };
@@ -242,7 +249,7 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
 
               <Row className="mb-3">
                 {/* Date */}
-                <Col md={4}>
+                <Col md={6}>
                   <Form.Group>
                     <Form.Label>Date *</Form.Label>
                     <Form.Control
@@ -258,7 +265,7 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
                 </Col>
 
                 {/* ✅ Créneau de 30 min — Select avec créneaux disponibles */}
-                <Col md={4}>
+                <Col md={6}>
                   <Form.Group>
                     <Form.Label>
                       Créneau (30 min) *{' '}
@@ -294,19 +301,6 @@ function PlanifierSeance({ seanceAModifier = null, onSuccess, onCancel, standalo
                   </Form.Group>
                 </Col>
 
-                {/* ✅ Heure fin — calculée automatiquement, lecture seule */}
-                <Col md={4}>
-                  <Form.Group>
-                    <Form.Label>Heure de fin (auto)</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.heure_debut ? heureFinAttendue(formData.heure_debut) : '—'}
-                      readOnly
-                      style={{ background: '#f8f9fa', color: '#6c757d' }}
-                    />
-                    <Form.Text className="text-muted">Calculée automatiquement (+30 min)</Form.Text>
-                  </Form.Group>
-                </Col>
               </Row>
 
               {/* Indicateur disponibilité du créneau sélectionné */}

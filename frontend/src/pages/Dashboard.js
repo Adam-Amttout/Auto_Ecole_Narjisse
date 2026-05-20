@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, useMemo, memo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -38,13 +38,13 @@ const STATUT_MSG = {
   archive:  { label:"Archivé",  bg:"#f0fdf4", color:"#94a3b8"  },
 };
 
-const Badge = ({ text, bg, color }) => (
+const Badge = memo(({ text, bg, color }) => (
   <span style={{ background:bg, color, padding:"2px 10px", borderRadius:20, fontSize:11.5, fontWeight:700, whiteSpace:"nowrap" }}>
     {text}
   </span>
-);
+));
 
-function ActionBtns({ onView, onEdit, onDelete, onAnnuler, confirmId, setConfirmId, id }) {
+const ActionBtns = memo(function ActionBtns({ onView, onEdit, onDelete, onAnnuler, confirmId, setConfirmId, id }) {
   return (
     <div className="db-actions">
       {onView    && <button className="db-btn view"    onClick={() => onView(id)}    title="Voir">👁️</button>}
@@ -60,7 +60,7 @@ function ActionBtns({ onView, onEdit, onDelete, onAnnuler, confirmId, setConfirm
       )}
     </div>
   );
-}
+});
 
 function Modal({ show, onClose, title, children, onSave, saveLabel="Enregistrer", error, hideFoot }) {
   if (!show) return null;
@@ -218,6 +218,11 @@ export default function Dashboard() {
   const [tab, setTab]             = useState("accueil");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(globalSearch), 250);
+    return () => clearTimeout(t);
+  }, [globalSearch]);
   const [showClientDetails, setShowClientDetails] = useState(null);
   const [clientFullData, setClientFullData] = useState(null);
   const [clientDetailsLoading, setClientDetailsLoading] = useState(false);
@@ -351,16 +356,54 @@ export default function Dashboard() {
       moniteur:    { post:`${API}/moniteurs`,      put:`${API}/moniteurs/${editId}`    },
       vehicule:    { post:`${API}/vehicules`,      put:`${API}/vehicules/${editId}`    },
       seance:      { post:`${API}/seances`,        put:`${API}/seances/${editId}`      },
-      question:    { post:`${API}/questions`,      put:`${API}/questions/${editId}`    },
+      question:    { post:`${API}/qcm`,            put:`${API}/qcm/${editId}`          },
     };
+    // Normaliser les booleans
+    const payload = { ...formData };
+    if (entity === "cours" && typeof payload.actif === "string") {
+      payload.actif = payload.actif === "true";
+    }
+    if (payload.duree_minutes === "" || payload.duree_minutes === undefined) delete payload.duree_minutes;
+
+    // ✅ OPTIMISTIC UPDATE : fermeture immédiate du modal sans attendre le serveur
+    const tempId = editId || ("temp_" + Date.now());
+    const optimisticItem = { ...payload, id: tempId };
+    const applyOptimistic = {
+      cours:       () => editId ? setCours(prev => prev.map(x => x.id === editId ? optimisticItem : x)) : setCours(prev => [optimisticItem, ...prev]),
+      client:      () => editId ? setClients(prev => prev.map(x => x.id === editId ? optimisticItem : x)) : setClients(prev => [optimisticItem, ...prev]),
+      inscription: () => editId ? setInscriptions(prev => prev.map(x => x.id === editId ? optimisticItem : x)) : setInscriptions(prev => [optimisticItem, ...prev]),
+      moniteur:    () => editId ? setMoniteurs(prev => prev.map(x => x.id === editId ? optimisticItem : x)) : setMoniteurs(prev => [optimisticItem, ...prev]),
+      vehicule:    () => editId ? setVehicules(prev => prev.map(x => x.id === editId ? optimisticItem : x)) : setVehicules(prev => [optimisticItem, ...prev]),
+      question:    () => editId ? setQuestions(prev => prev.map(x => x.id === editId ? optimisticItem : x)) : setQuestions(prev => [optimisticItem, ...prev]),
+    };
+    if (applyOptimistic[entity]) applyOptimistic[entity]();
+    setModal(m => ({ ...m, show:false }));
+    showToast(editId ? "Mis à jour !" : "Créé avec succès !");
+
     try {
-      if (editId) await axios.put(urls[entity].put, formData);
-      else        await axios.post(urls[entity].post, formData);
-      setModal(m => ({ ...m, show:false }));
-      await load();
-      showToast(editId ? "Mis à jour !" : "Créé avec succès !");
+      const res = editId
+        ? await axios.put(urls[entity].put, payload)
+        : await axios.post(urls[entity].post, payload);
+      // Remplacer l'item temporaire par la vraie réponse du serveur
+      const saved = res.data?.data || res.data;
+      if (saved?.id) {
+        const syncState = {
+          cours:       () => setCours(prev => prev.map(x => x.id === tempId || x.id === saved.id ? saved : x)),
+          client:      () => setClients(prev => prev.map(x => x.id === tempId || x.id === saved.id ? saved : x)),
+          inscription: () => setInscriptions(prev => prev.map(x => x.id === tempId || x.id === saved.id ? saved : x)),
+          moniteur:    () => setMoniteurs(prev => prev.map(x => x.id === tempId || x.id === saved.id ? saved : x)),
+          vehicule:    () => setVehicules(prev => prev.map(x => x.id === tempId || x.id === saved.id ? saved : x)),
+          question:    () => setQuestions(prev => prev.map(x => x.id === tempId || x.id === saved.id ? saved : x)),
+        };
+        if (syncState[entity]) syncState[entity]();
+      }
     } catch (e) {
+      // Erreur : annuler l'optimistic update et réafficher le modal
+      loadedTabs.current.delete(tab);
+      loadTab(tab);
+      setModal({ show:true, title: editId ? "✏️ Modifier" : "➕ Ajouter", entity });
       setModalErr(e.response?.data?.message || "Erreur lors de l'enregistrement.");
+      showToast(e.response?.data?.message || "Erreur.", false);
     }
   };
 
@@ -372,31 +415,48 @@ export default function Dashboard() {
       moniteur:    `${API}/moniteurs/${id}`,
       vehicule:    `${API}/vehicules/${id}`,
       seance:      `${API}/seances/${id}`,
-      question:    `${API}/questions/${id}`,
+      question:    `${API}/qcm/${id}`,
     };
+    // ✅ FIX: Optimistic update — suppression immédiate, pas d'attente serveur
+    const removeFromState = {
+      client:      () => setClients(prev => prev.filter(x => x.id !== id)),
+      inscription: () => setInscriptions(prev => prev.filter(x => x.id !== id)),
+      cours:       () => setCours(prev => prev.filter(x => x.id !== id)),
+      moniteur:    () => setMoniteurs(prev => prev.filter(x => x.id !== id)),
+      vehicule:    () => setVehicules(prev => prev.filter(x => x.id !== id)),
+      seance:      () => setSeances(prev => prev.filter(x => x.id !== id)),
+      question:    () => setQuestions(prev => prev.filter(x => x.id !== id)),
+    };
+    if (removeFromState[entity]) removeFromState[entity]();
+    setConfirmId(null);
     try {
       await axios.delete(urls[entity]);
-      await load();
       showToast("Supprimé.");
     } catch (e) {
+      loadedTabs.current.delete(tab);
+      loadTab(tab);
       showToast(e.response?.data?.message || "Impossible de supprimer.", false);
     }
-    setConfirmId(null);
   };
 
   const annulerSeance = async (id) => {
+    // ✅ FIX: Optimistic update
+    setSeances(prev => prev.map(s => s.id === id ? { ...s, statut: "annulee" } : s));
     try {
       await axios.patch(`${API}/seances/${id}/annuler`);
-      await load();
       showToast("Séance annulée.");
-    } catch (e) { showToast(e.response?.data?.message || "Erreur.", false); }
+    } catch (e) {
+      loadedTabs.current.delete("seances");
+      loadTab("seances");
+      showToast(e.response?.data?.message || "Erreur.", false);
+    }
   };
 
   const F = (key, label, type="text", options=null) => (
     <div className="db-field" key={key}>
       <label>{label}</label>
       {options ? (
-        <select className="db-input" value={formData[key]||""} onChange={e => {
+        <select className="db-input" value={formData[key] !== undefined && formData[key] !== null ? String(formData[key]) : ""} onChange={e => {
           const newData = {...formData, [key]:e.target.value};
           setFormData(newData);
           // Recharger les créneaux si on change moniteur, vehicule ou date dans le formulaire séance
@@ -466,29 +526,57 @@ export default function Dashboard() {
     fd.append("ordre",    faqForm.ordre);
     fd.append("actif",    faqForm.actif ? "1" : "0");
     if (faqImageFile) fd.append("image", faqImageFile);
+    // ✅ Optimistic update FAQ
+    const tempFaqId = faqEditItem?.id || ("faq_temp_" + Date.now());
+    const optimisticFaq = {
+      id: tempFaqId,
+      question: faqForm.question,
+      reponse:  faqForm.reponse,
+      ordre:    faqForm.ordre,
+      actif:    faqForm.actif,
+      image:    faqImageFile ? faqImagePreview : (faqEditItem?.image || null),
+    };
+    if (faqEditItem) {
+      setFaqs(prev => prev.map(f => f.id === faqEditItem.id ? optimisticFaq : f));
+    } else {
+      setFaqs(prev => [...prev, optimisticFaq]);
+    }
+    setFaqModal(false);
+    showToast(faqEditItem ? "FAQ mise à jour !" : "FAQ créée !");
+
     try {
+      let res;
       if (faqEditItem) {
-        fd.append("_method", "PUT");
-        await axios.post(`${API}/faq/${faqEditItem.id}`, fd, { headers:{"Content-Type":"multipart/form-data"} });
+        res = await axios.post(`${API}/faq/${faqEditItem.id}`, fd, { headers:{"Content-Type":"multipart/form-data"} });
       } else {
-        await axios.post(`${API}/faq`, fd, { headers:{"Content-Type":"multipart/form-data"} });
+        res = await axios.post(`${API}/faq`, fd, { headers:{"Content-Type":"multipart/form-data"} });
       }
-      setFaqModal(false);
-      loadedTabs.current.delete("faq");
-      await loadTab("faq");
-      showToast(faqEditItem ? "FAQ mise à jour !" : "FAQ créée !");
+      // Remplacer item temporaire par la vraie réponse
+      const saved = res.data?.data || res.data;
+      if (saved?.id) {
+        setFaqs(prev => prev.map(f => f.id === tempFaqId ? saved : f));
+      }
     } catch (e) {
+      // Annuler : recharger depuis le serveur
+      loadedTabs.current.delete("faq");
+      loadTab("faq");
+      setFaqModal(true);
       setFaqError(e.response?.data?.message || "Erreur lors de l'enregistrement.");
+      showToast("Erreur lors de l'enregistrement.", false);
     } finally { setFaqSaving(false); }
   };
   const handleFaqDelete = async (id) => {
+    // ✅ FIX: Optimistic update
+    setFaqs(prev => prev.filter(f => f.id !== id));
+    setFaqConfirmDel(null);
     try {
       await axios.delete(`${API}/faq/${id}`);
-      setFaqConfirmDel(null);
-      loadedTabs.current.delete("faq");
-      await loadTab("faq");
       showToast("FAQ supprimée.");
-    } catch (e) { showToast(e.response?.data?.message||"Erreur.", false); }
+    } catch (e) {
+      loadedTabs.current.delete("faq");
+      loadTab("faq");
+      showToast(e.response?.data?.message||"Erreur.", false);
+    }
   };
 
   /* ── MESSAGES : actions ── */
@@ -520,13 +608,18 @@ export default function Dashboard() {
   };
 
   const handleDeleteMsg = async (id) => {
+    // ✅ FIX: Optimistic update
+    setMessages(prev => prev.filter(m => m.id !== id));
+    if (convMsg?.id === id) setConvMsg(null);
+    setConfirmId(null);
     try {
       await axios.delete(`${API}/contact-messages/${id}`);
-      await reloadMessages();
-      if (convMsg?.id === id) setConvMsg(null);
       showToast("Message supprimé.");
-    } catch (e) { showToast(e.response?.data?.message||"Erreur.", false); }
-    setConfirmId(null);
+    } catch (e) {
+      loadedTabs.current.delete("messages");
+      loadTab("messages");
+      showToast(e.response?.data?.message||"Erreur.", false);
+    }
   };
 
   const openConversation = async (msg) => {
@@ -576,43 +669,19 @@ export default function Dashboard() {
     }
   };
 
-  const q = globalSearch.toLowerCase().trim();
+  const q = debouncedSearch.toLowerCase().trim();
 
-  const filteredClients = clients.filter(c =>
-    !q || [c.nom, c.prenom, c.email, c.telephone].some(f => f?.toLowerCase().includes(q))
-  );
-  const filteredInscriptions = inscriptions.filter(i =>
-    !q || [i.nom, i.prenom, i.email, i.telephone, i.sujet].some(f => f?.toLowerCase().includes(q))
-  );
-  const filteredMoniteurs = moniteurs.filter(m =>
-    !q || [m.nom, m.prenom, m.email, m.telephone].some(f => f?.toLowerCase().includes(q))
-  );
-  const filteredVehicules = vehicules.filter(v =>
-    !q || [v.marque, v.modele, v.immatriculation].some(f => f?.toLowerCase().includes(q))
-  );
-  const filteredSeances = seances.filter(s =>
-    !q || [
-      s.client?.nom, s.client?.prenom,
-      s.moniteur?.nom, s.moniteur?.prenom,
-      s.vehicule?.marque, s.vehicule?.modele,
-      s.statut
-    ].some(f => f?.toLowerCase().includes(q))
-  );
-  const filteredCours = cours.filter(c =>
-    !q || [c.titre, c.description, c.categorie, c.niveau].some(f => f?.toLowerCase().includes(q))
-  );
-  const filteredAvis = avis.filter(a =>
-    !q || [a.nom, a.prenom, a.texte, a.statut].some(f => f?.toLowerCase().includes(q))
-  );
-  const filteredFaqs = faqs.filter(f =>
-    !q || [f.question, f.reponse].some(x => x?.toLowerCase().includes(q))
-  );
-  const filteredMessages = messages.filter(m =>
-    !q || [m.nom, m.prenom, m.email, m.sujet, m.message].some(f => f?.toLowerCase().includes(q))
-  );
-  const filteredQuestions = questions.filter(qn =>
-    !q || [qn.question, qn.option_a, qn.option_b, qn.option_c, qn.option_d, qn.categorie].some(f => f?.toLowerCase().includes(q))
-  );
+  // ✅ useMemo : recalcul uniquement si les données ou la recherche changent
+  const filteredClients     = useMemo(() => clients.filter(c => !q || [c.nom, c.prenom, c.email, c.telephone].some(f => f?.toLowerCase().includes(q))), [clients, q]);
+  const filteredInscriptions= useMemo(() => inscriptions.filter(i => !q || [i.nom, i.prenom, i.email, i.telephone, i.sujet].some(f => f?.toLowerCase().includes(q))), [inscriptions, q]);
+  const filteredMoniteurs   = useMemo(() => moniteurs.filter(m => !q || [m.nom, m.prenom, m.email, m.telephone].some(f => f?.toLowerCase().includes(q))), [moniteurs, q]);
+  const filteredVehicules   = useMemo(() => vehicules.filter(v => !q || [v.marque, v.modele, v.immatriculation].some(f => f?.toLowerCase().includes(q))), [vehicules, q]);
+  const filteredSeances     = useMemo(() => seances.filter(s => !q || [s.client?.nom, s.client?.prenom, s.moniteur?.nom, s.moniteur?.prenom, s.vehicule?.marque, s.vehicule?.modele, s.statut].some(f => f?.toLowerCase().includes(q))), [seances, q]);
+  const filteredCours       = useMemo(() => cours.filter(c => !q || [c.titre, c.description, c.categorie, c.niveau].some(f => f?.toLowerCase().includes(q))), [cours, q]);
+  const filteredAvis        = useMemo(() => avis.filter(a => !q || [a.nom, a.prenom, a.texte, a.statut].some(f => f?.toLowerCase().includes(q))), [avis, q]);
+  const filteredFaqs        = useMemo(() => faqs.filter(f => !q || [f.question, f.reponse].some(x => x?.toLowerCase().includes(q))), [faqs, q]);
+  const filteredMessages    = useMemo(() => messages.filter(m => !q || [m.nom, m.prenom, m.email, m.sujet, m.message].some(f => f?.toLowerCase().includes(q))), [messages, q]);
+  const filteredQuestions   = useMemo(() => questions.filter(qn => !q || [qn.question, qn.option_a, qn.option_b, qn.option_c, qn.option_d, qn.categorie].some(f => f?.toLowerCase().includes(q))), [questions, q]);
   const msgFiltres = filteredMessages.filter(m =>
     msgFiltre === "tous" ? true : m.statut === msgFiltre
   );
@@ -1317,7 +1386,7 @@ export default function Dashboard() {
               <div className="db-cours-main">
                 <div className="db-section-head">
                   <h4 className="db-title">Cours ({filteredCours.length}{q && filteredCours.length !== cours.length ? ` / ${cours.length}` : ""})</h4>
-                  <button className="db-btn primary" onClick={() => openModal("cours","➕ Ajouter un cours",{categorie:"danger",niveau:"debutant"})}>+ Ajouter</button>
+                  <button className="db-btn primary" onClick={() => openModal("cours","➕ Ajouter un cours",{categorie:"danger",niveau:"debutant",actif:"true"})}>+ Ajouter</button>
                 </div>
                 <div className="db-card"><div className="db-table-wrap">
                   <table className="db-table">
@@ -1340,7 +1409,7 @@ export default function Dashboard() {
                               </span>
                             </td>
                             <td><ActionBtns
-                              onEdit  ={() => openModal("cours","✏️ Modifier le cours",{titre:c.titre,description:c.description||"",categorie:c.categorie,image:c.image||"",niveau:c.niveau},c.id)}
+                              onEdit  ={() => openModal("cours","✏️ Modifier le cours",{titre:c.titre,description:c.description||"",categorie:c.categorie,image:c.image||"",niveau:c.niveau,video_url:c.video_url||"",pdf_url:c.pdf_url||"",contenu:c.contenu||"",duree_minutes:c.duree_minutes||"",actif:c.actif},c.id)}
                               onDelete={() => handleDelete("cours",c.id)}
                               confirmId={confirmId} setConfirmId={setConfirmId} id={c.id}
                             /></td>
@@ -1588,12 +1657,33 @@ export default function Dashboard() {
                         <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
                         <td>
                           <div className="db-actions">
-                            {a.statut !== 'approved' && <button className="db-btn view" title="Approuver" onClick={async () => { await axios.patch(`${API}/avis/${a.id}/statut`,{statut:'approved'}); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis approuvé !'); }}>✅</button>}
-                            {a.statut !== 'rejected' && <button className="db-btn warn"  title="Rejeter"   onClick={async () => { await axios.patch(`${API}/avis/${a.id}/statut`,{statut:'rejected'}); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Avis rejeté.'); }}>âŒ</button>}
+                            {a.statut !== 'approved' && (
+                              <button className="db-btn view" title="Approuver" onClick={async () => {
+                                setAvis(prev => prev.map(x => x.id === a.id ? Object.assign({}, x, {statut: 'approved'}) : x));
+                                try { await axios.patch(`${API}/avis/${a.id}/statut`, {statut: 'approved'}); showToast('Avis approuvé !'); }
+                                catch(err) { loadedTabs.current.delete('avis'); loadTab('avis'); }
+                              }}>✅</button>
+                            )}
+                            {a.statut !== 'rejected' && (
+                              <button className="db-btn warn" title="Rejeter" onClick={async () => {
+                                setAvis(prev => prev.map(x => x.id === a.id ? Object.assign({}, x, {statut: 'rejected'}) : x));
+                                try { await axios.patch(`${API}/avis/${a.id}/statut`, {statut: 'rejected'}); showToast('Avis rejeté.'); }
+                                catch(err) { loadedTabs.current.delete('avis'); loadTab('avis'); }
+                              }}>❌</button>
+                            )}
                             {confirmId === a.id ? (
-                              <><button className="db-btn danger" onClick={async () => { await axios.delete(`${API}/avis/${a.id}`); setConfirmId(null); loadedTabs.current.delete('avis'); loadTab('avis'); showToast('Supprimé.'); }}>Oui</button>
-                              <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button></>
-                            ) : <button className="db-btn danger" onClick={() => setConfirmId(a.id)} title="Supprimer">🗑️</button>}
+                              <>
+                                <button className="db-btn danger" onClick={async () => {
+                                  setAvis(prev => prev.filter(x => x.id !== a.id));
+                                  setConfirmId(null);
+                                  try { await axios.delete(`${API}/avis/${a.id}`); showToast('Supprimé.'); }
+                                  catch(err) { loadedTabs.current.delete('avis'); loadTab('avis'); }
+                                }}>Oui</button>
+                                <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button>
+                              </>
+                            ) : (
+                              <button className="db-btn danger" onClick={() => setConfirmId(a.id)} title="Supprimer">🗑️</button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1832,6 +1922,10 @@ export default function Dashboard() {
           </div>
           {F("video_url","🎬 Lien Vidéo YouTube")}
           {F("pdf_url","📄 Lien PDF")}
+          <div className="db-form-row">
+            {F("duree_minutes","⏱️ Durée (min)","number")}
+            {F("actif","Statut","text",[{v:"true",l:"Actif"},{v:"false",l:"Inactif"}])}
+          </div>
         </>}
         {modal.entity === "moniteur" && <>
           <div className="db-form-row">{F("nom","Nom")}{F("prenom","Prénom")}</div>

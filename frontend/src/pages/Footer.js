@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaFacebookF, FaWhatsapp, FaInstagram, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 import "./Footer.css";
 
-export default function Footer() {
+export default function Footer({ className = "" }) {
   const navigate = useNavigate();
 
   const scrollTo = (id) => {
@@ -16,7 +16,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="ft">
+    <footer className={`ft ${className}`.trim()}>
       <div className="ft-inner">
 
         {/* Logo + slogan */}

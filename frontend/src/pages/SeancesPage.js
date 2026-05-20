@@ -16,12 +16,20 @@ const STATUT = {
 const JOURS = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 const MOIS  = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
+/** Créneaux autorisés : uniquement XX:00 et XX:30, de 08h00 à 19h30 */
+const HEURES_AUTORISEES = [
+  "08:00","08:30","09:00","09:30","10:00","10:30",
+  "11:00","11:30","12:00","12:30","13:00","13:30",
+  "14:00","14:30","15:00","15:30","16:00","16:30",
+  "17:00","17:30","18:00","18:30","19:00","19:30",
+];
+
 /** Calcule heure_fin = heure_debut + 30 minutes */
 function calcHeureFinAuto(heureDebut) {
   if (!heureDebut) return "";
   const [h, m] = heureDebut.split(":").map(Number);
   const total  = h * 60 + m + 30;
-  if (total > 24 * 60) return ""; // dépasse minuit
+  if (total > 24 * 60) return "";
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 
@@ -172,6 +180,10 @@ export default function SeancesPage() {
     if (form.date < today) {
       setFormErr("La date ne peut pas être dans le passé."); return;
     }
+    // ✅ FIX: Vérification que le créneau est bien autorisé (XX:00 ou XX:30)
+    if (!HEURES_AUTORISEES.includes(form.heure_debut)) {
+      setFormErr("L'heure choisie n'est pas valide. Choisissez un créneau de 30 minutes."); return;
+    }
     if (!heureFin) {
       setFormErr("L'heure de début est trop tardive."); return;
     }
@@ -183,14 +195,20 @@ export default function SeancesPage() {
     setFormErr("");
 
     try {
+      // ✅ FIX: client_id garanti non-undefined + heure_fin supprimée (calculée par le backend)
+      const clientId = isAdmin ? form.client_id : client?.id;
+      if (!clientId) {
+        setFormErr("Impossible d'identifier le client. Veuillez vous reconnecter.");
+        setSaving(false);
+        return;
+      }
       const payload = {
         moniteur_id: form.moniteur_id,
         vehicule_id: form.vehicule_id,
         date:        form.date,
         heure_debut: form.heure_debut,
-        heure_fin:   heureFin,          // calculée automatiquement
         notes:       form.notes,
-        client_id:   isAdmin ? form.client_id : client?.id,
+        client_id:   clientId,
       };
 
       if (editing) {
@@ -400,23 +418,16 @@ export default function SeancesPage() {
                     onChange={e => { setForm({ ...form, date: e.target.value }); setDispoResult(null); }} />
                 </div>
 
-                {/* Heure début — le client choisit librement */}
+                {/* Heure début — seulement créneaux XX:00 ou XX:30 */}
                 <div className="sp-fg">
-                  <label>Heure de début *</label>
-                  <input type="time" className="sp-fi" value={form.heure_debut}
-                    onChange={e => { setForm({ ...form, heure_debut: e.target.value }); setDispoResult(null); }} />
-                </div>
-
-                {/* Heure fin — calculée automatiquement, lecture seule */}
-                <div className="sp-fg">
-                  <label>Heure de fin <span style={{ color: "#94a3b8", fontWeight: 400, textTransform: "none" }}>(auto +30 min)</span></label>
-                  <input
-                    type="time"
-                    className="sp-fi"
-                    value={heureFin}
-                    readOnly
-                    style={{ background: "#f1f5f9", color: "#64748b", cursor: "not-allowed" }}
-                  />
+                  <label>Créneau de 30 min *</label>
+                  <select className="sp-fi" value={form.heure_debut}
+                    onChange={e => { setForm({ ...form, heure_debut: e.target.value }); setDispoResult(null); }}>
+                    <option value="">-- Choisir un créneau --</option>
+                    {HEURES_AUTORISEES.map(h => (
+                      <option key={h} value={h}>{h} – {calcHeureFinAuto(h)}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Notes */}

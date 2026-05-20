@@ -40,4 +40,11 @@ class InscriptionController extends Controller
             'data' => $inscription
         ]);
     }
+
+    public function destroy($id)
+    {
+        $inscription = Inscription::findOrFail($id);
+        $inscription->delete();
+        return response()->json(['message' => 'Inscription supprimée.']);
+    }
 }

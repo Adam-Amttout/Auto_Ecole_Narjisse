@@ -9,8 +9,8 @@ export default function PageTransition({ children, color = "#e63946" }) {
 
   useEffect(() => {
     // Overlay visible 650ms then fades out
-    const t1 = setTimeout(() => setPhase("exit"),  650);
-    const t2 = setTimeout(() => setPhase("done"),  1050);
+    const t1 = setTimeout(() => setPhase("exit"),  350);
+    const t2 = setTimeout(() => setPhase("done"),  650);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -28,7 +28,6 @@ export default function PageTransition({ children, color = "#e63946" }) {
           pointerEvents: "none",
         }}>
           <style>{`
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@800&display=swap');
             @keyframes pt-logo-pop {
               0%   { transform: scale(0.5) translateY(20px); opacity: 0; }
               60%  { transform: scale(1.12) translateY(-4px); opacity: 1; }

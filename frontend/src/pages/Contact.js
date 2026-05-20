@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import "./Contact.css";
 
@@ -22,6 +22,20 @@ export default function Contact() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error,   setError]   = useState("");
+
+  /* ── Lazy-load Google Maps iframe ── */
+  const mapRef = useRef(null);
+  const [showMap, setShowMap] = useState(false);
+  useEffect(() => {
+    const el = mapRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setShowMap(true); obs.disconnect(); } },
+      { rootMargin: "300px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -103,18 +117,24 @@ export default function Contact() {
             </div>
 
             {/* CARTE GOOGLE MAPS */}
-            <div className="ct-map-card">
+            <div className="ct-map-card" ref={mapRef}>
               <h3 className="ct-section-title">Notre localisation</h3>
               <div className="ct-map-wrap">
-                <iframe
-                  title="Auto École Narjiss - Marrakech"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3396.7987349!2d-7.9811!3d31.6295!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzHCsDM3JzQ2LjIiTiA3wrA1OCc1Mi4wIlc!5e0!3m2!1sfr!2sma!4v1234567890"
-                  width="100%" height="220"
-                  style={{ border:0, borderRadius:12 }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
+                {showMap ? (
+                  <iframe
+                    title="Auto École Narjiss - Marrakech"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3396.7987349!2d-7.9811!3d31.6295!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzHCsDM3JzQ2LjIiTiA3wrA1OCc1Mi4wIlc!5e0!3m2!1sfr!2sma!4v1234567890"
+                    width="100%" height="220"
+                    style={{ border:0, borderRadius:12 }}
+                    allowFullScreen=""
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                ) : (
+                  <div style={{ width: "100%", height: 220, borderRadius: 12, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8" }}>
+                    📍 Chargement de la carte…
+                  </div>
+                )}
               </div>
               <a
                 href="https://maps.google.com/?q=Marrakech,Maroc"

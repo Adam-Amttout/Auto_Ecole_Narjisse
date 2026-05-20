@@ -95,6 +95,7 @@ Route::get('/faq/all',     [FaqController::class, 'all']);
 Route::get('/faq',         [FaqController::class, 'index']);
 Route::post('/faq',        [FaqController::class, 'store']);
 Route::post('/faq/{id}',   [FaqController::class, 'update']);
+Route::put('/faq/{id}',    [FaqController::class, 'update']);
 Route::delete('/faq/{id}', [FaqController::class, 'destroy']);
 
 // ── CONTACT MESSAGES
