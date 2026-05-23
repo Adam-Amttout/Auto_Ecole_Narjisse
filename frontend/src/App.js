@@ -22,7 +22,8 @@ const Profil        = lazy(() => import("./pages/Profil"));
 const SeancesPage   = lazy(() => import("./pages/SeancesPage"));
 const Indication    = lazy(() => import("./pages/indication"));
 const Interdiction  = lazy(() => import("./pages/interdiction"));
-const ClientDashboard = lazy(() => import("./pages/ClientDashboard"));
+const ClientDashboard    = lazy(() => import("./pages/ClientDashboard"));
+const MoniteurDashboard  = lazy(() => import("./pages/MoniteurDashboard"));
 
 /* ─── Branded Page Loader ─── */
 const PageLoader = () => (
@@ -302,14 +303,28 @@ function PrivateRoute({ children }) {
 
 function AdminRoute({ children }) {
   const role = localStorage.getItem("role");
-  // ⚠️ Si pas admin → retour à l'accueil (PAS redirection automatique vers dashboard)
   return role === "admin" ? children : <Navigate to="/" replace />;
+}
+
+function MoniteurRoute({ children }) {
+  const role = localStorage.getItem("role");
+  return role === "moniteur" ? children : <Navigate to="/" replace />;
+}
+
+// Bloque le moniteur d'accéder à /mon-espace → redirige vers /moniteur-espace
+function UserOnlyRoute({ children }) {
+  const user = localStorage.getItem("user");
+  const role = localStorage.getItem("role");
+  if (!user) return <Navigate to="/connexion" replace />;
+  if (role === "moniteur") return <Navigate to="/moniteur-espace" replace />;
+  if (role === "admin") return <Navigate to="/dashboard" replace />;
+  return children;
 }
 
 /* ── Wrapper to conditionally hide Footer on dashboard pages ── */
 function ConditionalFooter() {
   const location = useLocation();
-  const hideFooter = location.pathname === "/dashboard" || location.pathname === "/mon-espace";
+  const hideFooter = ["/dashboard", "/mon-espace", "/moniteur-espace"].includes(location.pathname);
   if (hideFooter) return null;
   return <Footer />;
 }
@@ -353,10 +368,13 @@ function App() {
           <Route path="/profil/:id"    element={<AdminRoute><Profil /></AdminRoute>} />
 
           {/* ── ADMIN UNIQUEMENT ── */}
-          <Route path="/dashboard"     element={<AdminRoute><Dashboard /></AdminRoute>} />
+          <Route path="/dashboard"       element={<AdminRoute><Dashboard /></AdminRoute>} />
 
-          {/* ── CLIENT ESPACE PRIVÉ ── */}
-          <Route path="/mon-espace"    element={<PrivateRoute><ClientDashboard /></PrivateRoute>} />
+          {/* ── MONITEUR ESPACE PRIVÉ ── */}
+          <Route path="/moniteur-espace" element={<MoniteurRoute><MoniteurDashboard /></MoniteurRoute>} />
+
+          {/* ── CLIENT ESPACE PRIVÉ (user only, not moniteur) ── */}
+          <Route path="/mon-espace"      element={<UserOnlyRoute><ClientDashboard /></UserOnlyRoute>} />
 
           {/* ── 404 → accueil ── */}
           <Route path="*"              element={<Navigate to="/" replace />} />

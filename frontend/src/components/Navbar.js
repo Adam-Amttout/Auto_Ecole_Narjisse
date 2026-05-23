@@ -70,6 +70,8 @@ export default function Navbar({ theme, toggleTheme }) {
         const res = await axios.get(`${API}/clients/${localUser.id}`);
         const freshUser = res.data;
         localStorage.setItem("user", JSON.stringify(freshUser));
+        // ✅ Sync le rôle aussi — important si l'admin a changé le rôle
+        if (freshUser.role) localStorage.setItem("role", freshUser.role);
         setUser(freshUser);
       } catch (err) {
         setUser(localUser);
@@ -181,13 +183,19 @@ export default function Navbar({ theme, toggleTheme }) {
     { l: "Galerie",    a: () => scrollTo("gallery"), active: activeSec === "gallery" },
     { l: "FAQ",        a: () => scrollTo("faq"),     active: activeSec === "faq" },
     { l: "Contact",    a: () => scrollTo("contact"), active: activeSec === "contact" },
-    // Liens réservés aux utilisateurs connectés :
-    ...(user ? [{ l: "Cours",     a: () => goTo("/cours"),     active: location.pathname === "/cours" }] : []),
-    ...(user ? [{ l: "Séances",   a: () => goTo("/seances"),   active: location.pathname === "/seances" }] : []),
+    // Liens pour user et admin uniquement (pas pour moniteur)
+    ...(user && role !== "moniteur" ? [{ l: "Cours",   a: () => goTo("/cours"),   active: location.pathname === "/cours" }] : []),
+    ...(user && role !== "moniteur" ? [{ l: "Séances", a: () => goTo("/seances"), active: location.pathname === "/seances" }] : []),
+    // Dashboard admin
     ...(user && role === "admin"
       ? [{ l: "Dashboard", a: () => goTo("/dashboard"), active: location.pathname === "/dashboard" }]
       : []),
-    ...(user && role !== "admin"
+    // Dashboard moniteur
+    ...(user && role === "moniteur"
+      ? [{ l: "📊 Dashboard", a: () => goTo("/moniteur-espace"), active: location.pathname === "/moniteur-espace" }]
+      : []),
+    // Espace client
+    ...(user && role === "user"
       ? [{ l: "Mon Espace 🏠", a: () => goTo("/mon-espace"), active: location.pathname === "/mon-espace" }]
       : []),
   ];
@@ -313,14 +321,17 @@ export default function Navbar({ theme, toggleTheme }) {
                     <div>
                       <div className="nb-dd-name">{user.prenom} {user.nom}</div>
                       <div className="nb-dd-mail">{user.email}</div>
-                      <span className={`nb-dd-role ${role}`}>{role === "admin" ? "🛡 Admin" : "🎓 Élève"}</span>
+                      <span className={`nb-dd-role ${role}`}>
+                        {role === "admin" ? "🛡 Admin" : role === "moniteur" ? "🧑‍🏫 Moniteur" : "🎓 Élève"}
+                      </span>
                     </div>
                   </div>
                   <div className="nb-dd-sep" />
                   <button className="nb-dd-item" onClick={() => goTo("/profil")}>👤 Mon profil</button>
-                  {role !== "admin" && <button className="nb-dd-item" style={{ fontWeight: 700, color: "#e63946" }} onClick={() => goTo("/mon-espace")}>🏠 Mon Espace</button>}
-                  <button className="nb-dd-item" onClick={() => goTo("/cours")}>📚 Mes cours</button>
-                  <button className="nb-dd-item" onClick={() => goTo("/seances")}>🚗 Mes séances</button>
+                  {role === "moniteur" && <button className="nb-dd-item" style={{ fontWeight: 700, color: "#0891b2" }} onClick={() => goTo("/moniteur-espace")}>📊 Dashboard Moniteur</button>}
+                  {role === "user" && <button className="nb-dd-item" style={{ fontWeight: 700, color: "#e63946" }} onClick={() => goTo("/mon-espace")}>🏠 Mon Espace</button>}
+                  {role !== "moniteur" && <button className="nb-dd-item" onClick={() => goTo("/cours")}>📚 Mes cours</button>}
+                  {role !== "moniteur" && <button className="nb-dd-item" onClick={() => goTo("/seances")}>🚗 Mes séances</button>}
                   {role === "admin" && <button className="nb-dd-item" onClick={() => goTo("/dashboard")}>⚙️ Dashboard</button>}
                   <div className="nb-dd-sep" />
                   <button className="nb-dd-item logout" onClick={logout}>🚪 Déconnexion</button>

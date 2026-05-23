@@ -10,8 +10,7 @@ class MoniteurController extends Controller
     /** GET /api/moniteurs */
     public function index()
     {
-        $moniteurs = Moniteur::where('actif', true)
-            ->orderBy('nom')
+        $moniteurs = Moniteur::orderBy('nom')
             ->get()
             ->map(fn($m) => array_merge($m->toArray(), [
                 'nom_complet' => $m->nom_complet

@@ -245,6 +245,17 @@ export default function Dashboard() {
   const [dossierDocs,  setDossierDocs]  = useState([]);   // documents du dossier actif
   const [dossierSaving,setDossierSaving]= useState(false);
 
+  /* ── Rôle moniteur ── */
+  const [roleModal,        setRoleModal]        = useState(false);
+  const [roleTarget,       setRoleTarget]       = useState(null);   // client cible
+  const [roleSelected,     setRoleSelected]     = useState("user");
+  const [roleSaving,       setRoleSaving]        = useState(false);
+  const [roleErr,          setRoleErr]           = useState("");
+  const [moniteurModal,    setMoniteurModal]    = useState(false);
+  const [moniteurForm,     setMoniteurForm]     = useState({ nom:"", prenom:"", email:"", password:"", telephone:"" });
+  const [moniteurSaving,   setMoniteurSaving]   = useState(false);
+  const [moniteurErr,      setMoniteurErr]      = useState("");
+
   /* ── messages : conversation ouverte + filtres ── */
   const [convMsg,      setConvMsg]      = useState(null);   // message ouvert dans ConversationView
   const [msgFiltre,    setMsgFiltre]    = useState("tous"); // tous | nouveau | lu | repondu | archive
@@ -450,6 +461,47 @@ export default function Dashboard() {
       loadTab("seances");
       showToast(e.response?.data?.message || "Erreur.", false);
     }
+  };
+
+  /* ── Changer le rôle d'un client ── */
+  const openRoleModal = (client) => {
+    setRoleTarget(client);
+    setRoleSelected(client.role);
+    setRoleErr("");
+    setRoleModal(true);
+  };
+
+  const handleRoleChange = async () => {
+    if (!roleTarget) return;
+    setRoleSaving(true); setRoleErr("");
+    try {
+      await axios.patch(`${API}/clients/${roleTarget.id}/role`, { role: roleSelected });
+      setClients(prev => prev.map(c => c.id === roleTarget.id ? { ...c, role: roleSelected } : c));
+      setRoleModal(false);
+      showToast(`✅ Rôle de ${roleTarget.prenom} changé en "${roleSelected}"`);
+    } catch (e) {
+      setRoleErr(e.response?.data?.message || "Erreur lors du changement de rôle.");
+    } finally { setRoleSaving(false); }
+  };
+
+  /* ── Créer un compte Moniteur ── */
+  const handleCreateMoniteur = async () => {
+    setMoniteurErr("");
+    if (!moniteurForm.nom.trim() || !moniteurForm.prenom.trim() || !moniteurForm.email.trim() || !moniteurForm.password.trim()) {
+      setMoniteurErr("Tous les champs obligatoires (*) doivent être remplis."); return;
+    }
+    setMoniteurSaving(true);
+    try {
+      const res = await axios.post(`${API}/register-moniteur`, moniteurForm);
+      const newClient = res.data.user;
+      setClients(prev => [newClient, ...prev]);
+      setMoniteurModal(false);
+      setMoniteurForm({ nom:"", prenom:"", email:"", password:"", telephone:"" });
+      showToast(`🧑‍🏫 Compte moniteur "${newClient.prenom} ${newClient.nom}" créé !`);
+    } catch (e) {
+      const msg = e.response?.data?.message || e.response?.data?.errors?.email?.[0] || "Erreur lors de la création.";
+      setMoniteurErr(msg);
+    } finally { setMoniteurSaving(false); }
   };
 
   const F = (key, label, type="text", options=null) => (
@@ -1283,11 +1335,111 @@ export default function Dashboard() {
         )}
 
         {/* â•â• CLIENTS â•â• */}
+        {/* ══ MODAL CHANGER RÔLE ══ */}
+        {roleModal && (
+          <div className="db-modal-overlay" onClick={() => setRoleModal(false)}>
+            <div className="db-modal" onClick={e => e.stopPropagation()} style={{maxWidth:440}}>
+              <div className="db-modal-head">
+                <h5>🔄 Rôle de {roleTarget?.prenom} {roleTarget?.nom}</h5>
+                <button className="db-modal-x" onClick={() => setRoleModal(false)}>×</button>
+              </div>
+              <div className="db-modal-body">
+                {roleErr && <div className="db-alert err">⚠️ {roleErr}</div>}
+                <div className="db-field">
+                  <label>Choisir le nouveau rôle</label>
+                  <div style={{display:"flex", gap:12, marginTop:10}}>
+                    {[
+                      {val:"user",     label:"👤 Client",     bg:"#dbeafe", color:"#1d4ed8"},
+                      {val:"moniteur", label:"🧑‍🏫 Moniteur", bg:"#e0f2fe", color:"#0891b2"},
+                      {val:"admin",    label:"🔑 Admin",       bg:"#fee2e2", color:"#b91c1c"},
+                    ].map(r => (
+                      <button key={r.val}
+                        onClick={() => setRoleSelected(r.val)}
+                        style={{
+                          flex:1, padding:"12px 8px", borderRadius:10,
+                          border:`2.5px solid ${roleSelected===r.val ? r.color : "#e2e8f0"}`,
+                          background: roleSelected===r.val ? r.bg : "#f8fafc",
+                          color: roleSelected===r.val ? r.color : "#64748b",
+                          fontWeight: roleSelected===r.val ? 800 : 600,
+                          cursor:"pointer", fontSize:13, transition:".2s"
+                        }}
+                      >{r.label}</button>
+                    ))}
+                  </div>
+                </div>
+                {roleSelected === "admin" && (
+                  <div style={{background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:8, padding:"10px 14px", marginTop:12, fontSize:12, color:"#c2410c"}}>
+                    ⚠️ <b>Attention :</b> Ce client aura accès complet au tableau de bord administrateur.
+                  </div>
+                )}
+              </div>
+              <div className="db-modal-foot">
+                <button className="db-btn neutral lg" onClick={() => setRoleModal(false)}>Annuler</button>
+                <button className="db-btn primary lg" onClick={handleRoleChange} disabled={roleSaving}>
+                  {roleSaving ? "⏳ Sauvegarde…" : "✅ Confirmer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ MODAL CRÉER MONITEUR ══ */}
+        {moniteurModal && (
+          <div className="db-modal-overlay" onClick={() => setMoniteurModal(false)}>
+            <div className="db-modal" onClick={e => e.stopPropagation()} style={{maxWidth:480}}>
+              <div className="db-modal-head">
+                <h5>🧑‍🏫 Créer un compte Moniteur</h5>
+                <button className="db-modal-x" onClick={() => setMoniteurModal(false)}>×</button>
+              </div>
+              <div className="db-modal-body">
+                {moniteurErr && <div className="db-alert err">⚠️ {moniteurErr}</div>}
+                {[
+                  {key:"nom",       label:"Nom *",          type:"text"},
+                  {key:"prenom",    label:"Prénom *",        type:"text"},
+                  {key:"email",     label:"Email *",         type:"email"},
+                  {key:"password",  label:"Mot de passe *",  type:"password"},
+                  {key:"telephone", label:"Téléphone",       type:"text"},
+                ].map(f => (
+                  <div className="db-field" key={f.key}>
+                    <label>{f.label}</label>
+                    <input
+                      className="db-input"
+                      type={f.type}
+                      value={moniteurForm[f.key]}
+                      onChange={e => setMoniteurForm(prev => ({...prev, [f.key]: e.target.value}))}
+                      placeholder={f.label.replace(" *","")}
+                    />
+                  </div>
+                ))}
+                <div style={{background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:8, padding:"10px 14px", fontSize:12, color:"#0369a1", marginTop:4}}>
+                  💡 Le moniteur se connecte avec son email/mot de passe et accède au tableau de bord.
+                </div>
+              </div>
+              <div className="db-modal-foot">
+                <button className="db-btn neutral lg" onClick={() => setMoniteurModal(false)}>Annuler</button>
+                <button className="db-btn primary lg" onClick={handleCreateMoniteur} disabled={moniteurSaving}>
+                  {moniteurSaving ? "⏳ Création…" : "🧑‍🏫 Créer le compte"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ CLIENTS ══ */}
         {tab === "clients" && (
           <div className="db-section">
             <div className="db-section-head">
               <h4 className="db-title">Clients ({filteredClients.length}{q && filteredClients.length !== clients.length ? ` / ${clients.length}` : ""})</h4>
-              <button className="db-btn primary" onClick={() => openModal("client","➕ Ajouter un client",{role:"user"})}>+ Ajouter</button>
+              <div style={{display:"flex", gap:10}}>
+                <button
+                  className="db-btn"
+                  style={{background:"#e0f2fe", color:"#0891b2", border:"none", fontWeight:700}}
+                  onClick={() => { setMoniteurForm({ nom:"", prenom:"", email:"", password:"", telephone:"" }); setMoniteurErr(""); setMoniteurModal(true); }}
+                >
+                  🧑‍🏫 Créer Moniteur
+                </button>
+                <button className="db-btn primary" onClick={() => openModal("client","➕ Ajouter un client",{role:"user"})}>+ Ajouter</button>
+              </div>
             </div>
             <div className="db-card"><div className="db-table-wrap">
               <table className="db-table">
@@ -1295,21 +1447,41 @@ export default function Dashboard() {
                 <tbody>
                   {clients.length===0 && <tr><td colSpan={6} className="db-empty">Aucun client</td></tr>}
                   {q && filteredClients.length===0 && clients.length>0 && <tr><td colSpan={6} className="db-empty">🔍 Aucun résultat pour « {globalSearch} »</td></tr>}
-                  {filteredClients.map(c=>(
-                    <tr key={c.id}>
-                      <td className="db-id">{c.id}</td>
-                      <td><b>{c.nom} {c.prenom}</b></td>
-                      <td style={{color:"#64748b"}}>{c.email}</td>
-                      <td><Badge text={c.role} bg={c.role==="admin"?"#fee2e2":"#dbeafe"} color={c.role==="admin"?"#b91c1c":"#1d4ed8"}/></td>
-                      <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(c.created_at).toLocaleDateString("fr-FR")}</td>
-                      <td><ActionBtns
-                        onView  ={() => openClientDetails(c)}
-                        onEdit  ={() => openModal("client",`✏️ Modifier ${c.prenom}`,{nom:c.nom,prenom:c.prenom,email:c.email,password:"",role:c.role},c.id)}
-                        onDelete={() => handleDelete("client",c.id)}
-                        confirmId={confirmId} setConfirmId={setConfirmId} id={c.id}
-                      /></td>
-                    </tr>
-                  ))}
+                  {filteredClients.map(c => {
+                    const roleBadge = c.role === "admin"
+                      ? { bg:"#fee2e2", color:"#b91c1c", label:"🔑 Admin" }
+                      : c.role === "moniteur"
+                        ? { bg:"#e0f2fe", color:"#0891b2", label:"🧑‍🏫 Moniteur" }
+                        : { bg:"#dbeafe", color:"#1d4ed8", label:"👤 Client" };
+                    return (
+                      <tr key={c.id}>
+                        <td className="db-id">{c.id}</td>
+                        <td><b>{c.nom} {c.prenom}</b></td>
+                        <td style={{color:"#64748b"}}>{c.email}</td>
+                        <td><Badge text={roleBadge.label} bg={roleBadge.bg} color={roleBadge.color}/></td>
+                        <td style={{fontSize:12,color:"#94a3b8"}}>{new Date(c.created_at).toLocaleDateString("fr-FR")}</td>
+                        <td>
+                          <div className="db-actions">
+                            <button className="db-btn view" onClick={() => openClientDetails(c)} title="Voir">👁️</button>
+                            <button className="db-btn edit" onClick={() => openModal("client",`✏️ Modifier ${c.prenom}`,{nom:c.nom,prenom:c.prenom,email:c.email,password:"",role:c.role},c.id)} title="Modifier">✏️</button>
+                            <button
+                              title="Changer le rôle"
+                              onClick={() => openRoleModal(c)}
+                              style={{background:"#f0f9ff", color:"#0891b2", border:"1px solid #bae6fd", borderRadius:7, padding:"4px 9px", cursor:"pointer", fontSize:12, fontWeight:700, transition:".2s"}}
+                            >🔄 Rôle</button>
+                            {confirmId === c.id ? (
+                              <>
+                                <button className="db-btn danger" onClick={() => { handleDelete("client",c.id); setConfirmId(null); }}>Oui</button>
+                                <button className="db-btn neutral" onClick={() => setConfirmId(null)}>Non</button>
+                              </>
+                            ) : (
+                              <button className="db-btn danger" onClick={() => setConfirmId(c.id)} title="Supprimer">🗑️</button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div></div>

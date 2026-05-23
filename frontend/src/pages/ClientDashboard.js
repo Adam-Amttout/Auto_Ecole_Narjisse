@@ -27,6 +27,14 @@ export default function ClientDashboard() {
   const navigate = useNavigate();
   const user     = JSON.parse(localStorage.getItem("user") || "{}");
   const clientId = user?.id;
+  const role     = localStorage.getItem("role");
+
+  // 🔒 Guard : si moniteur ou admin, rediriger immédiatement
+  useEffect(() => {
+    if (role === "moniteur") navigate("/moniteur-espace", { replace: true });
+    if (role === "admin")    navigate("/dashboard",       { replace: true });
+  }, [role, navigate]);
+
 
   const [tab, setTab]         = useState("accueil");
   const [loading, setLoading] = useState(true);

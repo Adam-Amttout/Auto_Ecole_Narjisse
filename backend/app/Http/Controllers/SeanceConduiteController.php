@@ -80,6 +80,58 @@ class SeanceConduiteController extends Controller
             ->header('Cache-Control', 'public, max-age=30');
     }
 
+    /** GET /api/seances/moniteur-by-email?email=... */
+    public function byMoniteurEmail(Request $request)
+    {
+        $email = $request->query('email');
+        if (!$email) {
+            return response()->json(['message' => 'Email requis.'], 422);
+        }
+
+        $moniteur = \App\Models\Moniteur::where('email', $email)->first();
+
+        // ✅ Auto-create : si le client existe avec role=moniteur mais pas encore dans moniteurs
+        if (!$moniteur) {
+            $client = \App\Models\Client::where('email', $email)
+                ->where('role', 'moniteur')
+                ->first();
+
+            if (!$client) {
+                return response()->json(['message' => 'Aucun moniteur trouvé avec cet email.'], 404);
+            }
+
+            // Générer un téléphone unique s'il n'en a pas
+            $tel = $client->telephone ?? ('0600' . str_pad($client->id, 6, '0', STR_PAD_LEFT));
+
+            $moniteur = \App\Models\Moniteur::firstOrCreate(
+                ['email' => $email],
+                [
+                    'nom'       => $client->nom,
+                    'prenom'    => $client->prenom,
+                    'telephone' => $tel,
+                    'actif'     => true,
+                ]
+            );
+        }
+
+        $seances = SeanceConduite::with(['client', 'vehicule'])
+            ->where('moniteur_id', $moniteur->id)
+            ->orderBy('date', 'desc')
+            ->orderBy('heure_debut', 'asc')
+            ->get()
+            ->map(function ($s) use ($moniteur) {
+                return array_merge($s->toArray(), [
+                    'moniteur' => $moniteur->toArray(),
+                ]);
+            });
+
+        return response()->json([
+            'moniteur' => $moniteur,
+            'seances'  => $seances,
+        ]);
+    }
+
+
     /**
      * GET /api/seances/creneaux
      * Retourne tous les créneaux de 30 min avec leur disponibilité.

@@ -22,8 +22,10 @@ use App\Http\Controllers\DossierController;
 Route::get('/test', fn() => ['message' => 'API Narjiss OK']);
 
 // ── AUTH
-Route::post('/register-user', [AuthController::class, 'register']);
-Route::post('/login',         [AuthController::class, 'login']);
+Route::post('/register-user',     [AuthController::class, 'register']);
+Route::post('/login',             [AuthController::class, 'login']);
+Route::post('/register-moniteur', [AuthController::class, 'registerMoniteur']);
+Route::patch('/clients/{id}/role',[AuthController::class, 'updateRole']);
 
 // ── CLIENTS
 Route::get('/clients',         [ClientController::class, 'index']);
@@ -62,13 +64,14 @@ Route::put('/vehicules/{id}',     [VehiculeController::class, 'update']);
 Route::delete('/vehicules/{id}',  [VehiculeController::class, 'destroy']);
 
 // ── SÉANCES
-Route::get('/seances/creneaux',       [SeanceConduiteController::class, 'creneaux']);
-Route::get('/seances',                [SeanceConduiteController::class, 'index']);
-Route::get('/seances/{id}',           [SeanceConduiteController::class, 'show']);
-Route::post('/seances',               [SeanceConduiteController::class, 'store']);
-Route::put('/seances/{id}',           [SeanceConduiteController::class, 'update']);
-Route::delete('/seances/{id}',        [SeanceConduiteController::class, 'destroy']);
-Route::patch('/seances/{id}/annuler', [SeanceConduiteController::class, 'annuler']);
+Route::get('/seances/creneaux',              [SeanceConduiteController::class, 'creneaux']);
+Route::get('/seances/moniteur-by-email',     [SeanceConduiteController::class, 'byMoniteurEmail']);
+Route::get('/seances',                       [SeanceConduiteController::class, 'index']);
+Route::get('/seances/{id}',                  [SeanceConduiteController::class, 'show']);
+Route::post('/seances',                      [SeanceConduiteController::class, 'store']);
+Route::put('/seances/{id}',                  [SeanceConduiteController::class, 'update']);
+Route::delete('/seances/{id}',               [SeanceConduiteController::class, 'destroy']);
+Route::patch('/seances/{id}/annuler',        [SeanceConduiteController::class, 'annuler']);
 
 // ── AVIS
 Route::get('/avis/approved',      [AvisController::class, 'approved']);

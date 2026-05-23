@@ -35,6 +35,8 @@ function Connexion() {
 
         if (data.user.role === "admin") {
           navigate("/dashboard");
+        } else if (data.user.role === "moniteur") {
+          navigate("/moniteur-espace");
         } else {
           navigate("/mon-espace");
         }
