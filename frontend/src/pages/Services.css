@@ -1,126 +1,382 @@
-.services-hero{
-height:60vh;
-background-image:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
-url("https://images.unsplash.com/photo-1503376780353-7e6692767b70");
-background-size:cover;
-background-position:center;
+/* Services.css - Premium Modern Design */
+
+:root {
+  --serv-primary: #e63946;
+  --serv-dark: #0f172a;
+  --serv-gray: #64748b;
+  --serv-light: #f8fafc;
+  --serv-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  --serv-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.1);
+  --serv-gradient: linear-gradient(135deg, #e63946 0%, #ff6b6b 100%);
 }
 
-.services-hero h1{
-font-size:48px;
-font-weight:bold;
+.services-page-premium {
+  font-family: 'Poppins', sans-serif;
+  color: var(--serv-dark);
+  background: #ffffff;
+  overflow-x: hidden;
 }
 
-.services-section{
-padding:80px 0;
+/* =========================================
+   1. HERO SECTION CINEMATIC
+   ========================================= */
+.services-hero-cinematic {
+  position: relative;
+  min-height: 75vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('https://images.unsplash.com/photo-1550355220-43891461f364?auto=format&fit=crop&q=80&w=2000');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  padding: 100px 0;
 }
 
-.service-card{
-border:none;
-transition:0.3s;
+.cinematic-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.75) 100%);
+  z-index: 1;
 }
 
-.service-card:hover{
-transform:translateY(-10px);
+.cinematic-badge {
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 8px 25px;
+  border-radius: 30px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  backdrop-filter: blur(10px);
 }
 
-.service-icon{
-font-size:40px;
-margin-bottom:15px;
+.hero-title-cinematic {
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+  text-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
-.process-section{
-background:#f5f5f5;
-padding:70px 0;
+.text-primary-gradient {
+  background: var(--serv-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.step-box{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
+.hero-subtitle-cinematic {
+  font-size: 1.3rem;
+  color: #cbd5e1;
+  max-width: 750px;
+  line-height: 1.7;
 }
 
-.step-number{
-width:40px;
-height:40px;
-background:#002b5b;
-color:white;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:50%;
-margin:0 auto 10px;
-font-weight:bold;
+.hero-metric-box {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 15px 30px;
+  border-radius: 16px;
+  min-width: 150px;
+  transition: transform 0.3s ease;
 }
 
-.advantages-section{
-padding:80px 0;
+.hero-metric-box:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.cta-section{
-background:gray;
-padding:70px 0;
-border-radius: 18px;
-}
-.btn-inscription{
-transition:0.3s ease;
-}
-
-.btn-inscription:hover{
-transform:scale(1.1);
-}
-/* Ajouts CSS pour SeancesPage.js — à ajouter dans SeancesPage.css */
-
-/* Info règle métier */
-.sp-info-rule {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-bottom: 16px;
-  font-size: 0.88rem;
-  color: #1e40af;
+/* =========================================
+   2. SERVICES CATALOG (GRID)
+   ========================================= */
+.services-catalog {
+  padding: 100px 0;
+  background: #ffffff;
 }
 
-/* Loading disponibilité créneaux */
-.sp-loading-dispo {
-  padding: 8px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  color: #64748b;
-  font-size: 0.88rem;
-}
-
-/* Résultat disponibilité */
-.sp-dispo-result {
-  padding: 10px 14px;
-  border-radius: 8px;
+.section-tag {
+  color: var(--serv-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
   font-size: 0.9rem;
-  margin-bottom: 12px;
-}
-.sp-dispo-result.ok  { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-.sp-dispo-result.err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-
-/* Hint heure fin */
-.sp-hint {
   display: block;
-  margin-top: 4px;
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-.sp-hint-fin {
-  display: block;
-  margin-top: 4px;
-  font-size: 0.82rem;
-  color: #2563eb;
-  font-weight: 500;
+  margin-bottom: 10px;
 }
 
-/* Durée badge dans les cartes */
-.sp-duree {
-  font-size: 0.78rem;
-  color: #94a3b8;
-  margin-left: 4px;
+.section-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--serv-dark);
+}
+
+.text-highlight {
+  color: var(--serv-primary);
+}
+
+.service-card-modern {
+  background: var(--serv-light);
+  padding: 40px 30px;
+  border-radius: 20px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  z-index: 1;
+  border: 1px solid #f1f5f9;
+}
+
+.service-card-modern:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--serv-shadow-hover);
+  background: #ffffff;
+}
+
+.service-icon-box {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 25px;
+  transition: all 0.4s ease;
+}
+
+.service-card-modern:hover .service-icon-box {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.service-card-modern h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--serv-dark);
+  margin-bottom: 15px;
+}
+
+.service-card-modern p {
+  color: var(--serv-gray);
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.service-link {
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  transition: gap 0.3s ease;
+}
+
+.service-card-modern:hover .service-link {
+  gap: 12px;
+}
+
+.card-hover-border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 4px;
+  transition: width 0.4s ease;
+}
+
+.service-card-modern:hover .card-hover-border {
+  width: 100%;
+}
+
+/* =========================================
+   3. TIMELINE PROCESS
+   ========================================= */
+.process-timeline-section {
+  padding: 100px 0;
+  background: var(--serv-light);
+}
+
+.process-desc {
+  font-size: 1.15rem;
+  color: var(--serv-gray);
+  line-height: 1.7;
+}
+
+.btn-outline-dark {
+  background: transparent;
+  color: var(--serv-dark);
+  border: 2px solid var(--serv-dark);
+  padding: 14px 30px;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-dark:hover {
+  background: var(--serv-dark);
+  color: #fff;
+}
+
+.timeline-vertical {
+  position: relative;
+  padding-left: 40px;
+}
+
+.timeline-vertical::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 19px; /* center of 40px */
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -40px; /* aligns with padding */
+  width: 40px;
+  height: 40px;
+  background: var(--serv-gradient);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
+  z-index: 2;
+  border: 4px solid var(--serv-light);
+}
+
+.timeline-content {
+  background: #ffffff;
+  padding: 25px 30px;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.timeline-item:hover .timeline-content {
+  transform: translateX(10px);
+}
+
+.timeline-content::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 15px;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  transform: rotate(45deg);
+}
+
+.timeline-content h4 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--serv-dark);
+  margin-bottom: 10px;
+}
+
+.timeline-content p {
+  color: var(--serv-gray);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* =========================================
+   4. ADVANTAGES SECTION (DARK)
+   ========================================= */
+.advantages-modern {
+  padding: 100px 0;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  position: relative;
+}
+
+.text-primary-light {
+  color: #ffb3b8;
+}
+
+.advantage-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 40px 30px;
+  border-radius: 20px;
+  text-align: center;
+  height: 100%;
+  transition: all 0.4s ease;
+  backdrop-filter: blur(10px);
+}
+
+.advantage-box:hover {
+  transform: translateY(-10px);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.highlight-box {
+  background: var(--serv-gradient);
+  border: none;
+}
+
+.highlight-box:hover {
+  background: var(--serv-gradient);
+  box-shadow: 0 15px 30px rgba(230, 57, 70, 0.4);
+}
+
+.adv-icon {
+  font-size: 3rem;
+  color: #ffffff;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+}
+
+.advantage-box h4 {
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.advantage-box p {
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.highlight-box p {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 992px) {
+  .hero-title-clean { font-size: 3rem; }
+  .timeline-content { padding: 20px; }
+  .hero-floating-card { bottom: -15px; left: -15px; }
+}
+
+@media (max-width: 768px) {
+  .hero-title-clean { font-size: 2.3rem; }
+  .section-title { font-size: 2.3rem; }
+  .timeline-vertical { padding-left: 30px; }
+  .timeline-vertical::before { left: 14px; }
+  .timeline-marker { left: -30px; width: 30px; height: 30px; font-size: 1rem; border-width: 3px; }
+  .timeline-content::before { display: none; }
 }

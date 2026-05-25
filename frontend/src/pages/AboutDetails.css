@@ -1,0 +1,379 @@
+/* AboutDetails.css - High Level Premium Design */
+
+:root {
+  --detail-primary: #e63946;
+  --detail-dark: #0f172a;
+  --detail-gray: #475569;
+  --detail-light: #f8fafc;
+  --detail-gold: #fbbf24;
+}
+
+.about-details-page {
+  font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
+  background: #ffffff;
+}
+
+/* =========================================
+   1. HERO SECTION
+   ========================================= */
+.details-hero {
+  position: relative;
+  min-height: 60vh;
+  background-image: url('https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=1920');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  padding: 80px 0;
+}
+
+.details-hero-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.7) 100%);
+  z-index: 1;
+}
+
+.btn-back {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.btn-back:hover {
+  background: var(--detail-primary);
+  border-color: var(--detail-primary);
+  transform: translateX(-5px);
+}
+
+.badge-glow {
+  background: rgba(251, 191, 36, 0.2);
+  color: var(--detail-gold);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.hero-display {
+  font-size: 4rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(to right, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-lead {
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+  max-width: 700px;
+}
+
+/* =========================================
+   2. HISTORY & MISSION
+   ========================================= */
+.history-mission-section {
+  padding: 100px 0;
+  background: #ffffff;
+}
+
+.image-frame-gold, .image-frame-blue {
+  position: relative;
+  z-index: 1;
+}
+
+.image-frame-gold img, .image-frame-blue img {
+  width: 100%;
+  border-radius: 20px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.image-frame-gold .frame-decoration {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 100%;
+  height: 100%;
+  border: 4px solid var(--detail-gold);
+  border-radius: 20px;
+  z-index: 0;
+}
+
+.image-frame-blue .frame-decoration {
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  width: 100%;
+  height: 100%;
+  border: 4px solid var(--detail-primary);
+  border-radius: 20px;
+  z-index: 0;
+}
+
+.section-title-dark {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--detail-dark);
+  margin-bottom: 10px;
+}
+
+.title-underline {
+  width: 80px;
+  height: 4px;
+  background: var(--detail-primary);
+  border-radius: 2px;
+}
+
+.desc-text {
+  font-size: 1.1rem;
+  color: var(--detail-gray);
+  line-height: 1.8;
+}
+
+/* =========================================
+   3. FORMATIONS CARDS
+   ========================================= */
+.formations-showcase {
+  padding: 80px 0;
+  background: var(--detail-light);
+}
+
+.subtitle-text {
+  font-size: 1.15rem;
+  color: var(--detail-gray);
+  margin-top: 15px;
+}
+
+.formation-card {
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transition: all 0.4s ease;
+  height: 100%;
+  border: 1px solid #e2e8f0;
+}
+
+.formation-card:hover {
+  transform: translateY(-15px);
+  box-shadow: 0 20px 40px rgba(230, 57, 70, 0.1);
+  border-color: rgba(230, 57, 70, 0.3);
+}
+
+.formation-card .icon-wrapper {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 20px auto;
+  background: rgba(230, 57, 70, 0.1);
+  color: var(--detail-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  transition: all 0.4s ease;
+}
+
+.formation-card:hover .icon-wrapper {
+  background: var(--detail-primary);
+  color: #fff;
+}
+
+.formation-card h4 {
+  font-weight: 700;
+  color: var(--detail-dark);
+  margin-bottom: 15px;
+}
+
+.formation-card p {
+  color: var(--detail-gray);
+  line-height: 1.6;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* =========================================
+   4. WHY CHOOSE US (DARK)
+   ========================================= */
+.why-choose-us {
+  padding: 100px 0;
+  background: var(--detail-dark);
+}
+
+.feature-item {
+  display: flex;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 30px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  height: 100%;
+}
+
+.feature-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-5px);
+  border-color: rgba(230, 57, 70, 0.3);
+}
+
+.f-icon {
+  font-size: 2.5rem;
+  color: var(--detail-primary);
+  flex-shrink: 0;
+}
+
+.feature-item h5 {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.feature-item p {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* =========================================
+   5. PROCESS FLOW
+   ========================================= */
+.process-flow {
+  padding: 100px 0;
+  background: #ffffff;
+}
+
+.step-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 50px;
+}
+
+.step-box {
+  flex: 1;
+  text-align: center;
+  padding: 0 15px;
+}
+
+.step-number {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px auto;
+  background: var(--detail-light);
+  border: 2px dashed var(--detail-primary);
+  color: var(--detail-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  transition: all 0.4s ease;
+}
+
+.step-box:hover .step-number {
+  background: var(--detail-primary);
+  color: #fff;
+  border-style: solid;
+  transform: scale(1.1);
+}
+
+.step-box h4 {
+  font-weight: 700;
+  color: var(--detail-dark);
+  margin-bottom: 10px;
+}
+
+.step-box p {
+  color: var(--detail-gray);
+  font-size: 0.95rem;
+}
+
+.step-connector {
+  height: 2px;
+  width: 80px;
+  background: #e2e8f0;
+  margin-bottom: 50px; /* offset for text */
+}
+
+/* =========================================
+   6. CTA PREMIUM
+   ========================================= */
+.cta-premium {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #e63946 0%, #ff6b6b 100%);
+  color: #fff;
+}
+
+.cta-premium h2 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 15px;
+}
+
+.cta-premium p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.btn-glow {
+  background: #fff;
+  color: var(--detail-primary);
+  border: none;
+  padding: 15px 40px;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.btn-glow:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 992px) {
+  .hero-display { font-size: 3rem; }
+  .image-frame-gold .frame-decoration { left: 10px; top: 10px; }
+  .image-frame-blue .frame-decoration { right: 10px; bottom: 10px; }
+  .step-container { flex-direction: column; gap: 30px; }
+  .step-connector { display: none; }
+}
+
+@media (max-width: 768px) {
+  .hero-display { font-size: 2.3rem; }
+  .section-title-dark { font-size: 2.2rem; }
+  .btn-back { font-size: 0.9rem; padding: 8px 15px; }
+}

@@ -1,0 +1,313 @@
+/* ServiceDetail.css - Ultra Premium Design */
+
+:root {
+  --sd-dark: #0f172a;
+  --sd-gray: #64748b;
+  --sd-light: #f8fafc;
+}
+
+.service-detail-page {
+  font-family: 'Poppins', sans-serif;
+  background: var(--sd-light);
+  overflow-x: hidden;
+}
+
+/* =========================================
+   1. HERO BANNER
+   ========================================= */
+.service-detail-hero {
+  position: relative;
+  min-height: 55vh;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  padding-bottom: 80px;
+}
+
+.hero-gradient-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1;
+}
+
+.btn-return {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+}
+
+.btn-return:hover {
+  background: #fff;
+  color: var(--sd-dark);
+  transform: translateX(-5px);
+}
+
+.service-icon-massive {
+  width: 100px;
+  height: 100px;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.premium-badge {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  color: #fff;
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.service-title-massive {
+  color: #fff;
+  font-size: 4rem;
+  font-weight: 900;
+  margin-bottom: 15px;
+  text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.service-subtitle-massive {
+  color: rgba(255,255,255,0.9);
+  font-size: 1.4rem;
+  max-width: 800px;
+}
+
+/* =========================================
+   2. QUICK INFO BAR
+   ========================================= */
+.quick-info-bar {
+  margin-top: -50px;
+  position: relative;
+  z-index: 10;
+  margin-bottom: 80px;
+}
+
+.quick-info-container {
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+}
+
+.info-cell {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 35px;
+  border-right: 1px solid #e2e8f0;
+}
+
+.q-icon {
+  font-size: 2.2rem;
+}
+
+.info-cell span {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--sd-gray);
+  margin-bottom: 5px;
+}
+
+.info-cell strong {
+  display: block;
+  font-size: 1.2rem;
+  color: var(--sd-dark);
+}
+
+/* =========================================
+   3. OVERVIEW & SYLLABUS
+   ========================================= */
+.service-content-section {
+  padding-bottom: 100px;
+}
+
+.overview-box {
+  background: transparent;
+}
+
+.section-title-dark {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--sd-dark);
+}
+
+.overview-text {
+  font-size: 1.15rem;
+  color: var(--sd-gray);
+  line-height: 1.8;
+}
+
+.syllabus-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  margin-top: 50px;
+}
+
+.syllabus-timeline {
+  margin-top: 30px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.syllabus-timeline::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 24px;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.syllabus-item {
+  position: relative;
+  padding-left: 40px;
+  margin-bottom: 35px;
+}
+
+.syllabus-item:last-child { margin-bottom: 0; }
+
+.syll-marker {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 6px #e2e8f0;
+}
+
+.syll-content h5 {
+  font-weight: 700;
+  color: var(--sd-dark);
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.syll-content p {
+  color: var(--sd-gray);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* =========================================
+   4. PRICING CARDS
+   ========================================= */
+.pricing-sidebar {
+  padding-left: 20px;
+}
+
+.pricing-card {
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 40px 30px;
+  margin-bottom: 25px;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.popular-card {
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  transform: scale(1.02);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pkg-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--sd-gray);
+  margin-bottom: 15px;
+}
+
+.pkg-price {
+  font-size: 2.8rem;
+  font-weight: 900;
+  margin-bottom: 25px;
+}
+
+.pkg-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pkg-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 15px;
+  color: var(--sd-dark);
+  font-weight: 500;
+}
+
+.btn-pkg {
+  padding: 14px;
+  border-radius: 50px;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+
+.btn-pkg-solid {
+  color: #fff;
+  border: none;
+}
+.btn-pkg-solid:hover { opacity: 0.9; transform: translateY(-2px); }
+
+.btn-pkg-outline {
+  background: transparent;
+}
+.btn-pkg-outline:hover { opacity: 0.7; }
+
+.guarantee-alert {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #ecfdf5;
+  color: #059669;
+  padding: 20px;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 992px) {
+  .info-cell { border-right: none; border-bottom: 1px solid #e2e8f0; }
+  .info-cell:last-child { border-bottom: none; }
+  .pricing-sidebar { padding-left: 0; margin-top: 50px; }
+  .popular-card { transform: none; }
+}
+
+@media (max-width: 768px) {
+  .service-title-massive { font-size: 2.5rem; }
+  .quick-info-bar { margin-top: -30px; }
+  .info-cell { padding: 20px; }
+  .section-title-dark { font-size: 2rem; }
+}

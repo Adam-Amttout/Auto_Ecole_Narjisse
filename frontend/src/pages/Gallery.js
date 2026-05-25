@@ -3,6 +3,7 @@ import "./Gallery.css";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import axios from "axios";
+import { FaBullseye, FaUserGraduate, FaStar, FaUserTie, FaCarAlt, FaCommentDots, FaBuilding, FaCarSide, FaLaptop, FaVideo, FaRoute, FaCoffee } from "react-icons/fa";
 
 const API = "http://127.0.0.1:8000/api";
 
@@ -42,7 +43,7 @@ function Gallery() {
   
   // Split images for different sections
   const carouselImages = allImages.slice(0, 6);
-  const entrepriseImages = allImages.slice(6, 10);
+  const entrepriseImages = allImages.slice(6, 12);
   const reussiteImages = allImages.slice(10, 16);
 
   useEffect(() => {
@@ -103,10 +104,12 @@ function Gallery() {
   ];
 
   const entrepriseFeatures = [
-    { icon: "🏢", title: "Locaux Modernes", description: "Espace de 300m² entièrement équipé" },
-    { icon: "🚘", title: "Flotte de Véhicules", description: "12 véhicules récents avec double commande" },
-    { icon: "💻", title: "Salle Informatique", description: "10 postes pour la formation au code" },
-    { icon: "🎥", title: "Simulateurs", description: "Technologie de pointe pour l'apprentissage" }
+    { icon: <FaBuilding className="gallery-react-icon" />, title: "Locaux Modernes", description: "Espace de 300m² entièrement équipé" },
+    { icon: <FaCarSide className="gallery-react-icon" />, title: "Flotte de Véhicules", description: "12 véhicules récents avec double commande" },
+    { icon: <FaLaptop className="gallery-react-icon" />, title: "Salle Informatique", description: "10 postes pour la formation au code" },
+    { icon: <FaVideo className="gallery-react-icon" />, title: "Simulateurs", description: "Technologie de pointe pour l'apprentissage" },
+    { icon: <FaRoute className="gallery-react-icon" />, title: "Piste Privée", description: "Espace d'entraînement sécurisé et aménagé" },
+    { icon: <FaCoffee className="gallery-react-icon" />, title: "Espace Détente", description: "Cafétéria et espace repos pour les élèves" }
   ];
 
   const successStories = [
@@ -149,10 +152,12 @@ function Gallery() {
   ];
 
   const stats = [
-    { value: "98%", label: "Taux de réussite", icon: "🎯", trend: "+12%" },
-    { value: "1500+", label: "Élèves formés", icon: "👨‍🎓", trend: "+200" },
-    { value: "15+", label: "Années d'expérience", icon: "⭐", trend: "Expertise" },
-    { value: "4.9/5", label: "Avis clients", icon: "💯", trend: "Top rating" }
+    { value: "98%", label: "Taux de réussite", icon: <FaBullseye className="gallery-react-icon" />, trend: "+12%" },
+    { value: "1500+", label: "Élèves formés", icon: <FaUserGraduate className="gallery-react-icon" />, trend: "+200" },
+    { value: "15+", label: "Années d'expérience", icon: <FaStar className="gallery-react-icon" />, trend: "Expertise" },
+    { value: "8", label: "Moniteurs", icon: <FaUserTie className="gallery-react-icon" />, trend: "Certifiés" },
+    { value: "12", label: "Véhicules", icon: <FaCarAlt className="gallery-react-icon" />, trend: "Double commande" },
+    { value: "4.9/5", label: "Avis clients", icon: <FaCommentDots className="gallery-react-icon" />, trend: "Top rating" }
   ];
 
  
@@ -275,7 +280,7 @@ function Gallery() {
         </div>
 
         {/* Images Grid */}
-        <div className="grid grid-4" data-aos="fade-up">
+        <div className="grid grid-3" data-aos="fade-up">
           {entrepriseImages.map((image, index) => (
             <div 
               className="card entreprise-card" 
@@ -297,7 +302,7 @@ function Gallery() {
                 </div>
               </div>
               <div className="card-info">
-                <h4>Espace {index === 0 ? "Accueil" : index === 1 ? "Formation" : index === 2 ? "Pratique" : "Simulation"}</h4>
+                <h4>Espace {index === 0 ? "Accueil" : index === 1 ? "Formation" : index === 2 ? "Pratique" : index === 3 ? "Simulation" : index === 4 ? "Détente" : "Réunion"}</h4>
                 <p>Équipement professionnel</p>
               </div>
             </div>
